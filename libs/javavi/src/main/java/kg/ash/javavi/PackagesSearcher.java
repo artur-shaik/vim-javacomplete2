@@ -59,12 +59,13 @@ public class PackagesSearcher {
             if (slashpos >= 0) {
                 String parent = entry.substring(0, slashpos);
                 String child  = entry.substring(slashpos + 1, entry.length() - 6);
-                putItem(packagesMap, parent, child, Javavi.INDEX_CLASS);
-                putClassPath(classesMap, parent, child);
+                String parentDots = parent.replaceAll("/", ".");
+                putItem(packagesMap, parentDots, child, Javavi.INDEX_CLASS);
+                putClassPath(classesMap, parentDots, child);
 
                 slashpos = parent.lastIndexOf('/');
                 if (slashpos != -1) {
-                    AddToParent(packagesMap, parent.substring(0, slashpos), parent.substring(slashpos + 1));
+                    addToParent(packagesMap, parent.substring(0, slashpos), parent.substring(slashpos + 1));
                 }
             }
         }
@@ -96,12 +97,12 @@ public class PackagesSearcher {
         map.put(parent, sbs);
     }
 
-    private void AddToParent(HashMap map, String parent, String child) {
+    private void addToParent(HashMap map, String parent, String child) {
         putItem(map, parent, child, Javavi.INDEX_PACKAGE);
 
         int slashpos = parent.lastIndexOf('/');
         if (slashpos != -1) {
-            AddToParent(map, parent.substring(0, slashpos), parent.substring(slashpos + 1));
+            addToParent(map, parent.substring(0, slashpos), parent.substring(slashpos + 1));
         }
     }
 

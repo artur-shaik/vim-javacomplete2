@@ -156,36 +156,17 @@ endfu
 
 
 
+fu! javacomplete#GetClassPathSep()
+  return s:PATH_SEP
+endfu
 
-let g:JavaComplete_Home = ''
-for path in split(&rtp, ',')
-  " let g:JavaComplete_Home = escape( expand( '<sfile>:p:h' ), '\' )
-  if match(path, "vim-javacomplete2$") >= 0
-    let g:JavaComplete_Home = path
-    break
-  endif
-endfor
-
-if !exists("g:JavaComplete_SourcesPath")
-  let g:JavaComplete_SourcesPath = ''
-  let sources = globpath(getcwd(), '**/src', 0, 1)
-  for src in sources
-    if match(src, '.*build.*') < 0
-      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. javacomplete#GetClassPathSep()
-    endif
-  endfor
-  call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
-endif
-
-let g:JavaComplete_LibsPath = "~/.m2/repository"
-let g:JavaComplete_JavaParserJar = g:JavaComplete_Home. "/libs/javaparser.jar"
 
 augroup javacomplete
   autocmd!
   autocmd VimLeave * call javacomplete#TerminateServer()
 augroup END
 
-function! javacomplete#PollServer()
+function! s:PollServer()
   if !pyeval("'bridgeState' not in locals() or not bridgeState")
     return pyeval("bridgeState.poll()")
   endif
@@ -203,29 +184,30 @@ function! javacomplete#GetServerPid()
 endfunction
 
 function! javacomplete#TerminateServer()
-  if javacomplete#PollServer() != 0
+  if s:PollServer() != 0
     py bridgeState.terminateServer()
   endif
 endfunction
 
 function! javacomplete#EnableServer()
-  if javacomplete#PollServer() == 0
+  if s:PollServer() == 0
     call s:Info("Restart server")
 
-    let classpath = ' -classpath "' . s:GetClassPath() . '" '
+    let classpath = s:GetClassPath()
     let extra = ''
     if exists('g:JavaComplete_SourcesPath')
-      let extra = '-sources "'. s:ExpandAllPath(g:JavaComplete_SourcesPath). '" '
+      let extra = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '" '
     endif
     if exists('g:JavaComplete_LibsPath')
-      let extra = extra. '-jars "'. s:ExpandAllPath(g:JavaComplete_LibsPath). '" '
+      let extra = extra. '-jars "'. s:ExpandAllPaths(g:JavaComplete_LibsPath). s:PATH_SEP. classpath. '" '
     endif
 
-    let args = classpath . ' kg.ash.javavi.Javavi '. extra. '-D'
+    let args = ' -classpath "'. classpath. '" '. ' kg.ash.javavi.Javavi '. extra. '-D'
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
     execute "pyfile ". file
 
+    py import vim
     py bridgeState = JavaviBridge()
     py bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'))
 
@@ -1954,42 +1936,6 @@ fu! s:GetSourceDirs(filepath, ...)
   return dirs
 endfu
 
-" classpath								{{{2
-fu! javacomplete#AddClassPath(s)
-  if !isdirectory(a:s)
-    echoerr 'invalid classpath: ' . a:s
-    return
-  endif
-
-  if !exists('s:classpath')
-    let s:classpath = [a:s]
-  elseif index(s:classpath, a:s) == -1
-    call add(s:classpath, a:s)
-  endif
-  let s:cache = {}
-endfu
-
-fu! javacomplete#DelClassPath(s)
-  if !exists('s:classpath') | return   | endif
-  let idx = index(s:classpath, a:s)
-  if idx != -1
-    call remove(s:classpath, idx)
-  endif
-endfu
-
-fu! javacomplete#SetClassPath(s)
-  if type(a:s) == type("")
-    let s:classpath = split(a:s, javacomplete#GetClassPathSep())
-  elseif type(a:s) == type([])
-    let s:classpath = a:s
-  endif
-  let s:cache = {}
-endfu
-
-fu! javacomplete#GetClassPathSep()
-  return s:PATH_SEP
-endfu
-
 fu! javacomplete#GetClassPath()
   return exists('s:classpath') ? join(s:classpath, javacomplete#GetClassPathSep()) : ''
 endfu
@@ -2005,31 +1951,52 @@ fu! s:GetClassPath()
   endif
 
   if exists('b:classpath') && b:classpath !~ '^\s*$'
+    call s:Info(b:classpath)
     return path . b:classpath
   endif
 
   if exists('s:classpath')
+    call s:Info(s:classpath)
     return path . javacomplete#GetClassPath()
   endif
 
   if exists('g:java_classpath') && g:java_classpath !~ '^\s*$'
+    call s:Info(g:java_classpath)
     return path . g:java_classpath
+  endif
+
+  if empty($CLASSPATH)
+    let java = javacomplete#GetJVMLauncher()
+    call s:Info(exepath(java))
+    let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
+    for line in javaSettings
+      if line =~ 'java\.home'
+        let javaHome = split(line, ' = ')
+        return path. javaHome[1]. '/lib'
+      endif
+    endfor
+    
   endif
 
   return path . $CLASSPATH
 endfu
+
+function! javacomplete#CompileJavavi()
+  let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
+  if executable('mvn')
+    exe '!'. 'mvn -f "'. javaviDir. '" compile'
+  else
+    call mkdir(javaviDir. "target/classes", "p")
+    exe '!'. javacomplete#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar: -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
+  endif
+endfunction
 
 " Check if Javavi classes exists and return classpath directory.
 " If not found, build Javavi library classes with maven or javac.
 fu! s:GetJavaviClassPath()
   let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
   if !isdirectory(javaviDir. "target/classes")
-    if executable('mvn')
-      exe '!'. 'mvn -f "'. javaviDir. '" compile'
-    else
-      call mkdir(javaviDir. "target/classes", "p")
-      exe '!'. javacomplete#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar: -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
-    endif
+    call javacomplete#CompileJavavi()
   endif
 
   if !empty(globpath(javaviDir. 'target/classes', '**/*.class', 0, 1))
@@ -2373,13 +2340,21 @@ endfu
 
 " Function to run Reflection						{{{2
 fu! s:RunReflection(option, args, log)
-  let cmd = a:option. ' "'. a:args. '"'
-  call s:Info("RunReflection: ". cmd)
-  let response = pyeval('bridgeState.send(vim.eval("cmd"))')
-  return response
+  if !s:PollServer()
+    call javacomplete#EnableServer()
+  endif
+
+  if s:PollServer()
+    let cmd = a:option. ' "'. a:args. '"'
+    call s:Info("RunReflection: ". cmd)
+    let response = pyeval('bridgeState.send(vim.eval("cmd"))')
+    return response
+  endif
+
+  return ""
 endfu
 
-function! s:ExpandAllPath(path)
+function! s:ExpandAllPaths(path)
     let result = ''
     let list = split(a:path, javacomplete#GetClassPathSep())
     for l in list
@@ -2941,7 +2916,7 @@ fu! s:GetMembers(fqn, ...)
   let list = []
   let isClass = 0
 
-  let v = s:DoGetInfoByReflection(a:fqn, '-sources /home/ash/projects/ermak2/ -p')
+  let v = s:DoGetInfoByReflection(a:fqn, '-p')
   if type(v) == type([])
     let list = v
   elseif type(v) == type({}) && v != {}
@@ -3001,6 +2976,38 @@ fu! s:DoGetPackageInfoInDirs(package, onlyPackages, ...)
   endfor
   return list
 endfu
+
+
+
+
+let g:JavaComplete_Home = ''
+for path in split(&rtp, ',')
+  if match(path, "vim-javacomplete2$") >= 0
+    let g:JavaComplete_Home = path
+    break
+  endif
+endfor
+
+let g:JavaComplete_JavaParserJar = g:JavaComplete_Home. "/libs/javaparser.jar"
+
+if !exists("g:JavaComplete_SourcesPath")
+  let g:JavaComplete_SourcesPath = ''
+  let sources = globpath(getcwd(), '**/src', 0, 1)
+  for src in sources
+    if match(src, '.*build.*') < 0
+      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. javacomplete#GetClassPathSep()
+    endif
+  endfor
+  call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
+endif
+
+if exists('g:JavaComplete_LibsPath')
+  let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. javacomplete#GetClassPathSep()
+else
+  let g:JavaComplete_LibsPath = ""
+endif
+
+let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. "~/.m2/repository". javacomplete#GetClassPathSep(). s:GetClassPath()
 " }}}
 "}}}
 " vim:set fdm=marker sw=2 nowrap:

@@ -145,6 +145,9 @@ public class OutputBuilder {
     public String outputPackageInfo(String pathTarget) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
+        //if (pathTarget.contains(".")) {
+        //    pathTarget = pathTarget.replaceAll("\\.", "/");
+        //}
         if (Javavi.cachedPackages.containsKey(pathTarget)) {
             StringBuilder[] sbs = (StringBuilder[])Javavi.cachedPackages.get(pathTarget);
             sb.append("'").append( pathTarget ).append("':")
