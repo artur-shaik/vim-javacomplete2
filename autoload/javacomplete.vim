@@ -283,19 +283,34 @@ function! javacomplete#AddImport()
       return
     endif
 
-    let index = 0
-    for cn in result
-      echo "candidate [". index. "]: ". cn
-      let index += 1
-    endfor
-    let userinput = str2nr(input('select one candidate: ', '0'))
-    redraw!
-    if userinput < 0 || userinput > len(result)
-      echo "JavaComplete: wrong candidate number '". userinput. "'"
-      return
+    let import = 0
+    if len(result) > 1
+      let index = 0
+      for cn in result
+        echo "candidate [". index. "]: ". cn
+        let index += 1
+      endfor
+      let userinput = input('select one candidate [0]: ', '')
+      if empty(userinput)
+        let userinput = 0
+      elseif userinput =~ '^[0-9]*$'
+        let userinput = str2nr(userinput)
+      else
+        let userinput = -1
+      endif
+      redraw!
+      
+      if userinput < 0 || userinput > len(result)
+        echo "JavaComplete: wrong input"
+        return
+      endif
+
+      let import = result[userinput]
+    else
+      let import = result[0]
     endif
 
-    call s:AddImport(result[userinput])
+    call s:AddImport(import)
 
   endif
 endfunction
