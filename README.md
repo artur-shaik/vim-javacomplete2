@@ -54,9 +54,17 @@ for your plugin manager of choice. Put this into your `.vimrc`.
 
 ## Configuration
 
-    g:JavaComplete_LibsPath - path of you jar files. This path will always appended with '~/.m2/repository' directory. Here you can add your glassfish libs directory or your project libs.
+### Required
 
-    g:JavaComplete_SourcesPath - path of your sources. Don't try to add all sources you have, this will slow down parsing process. Add you project sources and necessery library sources. If you have compiled classes add them to previous config insteed. By default plugin will search `src` directory and add it automatically.
+Add this to your vimrc file:
+
+`autocmd FileType java set omnifunc=javacomplete#Complete`
+
+### Optional
+
+`g:JavaComplete_LibsPath` - path of you jar files. This path will always appended with '~/.m2/repository' directory. Here you can add your glassfish libs directory or your project libs. It will be automatically appended with you jre home path.
+
+`g:JavaComplete_SourcesPath` - path of your sources. Don't try to add all sources you have, this will slow down parsing process. Add you project sources and necessery library sources. If you have compiled classes add them to previous config instead. By default plugin will search `src` directory and add it automatically.
 
 ## Limitations:
 
