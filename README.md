@@ -6,7 +6,7 @@ Refreshed javacomplete plugin for vim.
 
 This is vim-javacomplete2, an omni-completion script of JAVA language for vim 7.  This plugin updates old one: http://www.vim.org/scripts/script.php?script_id=1785.
 
-It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), @javaparser/javaparser library.
+It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), javaparser library.
 
 I have kept java_parser.vim for local continious parsing, because javaparser library can't parse unfinished files.
 
@@ -83,7 +83,7 @@ for your plugin manager of choice. Put this into your `.vimrc`.
 
 - Cheng Fang author of original javacomplete plugin;
 - Zhang Li author of vim-javacompleteex plugin;
-- @javaparser/javaparser library.
+- http://github.com/javaparser/javaparser library.
 
 Originally thanked:
 
