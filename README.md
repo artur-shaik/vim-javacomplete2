@@ -15,7 +15,7 @@ This speed up reflection and source parsing.
 
 One more issue I had with original javacomplete plugin is loosing my classpath and as a result not working completion.
 Now plugin detect jre library path, and you will have standart java completion out of the box, without configuration.
-Plugin will scan child directory tree for `src` directory and add it to sources path (For this, nice to have @airblade/vim-rooter.git plugin). 
+Plugin will scan child directory tree for `src` directory and add it to sources path (For this, nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin). 
 And by default plugin will look at maven repository (`~/.m2/repository`) directory.
 
 At most first run, plugin will compile Javavi library.
