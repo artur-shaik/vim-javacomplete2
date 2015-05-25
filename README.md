@@ -6,7 +6,7 @@ Refreshed javacomplete plugin for vim.
 
 This is vim-javacomplete2, an omni-completion script of JAVA language for vim 7.  This plugin updates old one: http://www.vim.org/scripts/script.php?script_id=1785.
 
-It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), javaparser library.
+It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), [javaparser](https://github.com/javaparser/javaparser) library.
 
 I have kept java_parser.vim for local continious parsing, because javaparser library can't parse unfinished files.
 
@@ -17,6 +17,8 @@ One more issue I had with original javacomplete plugin is loosing my classpath a
 Now plugin detect jre library path, and you will have standart java completion out of the box, without configuration.
 Plugin will scan child directory tree for `src` directory and add it to sources path (For this, nice to have @airblade/vim-rooter.git plugin). 
 And by default plugin will look at maven repository (`~/.m2/repository`) directory.
+
+At most first run, plugin will compile Javavi library.
 
 ## Features
 
