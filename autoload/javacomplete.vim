@@ -252,7 +252,15 @@ function! s:AddImport(import)
 
   let imports = s:GetImports('imports')
   if empty(imports)
-    call append(1, a:import)
+    let firstline = getline(1)
+    if firstline =~ '^package.*'
+      let insertline = 1
+    else
+      let insertline = 0
+    endif
+
+    call append(insertline, 'import '. a:import. ';')
+    call append(insertline, '')
   else
     call s:Info(imports)
     let idx = 0
@@ -260,7 +268,7 @@ function! s:AddImport(import)
       let i = imports[idx][0]
       let list = [i, a:import]
       call sort(list)
-      if list[0] == a:import
+      if list[0] == a:import || idx == len(imports) - 1
         call append(imports[idx][1] - 1, 'import '. a:import. ';')
         return
       endif
@@ -1217,28 +1225,26 @@ endfunction
 fu! s:GetImports(kind, ...)
   let filekey = a:0 > 0 && !empty(a:1) ? a:1 : s:GetCurrentFileKey()
   let props = get(s:files, filekey, {})
-  if !has_key(props, a:kind)
-    let props['imports']	= filekey == s:GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
-    let props['imports_static']	= []
-    let props['imports_fqn']	= []
-    let props['imports_star']	= ['java.lang.']
-    if &ft == 'jsp' || filekey =~ '\.jsp$'
-      let props.imports_star += ['javax.servlet.', 'javax.servlet.http.', 'javax.servlet.jsp.']
-    endif
-
-    for import in props.imports
-      let subs = split(substitute(import[0], '^\s*\(static\s\+\)\?\(' .s:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*$', '\1;\2', ''), ';', 1)
-      let qid = substitute(subs[1] , '\s', '', 'g')
-      if !empty(subs[0])
-        call add(props.imports_static, qid)
-      elseif qid[-1:] == '*'
-        call add(props.imports_star, qid[:-2])
-      else
-        call add(props.imports_fqn, qid)
-      endif
-    endfor
-    let s:files[filekey] = props
+  let props['imports']	= filekey == s:GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
+  let props['imports_static']	= []
+  let props['imports_fqn']	= []
+  let props['imports_star']	= ['java.lang.']
+  if &ft == 'jsp' || filekey =~ '\.jsp$'
+    let props.imports_star += ['javax.servlet.', 'javax.servlet.http.', 'javax.servlet.jsp.']
   endif
+
+  for import in props.imports
+    let subs = split(substitute(import[0], '^\s*\(static\s\+\)\?\(' .s:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*$', '\1;\2', ''), ';', 1)
+    let qid = substitute(subs[1] , '\s', '', 'g')
+    if !empty(subs[0])
+      call add(props.imports_static, qid)
+    elseif qid[-1:] == '*'
+      call add(props.imports_star, qid[:-2])
+    else
+      call add(props.imports_fqn, qid)
+    endif
+  endfor
+  let s:files[filekey] = props
   return get(props, a:kind, [])
 endfu
 
