@@ -2,6 +2,10 @@
 
 Refreshed javacomplete plugin for vim.
 
+## Demo
+
+![vim-javacomplete2](https://github.com/artur-shaik/vim-javacomplete2/raw/master/doc/demo.gif)
+
 ## Intro
 
 This is vim-javacomplete2, an omni-completion script of JAVA language for vim 7.  This plugin updates old one: http://www.vim.org/scripts/script.php?script_id=1785.
