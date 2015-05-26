@@ -496,7 +496,6 @@ v0.7  2007-02-17
 -  Class creation helpers;
 -  Generics;
 -  Clean old unused code;
--  Update help;
 -  etc...
 
 ==============================================================================

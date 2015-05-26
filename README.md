@@ -94,7 +94,6 @@ To insert class import with F4, add this:
 - Class creation helpers;
 - Generics;
 - Clean old unused code;
-- Update help;
 - etc...
 
 ## Thanks
