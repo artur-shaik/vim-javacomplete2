@@ -89,7 +89,7 @@ To insert class import with F4, add this:
 - Cross session cache;
 - Most used (classes, methods, vars) at first place (smart suggestions);
 - FXML support;
-- JSP check support;
+- Check for jsp support;
 - Refactoring support?;
 - Class creation helpers;
 - Generics;
