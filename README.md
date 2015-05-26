@@ -75,7 +75,7 @@ Add this to your vimrc file:
 - First run can be slow;
 - The embedded parser works a bit slower than expected.
 
-## Plans
+## Todo
 
 - Add javadoc
 - Give a hint for class name conflict in different packages.
