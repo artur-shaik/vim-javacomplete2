@@ -64,6 +64,10 @@ Add this to your vimrc file:
 
 `autocmd FileType java set omnifunc=javacomplete#Complete`
 
+To insert class import with F4, add this:
+
+`nnoremap <F4> call javacomplete#AddImport()<cr>`
+
 ### Optional
 
 `g:JavaComplete_LibsPath` - path of you jar files. This path will always appended with '~/.m2/repository' directory. Here you can add your glassfish libs directory or your project libs. It will be automatically appended with you jre home path.
