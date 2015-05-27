@@ -196,6 +196,7 @@ function! javacomplete#EnableServer()
     endif
 
     let args = ' -classpath "'. classpath. '" '. ' kg.ash.javavi.Javavi '. extra. '-D'
+    call s:Info(classpath)
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
     execute "pyfile ". file
@@ -2398,13 +2399,24 @@ function! s:GetExtraPath()
   if exists('g:JavaComplete_LibsPath')
     let paths = split(g:JavaComplete_LibsPath, s:PATH_SEP)
     for path in paths
-      if isdirectory(path)
-        call add(jars, path . "/*")
-      else
-        call add(jars, path)
-      endif
+      call extend(jars, s:ExpandPathToJars(path))
     endfor
   endif
+
+  return jars
+endfunction
+
+function! s:ExpandPathToJars(path)
+  let jars = []
+  let files = globpath(a:path, "*", 0, 1)
+  for file in files
+    let filetype = strpart(file, len(file) - 4)
+    if filetype ==? ".jar" || filetype ==? ".zip"
+      call add(jars, ":" . file)
+    elseif isdirectory(file)
+      call extend(jars, s:ExpandPathToJars(file))
+    endif
+  endfor
 
   return jars
 endfunction
@@ -2983,6 +2995,8 @@ endfu
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
+
+call s:Info(g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
