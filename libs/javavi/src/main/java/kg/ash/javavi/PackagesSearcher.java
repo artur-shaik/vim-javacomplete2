@@ -155,7 +155,7 @@ public class PackagesSearcher {
 
     private List<String> getSourcePackages(String dirpaths) {
         List<String> result = new ArrayList<>();
-        String[] splitted = dirpaths.split(":");
+        String[] splitted = dirpaths.split(File.pathSeparator);
         for (String dirpath : splitted) {
             File dir = new File(dirpath);
             if (dir.isDirectory()) {
