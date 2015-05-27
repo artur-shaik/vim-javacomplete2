@@ -3003,7 +3003,7 @@ endfu
 
 let g:JavaComplete_Home = ''
 for path in split(&rtp, ',')
-  if match(path, "vim-javacomplete2$") >= 0
+  if match(path, "vim-javacomplete2/*$") >= 0
     let g:JavaComplete_Home = path
     break
   endif
