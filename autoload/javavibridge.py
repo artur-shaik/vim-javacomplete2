@@ -45,8 +45,8 @@ class JavaviBridge():
             self.sock = None
 
         if self.sock is None:
-            print('could not open socket')
-            sys.exit(1)
+            print('could not open socket, try again')
+            return
 
         self.sock.setblocking(0)
 
@@ -56,7 +56,7 @@ class JavaviBridge():
             print("creating socket")
             self.makeSocket()
             if self.sock is None:
-                return {}
+                return ''
 
         self.sock.sendall(data + '\n')
         totalData = []

@@ -2360,8 +2360,7 @@ fu! s:RunReflection(option, args, log)
   if s:PollServer()
     let cmd = a:option. ' "'. a:args. '"'
     call s:Info("RunReflection: ". cmd)
-    let response = pyeval('bridgeState.send(vim.eval("cmd"))')
-    return response
+    return pyeval('bridgeState.send(vim.eval("cmd"))')
   endif
 
   return ""
