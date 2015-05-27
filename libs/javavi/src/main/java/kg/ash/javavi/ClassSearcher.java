@@ -1,5 +1,6 @@
 package kg.ash.javavi;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,7 +20,7 @@ public class ClassSearcher {
             isReflected = true;
             return true;
         } else {
-            String[] sourcesArray = sources.split(":");
+            String[] sourcesArray = sources.split(File.pathSeparator);
             for (String sourceDir : sourcesArray) {
                 SourceFileFinder finder = new SourceFileFinder(targetClass);
                 try {

@@ -154,13 +154,6 @@ fu! s:System(cmd, caller)
   return res
 endfu
 
-
-
-fu! javacomplete#GetClassPathSep()
-  return s:PATH_SEP
-endfu
-
-
 augroup javacomplete
   autocmd!
   autocmd VimLeave * call javacomplete#TerminateServer()
@@ -203,6 +196,7 @@ function! javacomplete#EnableServer()
     endif
 
     let args = ' -classpath "'. classpath. '" '. ' kg.ash.javavi.Javavi '. extra. '-D'
+    call s:Info(classpath)
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
     execute "pyfile ". file
@@ -1918,7 +1912,7 @@ fu! javacomplete#DelSourcePath(s)
 endfu
 
 fu! javacomplete#SetSourcePath(s)
-  let paths = type(a:s) == type([]) ? a:s : split(a:s, javacomplete#GetClassPathSep())
+  let paths = type(a:s) == type([]) ? a:s : split(a:s, s:PATH_SEP)
   let s:sourcepath = []
   for path in paths
     if isdirectory(path)
@@ -1958,14 +1952,14 @@ fu! s:GetSourceDirs(filepath, ...)
 endfu
 
 fu! javacomplete#GetClassPath()
-  return exists('s:classpath') ? join(s:classpath, javacomplete#GetClassPathSep()) : ''
+  return exists('s:classpath') ? join(s:classpath, s:PATH_SEP) : ''
 endfu
 
 " s:GetClassPath()							{{{2
 fu! s:GetClassPath()
   let jars = s:GetExtraPath()
-  let path = s:GetJavaviClassPath() . javacomplete#GetClassPathSep(). s:GetJavaParserClassPath(). javacomplete#GetClassPathSep()
-  let path = path . join(jars, javacomplete#GetClassPathSep()) . javacomplete#GetClassPathSep()
+  let path = s:GetJavaviClassPath() . s:PATH_SEP. s:GetJavaParserClassPath(). s:PATH_SEP
+  let path = path . join(jars, s:PATH_SEP) . s:PATH_SEP
 
   if &ft == 'jsp'
     let path .= s:GetClassPathOfJsp()
@@ -2040,9 +2034,7 @@ fu! s:GetClassPathOfJsp()
         let b:classpath_jsp .= s:PATH_SEP . path . '/WEB-INF/classes'
       endif
       if isdirectory(path . '/WEB-INF/lib')
-        let libs = globpath(path . '/WEB-INF/lib', '*.jar')
-        if libs != ''
-          let b:classpath_jsp .= s:PATH_SEP . substitute(libs, "\n", s:PATH_SEP, 'g')
+        let b:classpath_jsp .= s:PATH_SEP . path . '/WEB-INF/lib/*.jar'
         endif
       endif
       return b:classpath_jsp
@@ -2377,15 +2369,15 @@ endfu
 
 function! s:ExpandAllPaths(path)
     let result = ''
-    let list = split(a:path, javacomplete#GetClassPathSep())
+    let list = uniq(split(a:path, s:PATH_SEP))
     for l in list
-      let result = result. expand(l) . javacomplete#GetClassPathSep()
+      let result = result. substitute(expand(l), '\\', '/', 'g') . s:PATH_SEP
     endfor
     return result
 endfunction
 
 function! s:GetJavaParserClassPath()
-  let path = g:JavaComplete_JavaParserJar . javacomplete#GetClassPathSep()
+  let path = g:JavaComplete_JavaParserJar . s:PATH_SEP
   if exists('b:classpath') && b:classpath !~ '^\s*$'
     return path . b:classpath
   endif
@@ -2405,7 +2397,7 @@ function! s:GetExtraPath()
   let jars = []
   let extrapath = ''
   if exists('g:JavaComplete_LibsPath')
-    let paths = split(g:JavaComplete_LibsPath, ":")
+    let paths = split(g:JavaComplete_LibsPath, s:PATH_SEP)
     for path in paths
       call extend(jars, s:ExpandPathToJars(path))
     endfor
@@ -3001,34 +2993,27 @@ endfu
 
 
 
-let g:JavaComplete_Home = ''
-for path in split(&rtp, ',')
-  if match(path, "vim-javacomplete2/*$") >= 0
-    let g:JavaComplete_Home = path
-    break
-  endif
-endfor
-
-let g:JavaComplete_JavaParserJar = g:JavaComplete_Home. "/libs/javaparser.jar"
+let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
   let sources = globpath(getcwd(), '**/src', 0, 1)
   for src in sources
     if match(src, '.*build.*') < 0
-      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. javacomplete#GetClassPathSep()
+      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. s:PATH_SEP
     endif
   endfor
   call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
 if exists('g:JavaComplete_LibsPath')
-  let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. javacomplete#GetClassPathSep()
+  let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
 else
   let g:JavaComplete_LibsPath = ""
 endif
 
-let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. "~/.m2/repository". javacomplete#GetClassPathSep(). s:GetClassPath()
+let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. "~/.m2/repository". s:PATH_SEP. s:GetClassPath()
 " }}}
 "}}}
 " vim:set fdm=marker sw=2 nowrap:
