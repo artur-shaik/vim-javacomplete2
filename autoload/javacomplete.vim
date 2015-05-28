@@ -1525,8 +1525,7 @@ fu! s:SearchForName(name, first, fullmatch)
       endif
 
       if quoteFlag
-        let l = strpart(line, 0, cursor)
-        let line = l. strpart(line, cursor + 1, strlen(line) - cursor - 1)
+        let line = line[0 : cursor - 1]. line[cursor + 1 : -1]
         let cursor -= 1
         continue
       endif
