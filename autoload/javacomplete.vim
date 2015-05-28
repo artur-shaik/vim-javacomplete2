@@ -203,6 +203,20 @@ function! javacomplete#EnableServer()
   endif
 endfunction
 
+function! javacomplete#ShowPort()
+  if s:PollServer()
+    let port = pyeval("bridgeState.port()")
+    echom "Javavi port: ". port
+  endif
+endfunction
+
+function! javacomplete#ShowPID()
+  if s:PollServer()
+    let pid = pyeval("bridgeState.pid()")
+    echom "Javavi pid: ". pid
+  endif
+endfunction
+
 function! GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1

@@ -35,6 +35,9 @@ class JavaviBridge():
     def pid(self):
         return self.popen.pid
 
+    def port(self):
+        return SERVER[1]
+
     def poll(self):
         return self.popen.poll() is None
 
