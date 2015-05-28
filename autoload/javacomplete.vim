@@ -177,7 +177,7 @@ function! javacomplete#TerminateServer()
   endif
 endfunction
 
-function! javacomplete#EnableServer()
+function! javacomplete#StartServer()
   if s:PollServer() == 0
     call s:Info("Restart server")
 
@@ -282,7 +282,7 @@ function! s:AddImport(import)
 endfunction
 
 function! javacomplete#AddImport()
-  call javacomplete#EnableServer()
+  call javacomplete#StartServer()
 
   let classname = expand('<cword>')
   let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
@@ -457,7 +457,7 @@ function! javacomplete#Complete(findstart, base)
     return -1
   endif
 
-  call javacomplete#EnableServer()
+  call javacomplete#StartServer()
 
   let result = []
 
@@ -2366,7 +2366,7 @@ endfu
 " Function to run Reflection						{{{2
 fu! s:RunReflection(option, args, log)
   if !s:PollServer()
-    call javacomplete#EnableServer()
+    call javacomplete#StartServer()
   endif
 
   if s:PollServer()
