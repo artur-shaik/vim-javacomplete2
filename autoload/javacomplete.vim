@@ -2998,6 +2998,8 @@ endfu
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
+call s:Info("JavaComplete_Home: ". g:JavaComplete_Home)
+
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
   let sources = globpath(getcwd(), '**/src', 0, 1)
