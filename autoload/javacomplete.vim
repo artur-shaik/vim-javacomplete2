@@ -154,11 +154,6 @@ fu! s:System(cmd, caller)
   return res
 endfu
 
-augroup javacomplete
-  autocmd!
-  autocmd VimLeave * call javacomplete#TerminateServer()
-augroup END
-
 function! s:PollServer()
   if !pyeval("'bridgeState' not in locals() or not bridgeState")
     return pyeval("bridgeState.poll()")
@@ -2323,8 +2318,12 @@ endfu
 
 call s:SetCurrentFileKey()
 if has("autocmd")
-  autocmd BufEnter *.java call s:SetCurrentFileKey()
-  autocmd FileType java call s:SetCurrentFileKey()
+  augroup javacomplete
+    autocmd!
+    autocmd BufEnter *.java call s:SetCurrentFileKey()
+    autocmd FileType java call s:SetCurrentFileKey()
+    autocmd VimLeave * call javacomplete#TerminateServer()
+  augroup END
 endif
 
 
