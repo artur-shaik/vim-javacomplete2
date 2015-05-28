@@ -74,6 +74,32 @@ To insert class import with F4, add this:
 
 `g:JavaComplete_SourcesPath` - path of your sources. Don't try to add all sources you have, this will slow down parsing process. Add you project sources and necessery library sources. If you have compiled classes add them to previous config instead. By default plugin will search `src` directory and add it automatically.
 
+## Commands
+
+manually run server:
+
+    javacomplete#StartServer()
+
+manually stop server:
+
+    javacomplete#TerminateServer()
+
+insert class import:
+
+    javacomplete#AddImport()
+
+show port used for javavi server:
+
+    javacomplete#ShowPort()
+
+show javavi server process id:
+
+    javacomplete#ShowPID()
+
+manually run server compilation:
+
+    javacomplete#CompileJavavi()
+
 ## Limitations:
 
 - First run can be slow;

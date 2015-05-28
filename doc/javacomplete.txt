@@ -202,6 +202,13 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
 2.4 Commands					*javacomplete-commands*
 
+    javacomplete#StartServer()      manually run server.
+    javacomplete#TerminateServer()  manually stop server.
+    javacomplete#AddImport()        insert class import. 
+    javacomplete#ShowPort()         show port used for javavi server.
+    javacomplete#ShowPID()          show javavi server process id.
+    javacomplete#CompileJavavi()    manually run server compilation.
+
 ==============================================================================
 3. Java parser in Vim    			*javacomplete-parser*
 
