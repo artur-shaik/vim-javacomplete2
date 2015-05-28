@@ -6,7 +6,16 @@ import sys
 import time
 import subprocess
 
-SERVER = ('127.0.0.1', 9999)
+# function to get free port from ycmd
+def GetUnusedLocalhostPort():
+  sock = socket.socket()
+  # This tells the OS to give us any free port in the range [1024 - 65535]
+  sock.bind(('', 0))
+  port = sock.getsockname()[1]
+  sock.close()
+  return port
+
+SERVER = ('127.0.0.1', GetUnusedLocalhostPort())
 
 # A wrapper for subprocess.Popen that works around a Popen bug on Windows.
 def SafePopen(*args, **kwargs):
