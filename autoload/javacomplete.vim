@@ -162,15 +162,6 @@ function! s:PollServer()
   return 0
 endfunction
 
-function! javacomplete#GetServerPid()
-  if !pyeval("'bridgeState' not in locals() or not bridgeState")
-    let pid = pyeval("bridgeState.pid()")
-    call s:Info(pid)
-  else
-    call s:Info(-1)
-  endif
-endfunction
-
 function! javacomplete#TerminateServer()
   if s:PollServer() != 0
     py bridgeState.terminateServer()
