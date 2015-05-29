@@ -2013,9 +2013,7 @@ fu! s:GetJavaviClassPath()
     call javacomplete#CompileJavavi()
   endif
 
-  call s:Info(javaviDir. 'target/classes')
-  call s:Info(globpath(javaviDir. 'target/classes', '**/*.class', 0, 1))
-  if !empty(globpath(javaviDir. 'target/classes', '**/*.class', 0, 1))
+  if !empty(globpath(javaviDir. 'target/classes', '**/*.class', 1, 1))
     return javaviDir. "target/classes"
   else
     echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK7+ installed?"
@@ -2412,7 +2410,7 @@ endfunction
 
 function! s:ExpandPathToJars(path)
   let jars = []
-  let files = globpath(a:path, "*", 0, 1)
+  let files = globpath(a:path, "*", 1, 1)
   for file in files
     let filetype = strpart(file, len(file) - 4)
     if filetype ==? ".jar" || filetype ==? ".zip"
