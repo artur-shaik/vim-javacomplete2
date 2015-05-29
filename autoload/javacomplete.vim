@@ -65,7 +65,8 @@ let s:KEYWORDS		= s:PRIMITIVE_TYPES + s:KEYWORDS_MODS + s:KEYWORDS_TYPE + ['supe
 
 let s:PATH_SEP	= ':'
 let s:FILE_SEP	= '/'
-if has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
+let s:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
+if s:IS_WINDOWS
   let s:PATH_SEP	= ';'
   let s:FILE_SEP	= '\'
 endif
@@ -93,6 +94,7 @@ let s:RE_CASTING	= '^\s*(\(' .s:RE_QUALID. '\))\s*\(' . s:RE_IDENTIFIER . '\)\>'
 
 let s:RE_KEYWORDS	= '\<\%(' . join(s:KEYWORDS, '\|') . '\)\>'
 
+let s:JAVA_HOME = $JAVA_HOME
 
 " local variables						{{{1
 let b:context_type = s:CONTEXT_OTHER
@@ -1980,16 +1982,17 @@ fu! s:GetClassPath()
   endif
 
   if empty($CLASSPATH)
-    let java = javacomplete#GetJVMLauncher()
-    call s:Info(exepath(java))
-    let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
-    for line in javaSettings
-      if line =~ 'java\.home'
-        let javaHome = split(line, ' = ')
-        return path. javaHome[1]. '/lib'
-      endif
-    endfor
-    
+    if s:JAVA_HOME == ''
+      let java = javacomplete#GetJVMLauncher()
+      call s:Info(exepath(java))
+      let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
+      for line in javaSettings
+        if line =~ 'java\.home'
+          let s:JAVA_HOME = split(line, ' = ')[1]
+        endif
+      endfor
+    endif
+    return path. s:JAVA_HOME. '/lib'
   endif
 
   return path . $CLASSPATH
@@ -2401,7 +2404,15 @@ function! s:GetExtraPath()
   if exists('g:JavaComplete_LibsPath')
     let paths = split(g:JavaComplete_LibsPath, s:PATH_SEP)
     for path in paths
-      call extend(jars, s:ExpandPathToJars(path))
+      if s:IS_WINDOWS
+        if isdirectory(path)
+          call add(jars, path . "/*")
+        else
+          call add(jars, path)
+        endif
+      else
+        call extend(jars, s:ExpandPathToJars(path))
+      endif
     endfor
   endif
 
@@ -2414,7 +2425,7 @@ function! s:ExpandPathToJars(path)
   for file in files
     let filetype = strpart(file, len(file) - 4)
     if filetype ==? ".jar" || filetype ==? ".zip"
-      call add(jars, ":" . file)
+      call add(jars, s:PATH_SEP . file)
     elseif isdirectory(file)
       call extend(jars, s:ExpandPathToJars(file))
     endif
