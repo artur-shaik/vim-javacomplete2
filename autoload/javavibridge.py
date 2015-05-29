@@ -21,7 +21,7 @@ class JavaviBridge():
     popen = None
 
     def setupServer(self, javabin, args):
-        self.popen = SafePopen([javabin + ' ' + args + ' ' + str(SERVER[1])], shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     def pid(self):
         return self.popen.pid

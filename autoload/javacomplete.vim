@@ -93,6 +93,7 @@ let s:RE_CASTING	= '^\s*(\(' .s:RE_QUALID. '\))\s*\(' . s:RE_IDENTIFIER . '\)\>'
 
 let s:RE_KEYWORDS	= '\<\%(' . join(s:KEYWORDS, '\|') . '\)\>'
 
+let s:JAVA_HOME = $JAVA_HOME
 
 " local variables						{{{1
 let b:context_type = s:CONTEXT_OTHER
@@ -1987,16 +1988,17 @@ fu! s:GetClassPath()
   endif
 
   if empty($CLASSPATH)
-    let java = javacomplete#GetJVMLauncher()
-    call s:Info(exepath(java))
-    let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
-    for line in javaSettings
-      if line =~ 'java\.home'
-        let javaHome = split(line, ' = ')
-        return path. javaHome[1]. '/lib'
-      endif
-    endfor
-    
+    if s:JAVA_HOME == ''
+      let java = javacomplete#GetJVMLauncher()
+      call s:Info(exepath(java))
+      let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
+      for line in javaSettings
+        if line =~ 'java\.home'
+          let s:JAVA_HOME = split(line, ' = ')[1]
+        endif
+      endfor
+    endif
+    return path. s:JAVA_HOME. '/lib'
   endif
 
   return path . $CLASSPATH
