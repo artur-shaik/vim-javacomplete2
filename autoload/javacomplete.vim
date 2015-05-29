@@ -2013,6 +2013,8 @@ fu! s:GetJavaviClassPath()
     call javacomplete#CompileJavavi()
   endif
 
+  call s:Info(javaviDir. 'target/classes')
+  call s:Info(globpath(javaviDir. 'target/classes', '**/*.class', 0, 1))
   if !empty(globpath(javaviDir. 'target/classes', '**/*.class', 0, 1))
     return javaviDir. "target/classes"
   else
