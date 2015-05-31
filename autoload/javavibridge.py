@@ -5,6 +5,7 @@ import socket
 import sys
 import time
 import subprocess
+import os
 
 # function to get free port from ycmd
 def GetUnusedLocalhostPort():
@@ -29,8 +30,13 @@ class JavaviBridge():
     sock = None
     popen = None
 
-    def setupServer(self, javabin, args):
-        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    def setupServer(self, javabin, args, classpath):
+        environ = os.environ
+        if 'CLASSPATH' in environ:
+            environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if sys.platform == 'win32' else ':') + classpath
+        else:
+            environ['CLASSPATH'] = classpath
+        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=True, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     def pid(self):
         return self.popen.pid
@@ -52,6 +58,7 @@ class JavaviBridge():
 
         try:
             self.sock.connect(SERVER)
+            time.sleep(.1)
         except socket.error as msg:
             self.sock.close()
             self.sock = None

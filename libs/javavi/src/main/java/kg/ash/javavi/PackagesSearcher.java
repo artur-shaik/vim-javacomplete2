@@ -22,11 +22,9 @@ public class PackagesSearcher {
 
     private HashMap htClasspath = new HashMap();
 
-    private String jarsDirectories;
     private String sourcesDirectories;
 
-    public PackagesSearcher(String jarsDirectories, String sourcesDirectories) {
-        this.jarsDirectories = jarsDirectories;
+    public PackagesSearcher(String sourcesDirectories) {
         this.sourcesDirectories = sourcesDirectories;
     }
 
@@ -116,7 +114,7 @@ public class PackagesSearcher {
 
         result.addAll(addClasspathesFromDir(System.getProperty("java.home")));
 
-        String classPath = System.getProperty("java.class.path") + File.pathSeparator + jarsDirectories;
+        String classPath = System.getProperty("java.class.path") + File.pathSeparator;
         StringTokenizer st = new StringTokenizer(classPath, File.pathSeparator);
         while (st.hasMoreTokens()) {
             String path = st.nextToken();
@@ -179,6 +177,7 @@ public class PackagesSearcher {
     }
 
     private String fetchPackagePath(String sourcePath) {
+        System.out.println(sourcePath);
         CompilationUnit cu = null;
         try (FileInputStream in = new FileInputStream(sourcePath)) {
             cu = JavaParser.parse(in);

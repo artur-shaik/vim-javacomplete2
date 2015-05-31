@@ -76,7 +76,6 @@ public class Javavi {
 
 
     static String sources = "";
-    static String jars = "";
     private static Daemon daemon = null;
 
     public static void main( String[] args ) throws Exception {
@@ -120,10 +119,6 @@ public class Javavi {
                     sources = args[++i];
                     debug(sources);
                     break;
-                case "-jars": 
-                    jars = args[++i];
-                    debug(jars);
-                    break;
                 case "-d":
                     Javavi.debugMode = true;
                     break;
@@ -158,19 +153,19 @@ public class Javavi {
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {
             if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(jars, sources).collectPackages(cachedPackages, cachedClassPackages);
+                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
             }
             return new OutputBuilder().outputClassPackages(target);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
             if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(jars, sources).collectPackages(cachedPackages, cachedClassPackages);
+                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
             }
             return new OutputBuilder().outputSimilarClasses(target);
 
         } else if (command == COMMAND__PACKAGESLIST) {
             if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(jars, sources).collectPackages(cachedPackages, cachedClassPackages);
+                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
             }
             result = new OutputBuilder().outputPackageInfo(target);
 

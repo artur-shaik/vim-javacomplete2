@@ -175,23 +175,20 @@ function! javacomplete#StartServer()
     call s:Info("Restart server")
 
     let classpath = s:GetClassPath()
-    let extra = ''
+    let sources = ''
     if exists('g:JavaComplete_SourcesPath')
-      let extra = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '" '
-    endif
-    if exists('g:JavaComplete_LibsPath')
-      let extra = extra. '-jars "'. s:ExpandAllPaths(g:JavaComplete_LibsPath). s:PATH_SEP. classpath. '" '
+      let sources = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '" '
     endif
 
-    let args = ' -classpath "'. classpath. '" '. ' kg.ash.javavi.Javavi '. extra. '-D'
-    call s:Info(classpath)
+    let args = ' kg.ash.javavi.Javavi '. sources. '-D'
+    call s:Info("Classpath: ". classpath)
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
     execute "pyfile ". file
 
     py import vim
     py bridgeState = JavaviBridge()
-    py bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'))
+    py bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
 
   endif
 endfunction
@@ -2404,15 +2401,7 @@ function! s:GetExtraPath()
   if exists('g:JavaComplete_LibsPath')
     let paths = split(g:JavaComplete_LibsPath, s:PATH_SEP)
     for path in paths
-      if s:IS_WINDOWS
-        if isdirectory(path)
-          call add(jars, path . "/*")
-        else
-          call add(jars, path)
-        endif
-      else
-        call extend(jars, s:ExpandPathToJars(path))
-      endif
+      call extend(jars, s:ExpandPathToJars(path))
     endfor
   endif
 
