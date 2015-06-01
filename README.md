@@ -1,6 +1,6 @@
 # vim-javacomplete2
 
-Refreshed javacomplete plugin for vim.
+Updated version of the original [javacomplete plugin](http://www.vim.org/scripts/script.php?script_id=1785) for vim.
 
 ## Demo
 
@@ -8,27 +8,26 @@ Refreshed javacomplete plugin for vim.
 
 ## Intro
 
-This is vim-javacomplete2, an omni-completion script of JAVA language for vim 7.  This plugin updates old one: http://www.vim.org/scripts/script.php?script_id=1785.
+This is vim-javacomplete2, an omni-completion plugin for [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) requiring vim 7.
 
-It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), javavibridge.py, [javaparser](https://github.com/javaparser/javaparser) library.
+It includes javacomplete.vim, java_parser.vim, javavi (reflecton and source parsing library), javavibridge.py, and the [javaparser](https://github.com/javaparser/javaparser) library.
 
-I have kept java_parser.vim for local continious parsing, because javaparser library can't parse unfinished files.
+I have kept java_parser.vim for local (live) continuous parsing, because the javaparser library can't parse unfinished files.
 
-For now main difference from original plugin is existence of server-like java library, that allows to communicate with it through socket.
-This speed up reflection and source parsing.
+For now the main difference from the original plugin is the existence of a server-like java library, that allows communication over sockets. This speeds up reflection and parsing.
 
-One more issue I had with original javacomplete plugin is loosing my classpath and as result not working completion.
-Now plugin detect jre library path, and you will have standart java completion out of the box, without configuration.
-Plugin will scan child directory tree for `src` named directory and add it to sources path (For this, nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin). 
-And by default plugin will look at maven repository (`~/.m2/repository`).
+One more issue I had with the original javacomplete plugin is losing my classpath and as a result, completion not working.
+So now the javacomplete2 plugin detects the JRE library path, thus bringing standard java completion out of the box - no configuration required!
+The plugin will scan child directory tree for `src` directory and add it to the sources path (For this, it is nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin). 
+By default the plugin will look for a maven repository (`~/.m2/repository`).
 
-At most first run, plugin will compile Javavi library.
+For the first run the plugin will compile the Javavi library.
 
 ## Features
 
 Features:
 - Server side java reflection class loader and parsing library;
-- Search class files automatically.
+- Searches class files automatically.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -39,40 +38,55 @@ Features (originally existed):
 - Use the JVM to obtain most information;
 - JSP is supported, Builtin objects such as request, session can be recognized.
  
-Features was borrowed and ported to vimscript from vim-javacompleteex:
+Features borrowed and ported to vimscript from vim-javacompleteex:
 - Complete class name;
 - Add import statement for a given class name.
 
 ## Requirements
 
-- Vim version 7.0 and above;
-- JDK version 7 and above in classpath.
+- Vim version 7.0 or above;
+- JDK version 7 or above in classpath.
 
 ## Installation
 
-This assumes you are using [Vundle](https://github.com/gmarik/Vundle.vim). Adapt
-for your plugin manager of choice. Put this into your `.vimrc`.
+### pathogen
+Run:
 
-    " Java completion plugin.
-    Plugin 'artur-shaik/vim-javacomplete2'
+````Shell
+cd ~/.vim/bundle
+git clone https://github.com/artur-shaik/vim-javacomplete2.git
+````
+
+### Vundle
+Add to `.vimrc`:
+
+````vimL
+Plugin 'artur-shaik/vim-javacomplete2'
+````
+
+### vim-plug
+Add to `.vimrc`:
+````vimL
+Plug 'artur-shaik/vim-javacomplete2'
+````
 
 ## Configuration
 
 ### Required
 
-Add this to your vimrc file:
+Add this to your `.vimrc` file:
 
 `autocmd FileType java set omnifunc=javacomplete#Complete`
 
-To insert class import with F4, add this:
+To enable inserting class imports with F4, add:
 
 `nnoremap <F4> call javacomplete#AddImport()<cr>`
 
 ### Optional
 
-`g:JavaComplete_LibsPath` - path of you jar files. This path will always appended with '~/.m2/repository' directory. Here you can add your glassfish libs directory or your project libs. It will be automatically appended with you jre home path.
+`g:JavaComplete_LibsPath` - path to additional jar files. This path will always be appended with '~/.m2/repository' directory. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
 
-`g:JavaComplete_SourcesPath` - path of your sources. Don't try to add all sources you have, this will slow down parsing process. Add you project sources and necessery library sources. If you have compiled classes add them to previous config instead. By default plugin will search `src` directory and add it automatically.
+`g:JavaComplete_SourcesPath` - path of additional sources. Don't try to add all sources you have, this will slow down the parsing process. Instead, add your project sources and necessary library sources. If you have compiled classes add them to the previous config (`g:JavaComplete_LibsPath`) instead. By default the plugin will search the `src` directory and add it automatically.
 
 ## Commands
 
@@ -144,4 +158,4 @@ Originally thanked:
 
 ## FeedBack
 
-Any problem, bug or suggest are welcome to send to ashaihullin@gmail.com
+Any problems, bugs or suggestions are welcome to send to ashaihullin@gmail.com
