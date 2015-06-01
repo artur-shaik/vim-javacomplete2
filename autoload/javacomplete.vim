@@ -709,13 +709,19 @@ function! s:CompleteAfterDot(expr)
 
       else
         " 3)
-        let typename = s:GetDeclaredClassName(ident)
+        let result = s:GetDeclaredClassName(ident)
+        if type(result) == type([])
+          let typename = result[0]
+        else
+          let typename = result
+        endif
         call s:Info('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
             let ti = s:ARRAY_TYPE_INFO
           elseif typename != 'void' && !s:IsBuiltinType(typename)
             let ti = s:DoGetClassInfo(typename)
+            call s:Info(ti)
           endif
 
         else
@@ -780,6 +786,9 @@ function! s:CompleteAfterDot(expr)
       let subs = split(substitute(items[0], s:RE_ARRAY_ACCESS, '\1;\2', ''), ';')
       if get(subs, 1, '') !~ s:RE_BRACKETS
         let typename = s:GetDeclaredClassName(subs[0])
+        if type(typename) == type([])
+          let typename = typename[0]
+        endif
         call s:Info('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
           let ti = s:ArrayAccess(typename, items[0])
@@ -1567,6 +1576,7 @@ function! s:GetDeclaredClassName(var)
   " use java_parser.vim
   if javacomplete#GetSearchdeclMethod() == 4
     let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
+    call s:Info(variable)
     return get(variable, 'tag', '') == 'VARDEF' ? java_parser#type2Str(variable.vartype) : get(variable, 't', '')
   endif
 
@@ -2321,7 +2331,7 @@ fu! s:RunReflection(option, args, log)
 
   if s:PollServer()
     let cmd = a:option. ' "'. a:args. '"'
-    call s:Info("RunReflection: ". cmd)
+    call s:Info("RunReflection: ". cmd. " [". a:log. "]")
     return pyeval('bridgeState.send(vim.eval("cmd"))')
   endif
 
@@ -2406,6 +2416,7 @@ endfu
 
 " a:1	filepath
 " a:2	package name
+" a:3   generic arguments list
 fu! s:DoGetClassInfo(class, ...)
   if has_key(s:cache, a:class)
     return s:cache[a:class]
@@ -2439,7 +2450,6 @@ fu! s:DoGetClassInfo(class, ...)
       " What will be returned for this?
       " - besides the above, all fields and methods of current class. No ctors.
       return s:Sort(s:Tree2ClassInfo(t))
-      "return s:Sort(s:AddInheritedClassInfo(a:class == 'this' ? s:Tree2ClassInfo(t) : {}, t, 1))
     endif
 
     return {}
@@ -2454,7 +2464,6 @@ fu! s:DoGetClassInfo(class, ...)
   let typename	= substitute(a:class, '\s', '', 'g')
   let filekey	= a:0 > 0 ? a:1 : s:GetCurrentFileKey()
   let packagename = a:0 > 1 ? a:2 : s:GetPackageName()
-  let srcpath	= join(s:GetSourceDirs(a:0 > 0 && a:1 != bufnr('%') ? a:1 : expand('%:p'), packagename), ',')
 
   let names = split(typename, '\.')
   " remove the package name if in the same packge
@@ -2501,26 +2510,11 @@ fu! s:DoGetClassInfo(class, ...)
     endif
   endif
 
-  " 3.
+  " 3 & 4 & 5
   " NOTE: PackageName.Ident, TypeName.Ident
-  let fqn = s:SearchSingleTypeImport(typename, s:GetImports('imports_fqn', filekey))
-  if !empty(fqn)
-    call s:Info('A3')
-    call s:FetchClassInfo(fqn)
-    let ti = get(s:cache, fqn, {})
-    if get(ti, 'tag', '') != 'CLASSDEF'
-      " TODO: mark the wrong import declaration.
-    endif
-    return ti
-  endif
+  call s:Info('A3&4&5')
 
-  " 4 & 5
-  " NOTE: Keeps the fqn of the same package first!!
-  call s:Info('A4&5')
-  let fqns = [empty(packagename) ? typename : packagename . '.' . typename]
-  for p in s:GetImports('imports_star', filekey)
-    call add(fqns, p . typename)
-  endfor
+  let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
     call s:FetchClassInfo(fqn)
     if has_key(s:cache, fqn)
@@ -2530,6 +2524,15 @@ fu! s:DoGetClassInfo(class, ...)
 
   return {}
 endfu
+
+function! s:CollectFQNs(typename, packagename, filekey)
+  let fqns = [empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename]
+  call add(fqns, s:SearchSingleTypeImport(a:typename, s:GetImports('imports_fqn', a:filekey)))
+  for p in s:GetImports('imports_star', a:filekey)
+    call add(fqns, p . a:typename)
+  endfor
+  return fqns
+endfunction
 
 " Parameters:
 "   class	the qualified class name
@@ -2606,6 +2609,9 @@ fu! s:Tree2ClassInfo(t)
     let i = 0
     while i < len(extends)
       let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
+      if type(ci) == type([])
+        let ci = [0]
+      endif
       if has_key(ci, 'fqn')
         let extends[i] = ci.fqn
       endif
@@ -2762,6 +2768,9 @@ fu! s:SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
   if !has_key(a:ci, 'classpath') || (a:kind == 1 || a:kind == 2)
     for i in get(a:ci, 'extends', [])
       let ci = s:DoGetClassInfo(java_parser#type2Str(i))
+      if type(ci) == type([])
+        let ci = ci[0]
+      endif
       let members = s:SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, a:memberkind)
       let result[0] += members[0]
       let result[1] += members[1]
@@ -2777,7 +2786,19 @@ endfu
 fu! s:DoGetFieldList(fields)
   let s = ''
   for field in a:fields
-    let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . field.t . "','dup':1},"
+    if type(field.t) == type([])
+      let fieldType = field.t[0]
+      let args = ''
+      for arg in field.t[1]
+        let args .= arg. ','
+      endfor
+      if len(args) > 0
+        let fieldType .= '<'. args[0:-2]. '>'
+      endif
+    else
+      let fieldType = field.t
+    endif
+    let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . fieldType . "','dup':1},"
   endfor
   return s
 endfu

@@ -238,7 +238,12 @@ fu! java_parser#type2Str(type)
   elseif t.tag == 'TYPEARRAY'
     return java_parser#type2Str(t.elementtype) . '[]'
   elseif t.tag == 'TYPEAPPLY'
-    return t.clazz.name
+    let args = []
+    for arg in t.arguments
+      call add(args, arg.name)
+    endfor
+
+    return [t.clazz.name, args]
   elseif t.tag == 'TEMPLATE'
     let s = t.clazz.value . '<'
     for arg in t.arguments
