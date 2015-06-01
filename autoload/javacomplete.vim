@@ -1507,53 +1507,12 @@ fu! s:SearchForName(name, first, fullmatch)
     return result
   endif
 
-  " Fast backward search for type declaration
-  let pos = line('.')
-  let clbracket = 0
-  let quoteFlag = 0
-  while pos > 0
-    let pos -= 1
-    let line = getline(pos)
-    let cursor = len(line)
-    while cursor > 0
-      if line[cursor] == '"'
-        if quoteFlag == 0
-          let quoteFlag = 1
-        else
-          let quoteFlag = 0
-        endif
-      endif
-
-      if quoteFlag
-        let line = line[0 : cursor - 1]. line[cursor + 1 : -1]
-        let cursor -= 1
-        continue
-      endif
-
-      if line[cursor] == '}'
-        let clbracket += 1
-      elseif line[cursor] == '{' && clbracket > 0
-        let clbracket -= 1
-      endif
-      let cursor -= 1
-    endwhile
-    if clbracket > 0
-      continue
-    endif
-
-    let matches = matchlist(line, '\C.*\(\<'. s:RE_IDENTIFIER. '\>\)\s\+\<'. a:name. '\>.*')
-    if len(matches) > 1
-      return [[],[],[{'tag': 'VARDEF', 'name': a:name, 'vartype': matches[1], 'm': '1000000000000000000000000000000000', 'pos': -1}],[]]
-    endif
-  endwhile
-
   " use java_parser.vim
   if javacomplete#GetSearchdeclMethod() == 4
     " declared in current file
     let unit = javacomplete#parse()
     let targetPos = java_parser#MakePos(line('.')-1, col('.')-1)
     let trees = s:SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
-    call s:Info(trees)
     for tree in trees
       if tree.tag == 'VARDEF'
 	call add(result[2], tree)
