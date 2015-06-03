@@ -106,6 +106,7 @@ public class OutputBuilder {
                 if (!method.getTypeName().equals(clazz.getName())) {
                     sb.append(Javavi.KEY_DECLARING_CLASS).append("'")
                         .append(method.getTypeName()).append("',");
+
                 }
                 appendModifier(sb, modifier);
                 sb.append(Javavi.KEY_RETURNTYPE).append("'")

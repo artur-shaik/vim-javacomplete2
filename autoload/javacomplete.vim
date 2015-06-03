@@ -520,7 +520,7 @@ function! javacomplete#Complete(findstart, base)
     return result
   endif
 
-  if strlen(b:errormsg) > 0
+  if len(b:errormsg) > 0
     echoerr 'javacomplete error: ' . b:errormsg
     let b:errormsg = ''
   endif
@@ -709,12 +709,7 @@ function! s:CompleteAfterDot(expr)
 
       else
         " 3)
-        let result = s:GetDeclaredClassName(ident)
-        if type(result) == type([])
-          let typename = result[0]
-        else
-          let typename = result
-        endif
+        let typename = s:GetDeclaredClassName(ident)
         call s:Info('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
@@ -1548,7 +1543,7 @@ fu! s:SearchForName(name, first, fullmatch)
     let result[1] += si[1]
     let result[2] += si[2]
   endif
-  call s:Info(result[1])
+
   return result
 endfu
 
@@ -1576,7 +1571,6 @@ function! s:GetDeclaredClassName(var)
   " use java_parser.vim
   if javacomplete#GetSearchdeclMethod() == 4
     let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
-    call s:Info(variable)
     return get(variable, 'tag', '') == 'VARDEF' ? java_parser#type2Str(variable.vartype) : get(variable, 't', '')
   endif
 
@@ -2416,7 +2410,6 @@ endfu
 
 " a:1	filepath
 " a:2	package name
-" a:3   generic arguments list
 fu! s:DoGetClassInfo(class, ...)
   if has_key(s:cache, a:class)
     return s:cache[a:class]
@@ -2455,79 +2448,120 @@ fu! s:DoGetClassInfo(class, ...)
     return {}
   endif
 
+  let typename	= substitute(a:class, '\s', '', 'g')
 
-  if a:class !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(a:class)
+  let typeArguments = ''
+  if a:class =~ s:RE_TYPE_WITH_ARGUMENTS
+    let lbridx = stridx(typename, '<')
+    let typeArguments = typename[lbridx + 1 : -2]
+    let typename = typename[0 : lbridx - 1]
+  endif
+
+  if typename !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(typename)
+    call s:Info("No qualid")
     return {}
   endif
 
 
-  let typename	= substitute(a:class, '\s', '', 'g')
-  let filekey	= a:0 > 0 ? a:1 : s:GetCurrentFileKey()
-  let packagename = a:0 > 1 ? a:2 : s:GetPackageName()
+  let filekey	= a:0 > 0 && len(a:1) > 0 ? a:1 : s:GetCurrentFileKey()
+  let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : s:GetPackageName()
 
-  let names = split(typename, '\.')
-  " remove the package name if in the same packge
-  if len(names) > 1
-    if packagename == join(names[:-2], '.')
-      let names = names[-1:]
-    endif
-  endif
-
-  " a FQN
-  if len(names) > 1
-    call s:FetchClassInfo(typename)
-    let ci = get(s:cache, typename, {})
-    if get(ci, 'tag', '') == 'CLASSDEF'
-      return s:cache[typename]
-    elseif get(ci, 'tag', '') == 'PACKAGE'
-      return {}
-    endif
-  endif
-
-  " The standard search order of a simple type name is as follows:
-  " 1. The current type including inherited types.
-  " 2. A nested type of the current type.
-  " 3. Explicitly named imported types (single type import).
-  " 4. Other types declared in the same package. Not only current directory.
-  " 5. Implicitly named imported types (import on demand).
-
-  " 1 & 2.
-  " NOTE: inherited types are treated as normal
-  if filekey == s:GetCurrentFileKey()
-    let simplename = typename[strridx(typename, '.')+1:]
-    if s:FoundClassDeclaration(simplename) != 0
-      call s:Info('A1&2')
-      let ci = s:GetClassInfoFromSource(simplename, '%')
-      " do not cache it
-      if !empty(ci)
-        return ci
-      endif
-    endif
-  else
-    let ci = s:GetClassInfoFromSource(typename, filekey)
-    if !empty(ci)
-      return ci
-    endif
-  endif
-
-  " 3 & 4 & 5
-  " NOTE: PackageName.Ident, TypeName.Ident
-  call s:Info('A3&4&5')
+  let typeArgumentsCollected = s:CollectTypeArguments(typeArguments, packagename, filekey)
 
   let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
+    let fqn = fqn. typeArgumentsCollected
     call s:FetchClassInfo(fqn)
-    if has_key(s:cache, fqn)
-      return get(s:cache[fqn], 'tag', '') == 'CLASSDEF' ? s:cache[fqn] : {}
+
+    let key = s:KeyInCache(fqn)
+    if !empty(key)
+      return get(s:cache[key], 'tag', '') == 'CLASSDEF' ? s:cache[key] : {}
     endif
   endfor
 
   return {}
 endfu
 
+function! s:CollectTypeArguments(typeArguments, packagename, filekey)
+  let typeArgumentsCollected = ''
+  if !empty(a:typeArguments)
+    let typeArguments = a:typeArguments
+    let i = 0
+    let lbr = 0
+    let stidx = 0
+    while i < len(typeArguments)
+      let c = typeArguments[i]
+      if c == '<'
+        let lbr += 1
+      elseif c == '>'
+        let lbr -= 1
+      endif
+
+      if c == ',' && lbr == 0
+        let typeArguments = typeArguments[stidx : i - 1] . "<_split_>". typeArguments[i + 1 : -1]
+        let stidx = i
+      endif
+      let i += 1
+    endwhile
+    
+    for arg in split(typeArguments, "<_split_>")
+      let argTypeArguments = ''
+      if arg =~ s:RE_TYPE_WITH_ARGUMENTS
+        let lbridx = stridx(arg, '<')
+        let argTypeArguments = arg[lbridx : -1]
+        let arg = arg[0 : lbridx - 1]
+      endif
+
+      let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
+      let typeArgumentsCollected .= ''
+      if len(fqns) > 1
+        let typeArgumentsCollected .= '('
+      endif
+      for fqn in fqns
+        if len(fqn) > 0
+          let typeArgumentsCollected .= fqn. argTypeArguments. '|'
+        endif
+      endfor
+      if len(fqns) > 1
+        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. '),'
+      else
+        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. ','
+      endif
+    endfor
+    if !empty(typeArgumentsCollected)
+      let typeArgumentsCollected = '<'. typeArgumentsCollected[0:-2]. '>'
+    endif
+  endif
+
+  return typeArgumentsCollected
+endfunction
+
+function! s:KeyInCache(fqn)
+  let fqn = substitute(a:fqn, '<', '\\<', 'g')
+  let fqn = substitute(fqn, '>', '\\>', 'g')
+
+  let keys = keys(s:cache)
+  let idx = match(keys, '\v'. fqn)
+  
+  if idx >= 0
+    return keys[idx]
+  endif
+
+  return ''
+endfunction
+
 function! s:CollectFQNs(typename, packagename, filekey)
-  let fqns = [empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename]
-  call add(fqns, s:SearchSingleTypeImport(a:typename, s:GetImports('imports_fqn', a:filekey)))
+  if len(split(a:typename, '\.')) > 1
+    return [a:typename]
+  endif
+
+  let directFqn = s:SearchSingleTypeImport(a:typename, s:GetImports('imports_fqn', a:filekey))
+  if !empty(directFqn)
+    return [directFqn]
+  endif
+
+  let fqns = []
+  call add(fqns, empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename)
   for p in s:GetImports('imports_star', a:filekey)
     call add(fqns, p . a:typename)
   endfor

@@ -18,9 +18,14 @@ public class SourceClass {
     private List<String> interfaces = new ArrayList<>();
 
     private List<SourceClass> linkedClasses = new ArrayList<>();
+    private List<String> typeArguments = new ArrayList();
 
     public String getName() {
-        return String.format("%s.%s", pakage, name);
+        String args = "";
+        for (String type : typeArguments) {
+            args += type + ",";
+        }
+        return String.format("%s.%s%s", pakage, name, args.length() > 0 ? "<" + args.substring(0, args.length() - 1) + ">" : "");
     }
 
     public void setName(String name) {
@@ -123,5 +128,9 @@ public class SourceClass {
         }
 
         return false;
+    }
+
+    public void addTypeArgument(String type) {
+        typeArguments.add(type);
     }
 }

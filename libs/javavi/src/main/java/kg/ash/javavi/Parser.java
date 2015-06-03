@@ -31,6 +31,11 @@ public class Parser implements ClassReader {
     }
 
     @Override
+    public void setTypeArguments(List<String> typeArguments) {
+
+    }
+
+    @Override
     public SourceClass read(String targetClass) {
         if (sourceFile == null || sourceFile.isEmpty()) return null;
 

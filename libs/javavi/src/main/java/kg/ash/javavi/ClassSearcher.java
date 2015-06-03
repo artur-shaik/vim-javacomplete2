@@ -16,7 +16,7 @@ public class ClassSearcher {
         Javavi.debug("Search class: " + targetClass);
 
         this.sources = sources;
-        if (Reflection.existed(targetClass) || Reflection.existed("java.lang." + targetClass)) {
+        if (Reflection.exist(targetClass) || Reflection.exist("java.lang." + targetClass)) {
             isReflected = true;
             return true;
         } else {
