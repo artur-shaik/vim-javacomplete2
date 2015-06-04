@@ -2541,7 +2541,7 @@ function! s:KeyInCache(fqn)
   let fqn = substitute(fqn, '>', '\\>', 'g')
 
   let keys = keys(s:cache)
-  let idx = match(keys, '\v'. fqn)
+  let idx = match(keys, '\v'. fqn. '$')
   
   if idx >= 0
     return keys[idx]
