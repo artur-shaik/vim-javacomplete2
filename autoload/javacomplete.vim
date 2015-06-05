@@ -332,6 +332,7 @@ function! javacomplete#Complete(findstart, base)
 
     " *********
     let classScope = GetClassNameWithScope()
+    call s:Info(classScope)
 
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
@@ -716,7 +717,6 @@ function! s:CompleteAfterDot(expr)
             let ti = s:ARRAY_TYPE_INFO
           elseif typename != 'void' && !s:IsBuiltinType(typename)
             let ti = s:DoGetClassInfo(typename)
-            call s:Info(ti)
           endif
 
         else
@@ -741,7 +741,6 @@ function! s:CompleteAfterDot(expr)
 
       " method invocation:	"method().|"	- "this.method().|"
     elseif items[0] =~ '^\s*' . s:RE_IDENTIFIER . '\s*('
-      call s:Info(items)
       let ti = s:MethodInvocation(items[0], ti, itemkind)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
@@ -1187,7 +1186,7 @@ function! s:GenerateImports()
 
   if &ft == 'jsp'
     while 1
-      let lnum = search('\<import\s*=[''"]', 'W')
+      let lnum = search('\<import\s*=[''"]', 'Wc')
       if (lnum == 0)
         break
       endif
@@ -1202,7 +1201,7 @@ function! s:GenerateImports()
     endwhile
   else
     while 1
-      let lnum = search('\<import\>', 'W')
+      let lnum = search('\<import\>', 'Wc')
       if (lnum == 0)
         break
       elseif !s:InComment(line("."), col(".")-1)
@@ -2562,7 +2561,8 @@ function! s:CollectFQNs(typename, packagename, filekey)
 
   let fqns = []
   call add(fqns, empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename)
-  for p in s:GetImports('imports_star', a:filekey)
+  let imports = s:GetImports('imports_star', a:filekey)
+  for p in imports
     call add(fqns, p . a:typename)
   endfor
   return fqns
