@@ -9,13 +9,14 @@
 
 " constants							{{{1
 " input context type
-let s:CONTEXT_AFTER_DOT		= 1
-let s:CONTEXT_METHOD_PARAM	= 2
-let s:CONTEXT_IMPORT		= 3
-let s:CONTEXT_IMPORT_STATIC	= 4
-let s:CONTEXT_PACKAGE_DECL	= 6 
-let s:CONTEXT_NEED_TYPE		= 7 
-let s:CONTEXT_OTHER 		= 0
+let s:CONTEXT_AFTER_DOT		    = 1
+let s:CONTEXT_METHOD_PARAM	    = 2
+let s:CONTEXT_IMPORT		    = 3
+let s:CONTEXT_IMPORT_STATIC	    = 4
+let s:CONTEXT_PACKAGE_DECL	    = 6 
+let s:CONTEXT_NEED_TYPE		    = 7 
+let s:CONTEXT_COMPLETE_CLASS	= 8
+let s:CONTEXT_OTHER 		    = 0
 
 
 let s:ARRAY_TYPE_MEMBERS = [
@@ -211,8 +212,6 @@ function! GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
   let word_r = col('.') - 1
-  call s:Info(word_r)
-  call s:Info(word_l)
   while curline[word_l - 1] =~ '[.A-Za-z0-9_]'
     let word_l -= 1
   endwhile
@@ -255,7 +254,6 @@ function! s:AddImport(import)
     call append(insertline, 'import '. a:import. ';')
     call append(insertline, '')
   else
-    call s:Info(imports)
     let idx = 0
     while idx < len(imports)
       let i = imports[idx][0]
@@ -277,7 +275,6 @@ function! javacomplete#AddImport()
   let classname = expand('<cword>')
   let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
-    call s:Info(response)
     let result = eval(response)
     if len(result) == 0
       echo "JavaComplete: classname '". classname. "' not found in any scope."
@@ -318,7 +315,6 @@ endfunction
 
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#Complete(findstart, base)
-  call s:Info("fs: ". a:findstart)
   if a:findstart
     " reset enviroment
     let b:dotexpr = ''
@@ -331,7 +327,6 @@ function! javacomplete#Complete(findstart, base)
 
     " *********
     let classScope = GetClassNameWithScope()
-
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
       let start = col('.') - 1
@@ -339,6 +334,8 @@ function! javacomplete#Complete(findstart, base)
       while start > 0 && curline[start - 1] =~ '[A-Za-z0-9_]'
         let start -= 1
       endwhile
+
+      let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       return start
     endif
@@ -452,7 +449,7 @@ function! javacomplete#Complete(findstart, base)
   let result = []
 
   " Try to complete incomplete class name
-  if a:base =~ '^[A-Z][A-Za-z0-9_]*$'
+  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[A-Z][A-Za-z0-9_]*$'
     let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
     if response =~ '^['
       let result = eval(response)
@@ -519,7 +516,7 @@ function! javacomplete#Complete(findstart, base)
     return result
   endif
 
-  if strlen(b:errormsg) > 0
+  if len(b:errormsg) > 0
     echoerr 'javacomplete error: ' . b:errormsg
     let b:errormsg = ''
   endif
@@ -739,7 +736,6 @@ function! s:CompleteAfterDot(expr)
 
       " method invocation:	"method().|"	- "this.method().|"
     elseif items[0] =~ '^\s*' . s:RE_IDENTIFIER . '\s*('
-      call s:Info(items)
       let ti = s:MethodInvocation(items[0], ti, itemkind)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
@@ -779,6 +775,9 @@ function! s:CompleteAfterDot(expr)
       let subs = split(substitute(items[0], s:RE_ARRAY_ACCESS, '\1;\2', ''), ';')
       if get(subs, 1, '') !~ s:RE_BRACKETS
         let typename = s:GetDeclaredClassName(subs[0])
+        if type(typename) == type([])
+          let typename = typename[0]
+        endif
         call s:Info('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
           let ti = s:ArrayAccess(typename, items[0])
@@ -1182,7 +1181,7 @@ function! s:GenerateImports()
 
   if &ft == 'jsp'
     while 1
-      let lnum = search('\<import\s*=[''"]', 'W')
+      let lnum = search('\<import\s*=[''"]', 'Wc')
       if (lnum == 0)
         break
       endif
@@ -1197,7 +1196,7 @@ function! s:GenerateImports()
     endwhile
   else
     while 1
-      let lnum = search('\<import\>', 'W')
+      let lnum = search('\<import\>', 'Wc')
       if (lnum == 0)
         break
       elseif !s:InComment(line("."), col(".")-1)
@@ -1506,53 +1505,12 @@ fu! s:SearchForName(name, first, fullmatch)
     return result
   endif
 
-  " Fast backward search for type declaration
-  let pos = line('.')
-  let clbracket = 0
-  let quoteFlag = 0
-  while pos > 0
-    let pos -= 1
-    let line = getline(pos)
-    let cursor = len(line)
-    while cursor > 0
-      if line[cursor] == '"'
-        if quoteFlag == 0
-          let quoteFlag = 1
-        else
-          let quoteFlag = 0
-        endif
-      endif
-
-      if quoteFlag
-        let line = line[0 : cursor - 1]. line[cursor + 1 : -1]
-        let cursor -= 1
-        continue
-      endif
-
-      if line[cursor] == '}'
-        let clbracket += 1
-      elseif line[cursor] == '{' && clbracket > 0
-        let clbracket -= 1
-      endif
-      let cursor -= 1
-    endwhile
-    if clbracket > 0
-      continue
-    endif
-
-    let matches = matchlist(line, '\C.*\(\<'. s:RE_IDENTIFIER. '\>\)\s\+\<'. a:name. '\>.*')
-    if len(matches) > 1
-      return [[],[],[{'tag': 'VARDEF', 'name': a:name, 'vartype': matches[1], 'm': '1000000000000000000000000000000000', 'pos': -1}],[]]
-    endif
-  endwhile
-
   " use java_parser.vim
   if javacomplete#GetSearchdeclMethod() == 4
     " declared in current file
     let unit = javacomplete#parse()
     let targetPos = java_parser#MakePos(line('.')-1, col('.')-1)
     let trees = s:SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
-    call s:Info(trees)
     for tree in trees
       if tree.tag == 'VARDEF'
 	call add(result[2], tree)
@@ -1579,7 +1537,7 @@ fu! s:SearchForName(name, first, fullmatch)
     let result[1] += si[1]
     let result[2] += si[2]
   endif
-  call s:Info(result[1])
+
   return result
 endfu
 
@@ -2362,7 +2320,7 @@ fu! s:RunReflection(option, args, log)
 
   if s:PollServer()
     let cmd = a:option. ' "'. a:args. '"'
-    call s:Info("RunReflection: ". cmd)
+    call s:Info("RunReflection: ". cmd. " [". a:log. "]")
     return pyeval('bridgeState.send(vim.eval("cmd"))')
   endif
 
@@ -2480,97 +2438,131 @@ fu! s:DoGetClassInfo(class, ...)
       " What will be returned for this?
       " - besides the above, all fields and methods of current class. No ctors.
       return s:Sort(s:Tree2ClassInfo(t))
-      "return s:Sort(s:AddInheritedClassInfo(a:class == 'this' ? s:Tree2ClassInfo(t) : {}, t, 1))
     endif
 
     return {}
   endif
-
-
-  if a:class !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(a:class)
-    return {}
-  endif
-
 
   let typename	= substitute(a:class, '\s', '', 'g')
-  let filekey	= a:0 > 0 ? a:1 : s:GetCurrentFileKey()
-  let packagename = a:0 > 1 ? a:2 : s:GetPackageName()
-  let srcpath	= join(s:GetSourceDirs(a:0 > 0 && a:1 != bufnr('%') ? a:1 : expand('%:p'), packagename), ',')
 
-  let names = split(typename, '\.')
-  " remove the package name if in the same packge
-  if len(names) > 1
-    if packagename == join(names[:-2], '.')
-      let names = names[-1:]
-    endif
+  let typeArguments = ''
+  if a:class =~ s:RE_TYPE_WITH_ARGUMENTS
+    let lbridx = stridx(typename, '<')
+    let typeArguments = typename[lbridx + 1 : -2]
+    let typename = typename[0 : lbridx - 1]
   endif
 
-  " a FQN
-  if len(names) > 1
-    call s:FetchClassInfo(typename)
-    let ci = get(s:cache, typename, {})
-    if get(ci, 'tag', '') == 'CLASSDEF'
-      return s:cache[typename]
-    elseif get(ci, 'tag', '') == 'PACKAGE'
-      return {}
-    endif
+  if typename !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(typename)
+    call s:Info("No qualid")
+    return {}
   endif
 
-  " The standard search order of a simple type name is as follows:
-  " 1. The current type including inherited types.
-  " 2. A nested type of the current type.
-  " 3. Explicitly named imported types (single type import).
-  " 4. Other types declared in the same package. Not only current directory.
-  " 5. Implicitly named imported types (import on demand).
 
-  " 1 & 2.
-  " NOTE: inherited types are treated as normal
-  if filekey == s:GetCurrentFileKey()
-    let simplename = typename[strridx(typename, '.')+1:]
-    if s:FoundClassDeclaration(simplename) != 0
-      call s:Info('A1&2')
-      let ci = s:GetClassInfoFromSource(simplename, '%')
-      " do not cache it
-      if !empty(ci)
-        return ci
-      endif
-    endif
-  else
-    let ci = s:GetClassInfoFromSource(typename, filekey)
-    if !empty(ci)
-      return ci
-    endif
-  endif
+  let filekey	= a:0 > 0 && len(a:1) > 0 ? a:1 : s:GetCurrentFileKey()
+  let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : s:GetPackageName()
 
-  " 3.
-  " NOTE: PackageName.Ident, TypeName.Ident
-  let fqn = s:SearchSingleTypeImport(typename, s:GetImports('imports_fqn', filekey))
-  if !empty(fqn)
-    call s:Info('A3')
-    call s:FetchClassInfo(fqn)
-    let ti = get(s:cache, fqn, {})
-    if get(ti, 'tag', '') != 'CLASSDEF'
-      " TODO: mark the wrong import declaration.
-    endif
-    return ti
-  endif
+  let typeArgumentsCollected = s:CollectTypeArguments(typeArguments, packagename, filekey)
 
-  " 4 & 5
-  " NOTE: Keeps the fqn of the same package first!!
-  call s:Info('A4&5')
-  let fqns = [empty(packagename) ? typename : packagename . '.' . typename]
-  for p in s:GetImports('imports_star', filekey)
-    call add(fqns, p . typename)
-  endfor
+  let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
+    let fqn = fqn. typeArgumentsCollected
     call s:FetchClassInfo(fqn)
-    if has_key(s:cache, fqn)
-      return get(s:cache[fqn], 'tag', '') == 'CLASSDEF' ? s:cache[fqn] : {}
+
+    let key = s:KeyInCache(fqn)
+    if !empty(key)
+      return get(s:cache[key], 'tag', '') == 'CLASSDEF' ? s:cache[key] : {}
     endif
   endfor
 
   return {}
 endfu
+
+function! s:CollectTypeArguments(typeArguments, packagename, filekey)
+  let typeArgumentsCollected = ''
+  if !empty(a:typeArguments)
+    let typeArguments = a:typeArguments
+    let i = 0
+    let lbr = 0
+    let stidx = 0
+    while i < len(typeArguments)
+      let c = typeArguments[i]
+      if c == '<'
+        let lbr += 1
+      elseif c == '>'
+        let lbr -= 1
+      endif
+
+      if c == ',' && lbr == 0
+        let typeArguments = typeArguments[stidx : i - 1] . "<_split_>". typeArguments[i + 1 : -1]
+        let stidx = i
+      endif
+      let i += 1
+    endwhile
+    
+    for arg in split(typeArguments, "<_split_>")
+      let argTypeArguments = ''
+      if arg =~ s:RE_TYPE_WITH_ARGUMENTS
+        let lbridx = stridx(arg, '<')
+        let argTypeArguments = arg[lbridx : -1]
+        let arg = arg[0 : lbridx - 1]
+      endif
+
+      let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
+      let typeArgumentsCollected .= ''
+      if len(fqns) > 1
+        let typeArgumentsCollected .= '('
+      endif
+      for fqn in fqns
+        if len(fqn) > 0
+          let typeArgumentsCollected .= fqn. argTypeArguments. '|'
+        endif
+      endfor
+      if len(fqns) > 1
+        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. '),'
+      else
+        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. ','
+      endif
+    endfor
+    if !empty(typeArgumentsCollected)
+      let typeArgumentsCollected = '<'. typeArgumentsCollected[0:-2]. '>'
+    endif
+  endif
+
+  return typeArgumentsCollected
+endfunction
+
+function! s:KeyInCache(fqn)
+  let fqn = substitute(a:fqn, '<', '\\<', 'g')
+  let fqn = substitute(fqn, '>', '\\>', 'g')
+
+  let keys = keys(s:cache)
+  let idx = match(keys, '\v'. fqn. '$')
+  
+  if idx >= 0
+    return keys[idx]
+  endif
+
+  return ''
+endfunction
+
+function! s:CollectFQNs(typename, packagename, filekey)
+  if len(split(a:typename, '\.')) > 1
+    return [a:typename]
+  endif
+
+  let directFqn = s:SearchSingleTypeImport(a:typename, s:GetImports('imports_fqn', a:filekey))
+  if !empty(directFqn)
+    return [directFqn]
+  endif
+
+  let fqns = []
+  call add(fqns, empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename)
+  let imports = s:GetImports('imports_star', a:filekey)
+  for p in imports
+    call add(fqns, p . a:typename)
+  endfor
+  return fqns
+endfunction
 
 " Parameters:
 "   class	the qualified class name
@@ -2647,6 +2639,9 @@ fu! s:Tree2ClassInfo(t)
     let i = 0
     while i < len(extends)
       let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
+      if type(ci) == type([])
+        let ci = [0]
+      endif
       if has_key(ci, 'fqn')
         let extends[i] = ci.fqn
       endif
@@ -2803,6 +2798,9 @@ fu! s:SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
   if !has_key(a:ci, 'classpath') || (a:kind == 1 || a:kind == 2)
     for i in get(a:ci, 'extends', [])
       let ci = s:DoGetClassInfo(java_parser#type2Str(i))
+      if type(ci) == type([])
+        let ci = ci[0]
+      endif
       let members = s:SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, a:memberkind)
       let result[0] += members[0]
       let result[1] += members[1]
@@ -2818,7 +2816,19 @@ endfu
 fu! s:DoGetFieldList(fields)
   let s = ''
   for field in a:fields
-    let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . field.t . "','dup':1},"
+    if type(field.t) == type([])
+      let fieldType = field.t[0]
+      let args = ''
+      for arg in field.t[1]
+        let args .= arg. ','
+      endfor
+      if len(args) > 0
+        let fieldType .= '<'. args[0:-2]. '>'
+      endif
+    else
+      let fieldType = field.t
+    endif
+    let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . fieldType . "','dup':1},"
   endfor
   return s
 endfu
