@@ -31,7 +31,7 @@ class JavaviBridge():
     popen = None
 
     def setupServer(self, javabin, args, classpath):
-        environ = os.environ
+        environ = os.environ.copy()
         if 'CLASSPATH' in environ:
             environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if sys.platform == 'win32' else ':') + classpath
         else:
