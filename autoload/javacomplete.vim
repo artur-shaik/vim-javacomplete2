@@ -9,13 +9,14 @@
 
 " constants							{{{1
 " input context type
-let s:CONTEXT_AFTER_DOT		= 1
-let s:CONTEXT_METHOD_PARAM	= 2
-let s:CONTEXT_IMPORT		= 3
-let s:CONTEXT_IMPORT_STATIC	= 4
-let s:CONTEXT_PACKAGE_DECL	= 6 
-let s:CONTEXT_NEED_TYPE		= 7 
-let s:CONTEXT_OTHER 		= 0
+let s:CONTEXT_AFTER_DOT		    = 1
+let s:CONTEXT_METHOD_PARAM	    = 2
+let s:CONTEXT_IMPORT		    = 3
+let s:CONTEXT_IMPORT_STATIC	    = 4
+let s:CONTEXT_PACKAGE_DECL	    = 6 
+let s:CONTEXT_NEED_TYPE		    = 7 
+let s:CONTEXT_COMPLETE_CLASS	= 8
+let s:CONTEXT_OTHER 		    = 0
 
 
 let s:ARRAY_TYPE_MEMBERS = [
@@ -212,8 +213,6 @@ function! GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
   let word_r = col('.') - 1
-  call s:Info(word_r)
-  call s:Info(word_l)
   while curline[word_l - 1] =~ '[.A-Za-z0-9_]'
     let word_l -= 1
   endwhile
@@ -256,7 +255,6 @@ function! s:AddImport(import)
     call append(insertline, 'import '. a:import. ';')
     call append(insertline, '')
   else
-    call s:Info(imports)
     let idx = 0
     while idx < len(imports)
       let i = imports[idx][0]
@@ -278,7 +276,6 @@ function! javacomplete#AddImport()
   let classname = expand('<cword>')
   let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
-    call s:Info(response)
     let result = eval(response)
     if len(result) == 0
       echo "JavaComplete: classname '". classname. "' not found in any scope."
@@ -319,7 +316,6 @@ endfunction
 
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#Complete(findstart, base)
-  call s:Info("fs: ". a:findstart)
   if a:findstart
     " reset enviroment
     let b:dotexpr = ''
@@ -332,8 +328,6 @@ function! javacomplete#Complete(findstart, base)
 
     " *********
     let classScope = GetClassNameWithScope()
-    call s:Info(classScope)
-
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
       let start = col('.') - 1
@@ -341,6 +335,8 @@ function! javacomplete#Complete(findstart, base)
       while start > 0 && curline[start - 1] =~ '[A-Za-z0-9_]'
         let start -= 1
       endwhile
+
+      let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       return start
     endif
@@ -454,7 +450,7 @@ function! javacomplete#Complete(findstart, base)
   let result = []
 
   " Try to complete incomplete class name
-  if a:base =~ '^[A-Z][A-Za-z0-9_]*$'
+  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[A-Z][A-Za-z0-9_]*$'
     let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
     if response =~ '^['
       let result = eval(response)
