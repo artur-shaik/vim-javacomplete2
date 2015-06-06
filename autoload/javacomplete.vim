@@ -211,7 +211,7 @@ endfunction
 function! GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
-  let word_r = col('.') - 1
+  let word_r = col('.') - 2
   while curline[word_l - 1] =~ '[.A-Za-z0-9_]'
     let word_l -= 1
   endwhile
@@ -219,7 +219,7 @@ function! GetClassNameWithScope()
     let word_r += 1
   endwhile
 
-  return curline[word_l : word_r + 1]
+  return curline[word_l : word_r]
 endfunction
 
 function! s:AddImport(import)
