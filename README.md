@@ -117,7 +117,8 @@ manually run server compilation:
 ## Limitations:
 
 - First run can be slow;
-- The embedded parser works a bit slower than expected.
+- The embedded parser works a bit slower than expected;
+- Sometimes you need to call completion twice, because server doesn't start immediatly.
 
 ## Todo
 
