@@ -1098,6 +1098,10 @@ fu! s:ParseExpr(expr)
       if e < 0
         break
       else
+        if e < len(a:expr) - 2
+          let s = e + 1
+          continue
+        endif
         let e = matchend(a:expr, '^\s*[.[]', e+1)-1
         continue
       endif
