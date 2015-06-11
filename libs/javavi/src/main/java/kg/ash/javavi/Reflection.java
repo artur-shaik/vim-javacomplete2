@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -76,12 +77,12 @@ public class Reflection implements ClassReader {
         clazz.setPackage(cls.getPackage().getName());
 
         for (int i = 0; i < cls.getTypeParameters().length; i++) {
-            Type type = cls.getTypeParameters()[i];
+            TypeVariable<?> type = cls.getTypeParameters()[i];
             if (i < typeArguments.size()) {
-                typeArgumentsAccordance.put(type.getTypeName(), typeArguments.get(i));
+                typeArgumentsAccordance.put(type.getName(), typeArguments.get(i));
                 clazz.addTypeArgument(typeArguments.get(i));
             } else {
-                typeArgumentsAccordance.put(type.getTypeName(), "java.lang.Object");
+                typeArgumentsAccordance.put(type.getName(), "java.lang.Object");
             }
         }
 
@@ -119,7 +120,7 @@ public class Reflection implements ClassReader {
 
             Type[] parameterTypes = ctor.getGenericParameterTypes();
             for (Type t : parameterTypes) {
-                String name = t.getTypeName();
+                String name = t.toString();
                 for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                     name = name.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
                 }
@@ -135,7 +136,7 @@ public class Reflection implements ClassReader {
             field.setName(f.getName());
             field.setModifiers(f.getModifiers());
 
-            String genericType = f.getGenericType().getTypeName();
+            String genericType = f.getGenericType().toString();
             for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                 genericType = genericType.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
             }
@@ -149,7 +150,7 @@ public class Reflection implements ClassReader {
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
             method.setModifiers(m.getModifiers());
-            
+
             String genericDeclaration = m.toGenericString();
             for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                 genericDeclaration = genericDeclaration.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
@@ -157,7 +158,7 @@ public class Reflection implements ClassReader {
 
             method.setDeclaration(genericDeclaration);
 
-            String genericReturnType = m.getGenericReturnType().getTypeName();
+            String genericReturnType = m.getGenericReturnType().toString();
             for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                 genericReturnType = genericReturnType.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
             }
@@ -165,7 +166,7 @@ public class Reflection implements ClassReader {
 
             Type[] parameterTypes = m.getGenericParameterTypes();
             for (Type t : parameterTypes) {
-                String name = t.getTypeName();
+                String name = t.toString();
                 for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                     name = name.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
                 }
