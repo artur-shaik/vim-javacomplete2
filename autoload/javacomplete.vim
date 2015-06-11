@@ -3031,7 +3031,12 @@ else
   let g:JavaComplete_LibsPath = ""
 endif
 
-let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. "~/.m2/repository". s:PATH_SEP. s:GetClassPath()
+let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath
+if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
+  let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+endif
+let g:JavaComplete_LibsPath .= s:GetClassPath()
+
 " }}}
 "}}}
 " vim:set fdm=marker sw=2 nowrap:
