@@ -44,7 +44,7 @@ Features borrowed and ported to vimscript from vim-javacompleteex:
 
 ## Requirements
 
-- Vim version 7.0 or above;
+- Vim version 7.0 or above, with python support;
 - JDK version 7 or above in classpath.
 
 ## Installation
@@ -62,6 +62,13 @@ Add to `.vimrc`:
 
 ````vimL
 Plugin 'artur-shaik/vim-javacomplete2'
+````
+
+### NeoBundle
+Add to `.vimrc`:
+
+````vimL
+NeoBundle 'artur-shaik/vim-javacomplete2'
 ````
 
 ### vim-plug
