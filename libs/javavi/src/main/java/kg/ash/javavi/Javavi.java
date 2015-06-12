@@ -126,7 +126,7 @@ public class Javavi {
                     if (matchResult) {
                         arg = argMatcher.group(1);
                     }
-                    if (seacher.find(arg, sources)) {
+                    if (seacher.find(arg.replaceAll("(\\[|\\])", ""), sources)) {
                         if (matchResult) {
                             typeArguments.add(String.format("%s<%s>", arg, argMatcher.group(2)));
                         } else {

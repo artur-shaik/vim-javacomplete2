@@ -808,6 +808,7 @@ function! s:CompleteAfterDot(expr)
       " package members
       if itemkind/10 == 2 && empty(brackets) && !s:IsKeyword(ident)
         let qn = join(items[:ii], '.')
+        call s:Info("package members: ". qn)
         if type(ti) == type([])
           let idx = s:Index(ti, ident, 'word')
           if idx >= 0
@@ -830,6 +831,7 @@ function! s:CompleteAfterDot(expr)
         " type members
       elseif itemkind/10 == 1 && empty(brackets)
         if ident ==# 'class' || ident ==# 'this' || ident ==# 'super'
+          call s:Info("type members: ". ident)
           let ti = s:DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ii += 1
@@ -840,6 +842,7 @@ function! s:CompleteAfterDot(expr)
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0 && s:IsStatic(ti.fields[idx].m)
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
+          call s:Info("static fields: ". ident)
           let members = s:SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
             let ti = s:ArrayAccess(members[2][0].t, items[ii])
@@ -861,6 +864,7 @@ function! s:CompleteAfterDot(expr)
         " instance members
       elseif itemkind/10 == 0 && !s:IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
+          call s:Info("instance members")
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
@@ -930,11 +934,13 @@ fu! s:ArrayAccess(arraytype, expr)
   if a:expr =~ s:RE_BRACKETS	| return {} | endif
   let typename = a:arraytype
 
+  call s:Info("array access: ". typename)
+
   let dims = 0
   if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
     let dims = s:CountDims(a:expr) - s:CountDims(typename)
     if dims == 0
-      let typename = matchstr(typename, s:RE_IDENTIFIER)
+      let typename = typename[0 : stridx(typename, '[') - 1]
     elseif dims < 0
       return s:ARRAY_TYPE_INFO
     else
@@ -1098,10 +1104,6 @@ fu! s:ParseExpr(expr)
       if e < 0
         break
       else
-        if e < len(a:expr) - 2
-          let s = e + 1
-          continue
-        endif
         let e = matchend(a:expr, '^\s*[.[]', e+1)-1
         continue
       endif
@@ -1131,6 +1133,9 @@ fu! s:ProcessParentheses(expr, ...)
     let e = s:GetMatchedIndexEx(a:expr, s-1, '(', ')')
     if e >= 0
       let tail = strpart(a:expr, e+1)
+      if tail[-1:] == '.'
+        return [tail[0:-2]]
+      endif
       if tail =~ '^\s*[\=$'
         return s:ProcessParentheses(strpart(a:expr, s, e-s), 1)
       elseif tail =~ '^\s*\w'
@@ -2409,10 +2414,12 @@ endfu
 
 " a:1	filepath
 " a:2	package name
-fu! s:DoGetClassInfo(class, ...)
+function! s:DoGetClassInfo(class, ...)
   if has_key(s:cache, a:class)
     return s:cache[a:class]
   endif
+
+  call s:Info("DoGetClassInfo: ". a:class)
 
   " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
   if a:class[-1:] == ']' || a:class[0] == '['
@@ -2538,6 +2545,8 @@ endfunction
 function! s:KeyInCache(fqn)
   let fqn = substitute(a:fqn, '<', '\\<', 'g')
   let fqn = substitute(fqn, '>', '\\>', 'g')
+  let fqn = substitute(fqn, ']', '\\]', 'g')
+  let fqn = substitute(fqn, '[', '\\[', 'g')
 
   let keys = keys(s:cache)
   let idx = match(keys, '\v'. fqn. '$')
@@ -2554,9 +2563,18 @@ function! s:CollectFQNs(typename, packagename, filekey)
     return [a:typename]
   endif
 
-  let directFqn = s:SearchSingleTypeImport(a:typename, s:GetImports('imports_fqn', a:filekey))
+  let brackets = stridx(a:typename, '[')
+  let extra = ''
+  if brackets >= 0
+    let typename = a:typename[0 : brackets - 1]
+    let extra = a:typename[brackets : -1]
+  else
+    let typename = a:typename
+  endif
+
+  let directFqn = s:SearchSingleTypeImport(typename, s:GetImports('imports_fqn', a:filekey))
   if !empty(directFqn)
-    return [directFqn]
+    return [directFqn. extra]
   endif
 
   let fqns = []
