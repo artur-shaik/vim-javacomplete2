@@ -200,6 +200,12 @@ A single letter indicates the kind of compeltion item. These kinds are:
         default plugin will search `src` directory and add it 
         automatically.
 
+    Disable maven repository:
+
+        let g:JavaComplete_MavenRepositoryDisable = 1 
+        By default this option is disabled (0).
+        
+
 2.4 Commands					*javacomplete-commands*
 
     javacomplete#StartServer()      manually run server.
@@ -267,6 +273,10 @@ The embedded parser works a bit slower than expected.
 6. History					
 
 6.1 javacomplete				*javacomplete-history*
+
+v2.1
+    2015-06-12  Generics completion. Bug fixes. 
+                Added g:JavaComplete_MavenRepositoryDisable option.
 
 v2.0
     2015-05-26  Writed new library for reflection and parsing. Parsing make by

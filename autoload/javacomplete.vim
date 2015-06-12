@@ -1,5 +1,5 @@
 " Vim completion script
-" Version:	2.0
+" Version:	2.1
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 " Last Change:	2015-05-22

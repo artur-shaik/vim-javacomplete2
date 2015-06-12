@@ -2,7 +2,7 @@
 " Language:	Java
 " Maintainer:	cheng fang <fangread@yahoo.com.cn>
 " Last Changed: 2007-09-16
-" Version:	0.67
+" Version:	0.68
 " Copyright:	Copyright (C) 2007 cheng fang.	All rights reserved.
 " License:	Vim License	(see vim's :help license)
 
