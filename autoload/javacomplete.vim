@@ -1963,7 +1963,17 @@ fu! s:GetClassPath()
 endfu
 
 function! javacomplete#CompileJavavi()
+  call javacomplete#TerminateServer()
+
   let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
+  if isdirectory(javaviDir. "target/classes") 
+    if s:IS_WINDOWS
+      silent exe '!rmdir \s "'. javaviDir. "target/classes"
+    else
+      silent exe '!rm -r '. javaviDir. "target/classes"
+    endif
+  endif
+
   if executable('mvn')
     exe '!'. 'mvn -f "'. javaviDir. '/pom.xml" compile'
   else
