@@ -6,6 +6,10 @@ Updated version of the original [javacomplete plugin](http://www.vim.org/scripts
 
 ![vim-javacomplete2](https://github.com/artur-shaik/vim-javacomplete2/raw/master/doc/demo.gif)
 
+Generics demo
+
+![vim-javacomplete2](https://github.com/artur-shaik/vim-javacomplete2/raw/master/doc/generics_demo.gif)
+
 ## Intro
 
 This is vim-javacomplete2, an omni-completion plugin for [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) requiring vim 7.
@@ -27,7 +31,8 @@ For the first run the plugin will compile the Javavi library.
 
 Features:
 - Server side java reflection class loader and parsing library;
-- Searches class files automatically.
+- Searches class files automatically;
+- Generics.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -142,7 +147,7 @@ manually run server compilation:
 - Check for jsp support;
 - Refactoring support?;
 - Class creation helpers;
-- Generics;
+- ~~Generics~~;
 - Clean old unused code;
 - etc...
 
