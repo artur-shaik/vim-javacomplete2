@@ -915,10 +915,6 @@ fu! s:MethodInvocation(expr, ti, itemkind)
     let methods = s:SearchForName(subs[0], 0, 1)[1]
   elseif type(a:ti) == type({}) && get(a:ti, 'tag', '') == 'CLASSDEF'
     let methods = s:SearchMember(a:ti, subs[0], 1, a:itemkind, 1, 0, a:itemkind == 2)[1]
-    "    let methods = s:filter(get(a:ti, 'methods', []), 'item.n == "' . subs[0] . '"')
-    "    if a:itemkind == 1 || a:itemkind == 2
-    "      let methods += s:filter(get(a:ti, 'declared_methods', []), 'item.n == "' . subs[0] . '"')
-    "    endif
   else
     let methods = []
   endif
