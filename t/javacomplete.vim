@@ -69,4 +69,44 @@ describe 'javacomplete-test'
         call cursor(0, 31)
         Expect Call('s:GetClassNameWithScope') == ''
     end
+
+    it 'AddImport test'
+        new
+        put! ='package kg.ash.foo;'
+
+        call Call('s:AddImport', 'java.util.List')
+        let str = getline(3)
+        Expect str == 'import java.util.List;'
+
+        call Call('s:AddImport', 'java.util.ArrayList')
+        let str = getline(3)
+        Expect str == 'import java.util.ArrayList;'
+
+        call Call('s:AddImport', 'foo.bar.Baz')
+        let str = getline(3)
+        Expect str == 'import foo.bar.Baz;'
+
+        call Call('s:AddImport', 'zoo.bar.Baz')
+        let str = getline(3)
+        Expect str == 'import foo.bar.Baz;'
+
+        new
+
+        call Call('s:AddImport', 'java.util.List')
+        let str = getline(2)
+        Expect str == 'import java.util.List;'
+
+        call Call('s:AddImport', 'java.util.ArrayList')
+        let str = getline(2)
+        Expect str == 'import java.util.ArrayList;'
+
+        call Call('s:AddImport', 'foo.bar.Baz')
+        let str = getline(2)
+        Expect str == 'import foo.bar.Baz;'
+
+        call Call('s:AddImport', 'zoo.bar.Baz')
+        let str = getline(2)
+        Expect str == 'import foo.bar.Baz;'
+
+    end
 end
