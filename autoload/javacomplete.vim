@@ -208,7 +208,7 @@ function! javacomplete#ShowPID()
   endif
 endfunction
 
-function! GetClassNameWithScope()
+function! s:GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
   let word_r = col('.') - 2
@@ -326,7 +326,7 @@ function! javacomplete#Complete(findstart, base)
 
 
     " *********
-    let classScope = GetClassNameWithScope()
+    let classScope = s:GetClassNameWithScope()
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
       let start = col('.') - 1

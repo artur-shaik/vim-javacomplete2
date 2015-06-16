@@ -41,4 +41,32 @@ describe 'javacomplete-test'
         Expect Call('s:CollectFQNs', 'List', 'kg.ash.foo', '') == ['kg.ash.foo.List', 'java.lang.List', 'java.util.List', 'java.foo.List']
     end
 
+    it 'GetClassNameWithScope test'
+        new 
+        put ='ArrayLi'
+        Expect Call('s:GetClassNameWithScope') == 'ArrayLi'
+
+        new 
+        put ='ArrayList '
+        Expect Call('s:GetClassNameWithScope') == 'ArrayList'
+
+        new 
+        put ='ArrayList l'
+        call cursor(0, 10)
+        Expect Call('s:GetClassNameWithScope') == 'ArrayList'
+
+        new 
+        put ='ArrayList<String> l'
+        call cursor(0, 11)
+        Expect Call('s:GetClassNameWithScope') == 'String'
+
+        new 
+        put ='List l = new ArrayList<String>()'
+        call cursor(0, 1)
+        Expect Call('s:GetClassNameWithScope') == 'List'
+        call cursor(0, 14)
+        Expect Call('s:GetClassNameWithScope') == 'ArrayList'
+        call cursor(0, 31)
+        Expect Call('s:GetClassNameWithScope') == ''
+    end
 end
