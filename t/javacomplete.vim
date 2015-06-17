@@ -102,4 +102,16 @@ describe 'javacomplete-test'
 
     end
 
+    it 'ParseExpr test'
+        Expect Call('s:ParseExpr', 'var') == ['var']
+        Expect Call('s:ParseExpr', 'var.') == ['var']
+        Expect Call('s:ParseExpr', 'var.method().') == ['var', 'method()']
+        Expect Call('s:ParseExpr', 'var.vari') == ['var', 'vari']
+        Expect Call('s:ParseExpr', 'var.vari.') == ['var', 'vari']
+        Expect Call('s:ParseExpr', 'var[].') == ['var[]']
+        Expect Call('s:ParseExpr', '(Boolean) var.') == [' var']
+        Expect Call('s:ParseExpr', '((Boolean) var).') == ['(Boolean)obj.']
+        Expect Call('s:ParseExpr', '((Boolean) var).method()') == ['(Boolean)obj.', 'method()']
+    end
+
 end
