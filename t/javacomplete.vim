@@ -114,4 +114,11 @@ describe 'javacomplete-test'
         Expect Call('s:ParseExpr', '((Boolean) var).method()') == ['(Boolean)obj.', 'method()']
     end
 
+    it 'ExtractCleanExpr test'
+        Expect Call('s:ExtractCleanExpr', 'var') == 'var'
+        Expect Call('s:ExtractCleanExpr', ' var.') == 'var.'
+        Expect Call('s:ExtractCleanExpr', 'var [ 0 ].') == 'var[0].'
+        Expect Call('s:ExtractCleanExpr', 'Boolean b = ((Boolean) var).method()') == '((Boolean)var).method()'
+    end
+
 end
