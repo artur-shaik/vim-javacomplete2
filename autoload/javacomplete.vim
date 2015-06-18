@@ -1957,7 +1957,7 @@ function! s:FindClassPath() abort
     endif
     let path = base . key
 
-    let pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
     if pom != "" && filereadable(path)
       if getftime(path) >= getftime('pom.xml')
         return join(readfile(path), '')
