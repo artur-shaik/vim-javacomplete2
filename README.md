@@ -31,7 +31,7 @@ For the first run the plugin will compile the Javavi library.
 
 Features:
 - Server side java reflection class loader and parsing library;
-- Searches class files automatically;
+- Searches class files automatically, using `pom.xml` to append completion classpath;
 - Generics.
 
 Features (originally existed):
@@ -100,7 +100,7 @@ To enable inserting class imports with F4, add:
 
 `g:JavaComplete_SourcesPath` - path of additional sources. Don't try to add all sources you have, this will slow down the parsing process. Instead, add your project sources and necessary library sources. If you have compiled classes add them to the previous config (`g:JavaComplete_LibsPath`) instead. By default the plugin will search the `src` directory and add it automatically.
 
-`let g:JavaComplete_MavenRepositoryDisable = 1` - don't append classpath with `~/.m2/repository`. By default is `0`.
+`let g:JavaComplete_MavenRepositoryDisable = 1` - don't append classpath with libraries specified in `pom.xml` of your project. By default is `0`.
 
 ## Commands
 

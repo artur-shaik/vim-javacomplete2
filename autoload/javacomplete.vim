@@ -1951,9 +1951,9 @@ endfunction
 function! s:FindClassPath() abort
   if executable('mvn')
     let key = s:encodeURI(fnamemodify('.', ':p'))
-    let base = expand('~/.mvnclasspath/')
+    let base = expand('~/.javacomplete2/mvnclasspath/')
     if !isdirectory(base)
-      call mkdir(base)
+      call mkdir(base, "p")
     endif
     let path = base . key
 
@@ -3126,21 +3126,17 @@ if !exists("g:JavaComplete_SourcesPath")
   call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
-let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
-if s:pom != ""
-  let g:JavaComplete_LibsPath = s:FindClassPath()
-else
+if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
   if exists('g:JavaComplete_LibsPath')
-    let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
+    let g:JavaComplete_LibsPath .= s:PATH_SEP
   else
     let g:JavaComplete_LibsPath = ""
   endif
 
-  if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
-    let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+  let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+  if s:pom != ""
+    let g:JavaComplete_LibsPath .= s:FindClassPath()
   endif
-
-  let g:JavaComplete_LibsPath .= s:GetClassPath()
 endif
 
 " }}}
