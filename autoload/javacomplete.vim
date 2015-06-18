@@ -1920,9 +1920,37 @@ fu! javacomplete#GetClassPath()
   return exists('s:classpath') ? join(s:classpath, s:PATH_SEP) : ''
 endfu
 
+function! s:nr2hex(nr)
+  let n = a:nr
+  let r = ""
+  while n
+    let r = '0123456789ABCDEF'[n % 16] . r
+    let n = n / 16
+  endwhile
+  return r
+endfunction
+
+function s:encodeURI(path)
+  let ret = ''
+  let len = strlen(a:path)
+  let i = 0
+  while i < len
+    let ch = a:path[i]
+    if ch =~# '[0-9A-Za-z-._~!''()*]'
+      let ret .= ch
+    elseif ch == ' '
+      let ret .= '+'
+    else
+      let ret .= '%' . substitute('0' . s:nr2hex(char2nr(ch)), '^.*\(..\)$', '\1', '')
+    endif
+    let i = i + 1
+  endwhile
+  return ret
+endfunction
+
 function! s:FindClassPath() abort
   if executable('mvn')
-    let key = webapi#http#encodeURIComponent(fnamemodify('.', ':p'))
+    let key = s:encodeURI(fnamemodify('.', ':p'))
     let base = expand('~/.mvnclasspath/')
     if !isdirectory(base)
       call mkdir(base)
