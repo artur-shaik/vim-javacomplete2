@@ -1920,6 +1920,39 @@ fu! javacomplete#GetClassPath()
   return exists('s:classpath') ? join(s:classpath, s:PATH_SEP) : ''
 endfu
 
+function! s:FindClassPath() abort
+  if executable('mvn')
+    let key = webapi#http#encodeURIComponent(fnamemodify('.', ':p'))
+    let base = expand('~/.mvnclasspath/')
+    if !isdirectory(base)
+      call mkdir(base)
+    endif
+    let path = base . key
+
+    let pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+    if pom != "" && filereadable(path)
+      if getftime(path) >= getftime('pom.xml')
+        return join(readfile(path), '')
+      endif
+    endif
+    return s:GenerateClassPath(path)
+  else
+    return '.'
+  endif
+endfunction
+
+function! s:GenerateClassPath(path) abort
+  let lines = split(system('mvn dependency:build-classpath -DincludeScope=test'), "\n")
+  for i in range(len(lines))
+    if lines[i] =~ 'Dependencies classpath:'
+      let cp = lines[i+1]
+      call writefile([cp], a:path)
+      return cp
+    endif
+  endfor
+  return '.'
+endfunction
+
 " s:GetClassPath()							{{{2
 fu! s:GetClassPath()
   let jars = s:GetExtraPath()
@@ -3053,17 +3086,22 @@ if !exists("g:JavaComplete_SourcesPath")
   call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
-if exists('g:JavaComplete_LibsPath')
-  let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
+let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+if s:pom != ""
+  let g:JavaComplete_LibsPath = s:FindClassPath()
 else
-  let g:JavaComplete_LibsPath = ""
-endif
+  if exists('g:JavaComplete_LibsPath')
+    let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
+  else
+    let g:JavaComplete_LibsPath = ""
+  endif
 
-let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath
-if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
-  let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+  if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
+    let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+  endif
+
+  let g:JavaComplete_LibsPath .= s:GetClassPath()
 endif
-let g:JavaComplete_LibsPath .= s:GetClassPath()
 
 " }}}
 "}}}
