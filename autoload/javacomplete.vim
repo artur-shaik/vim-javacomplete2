@@ -1920,6 +1920,67 @@ fu! javacomplete#GetClassPath()
   return exists('s:classpath') ? join(s:classpath, s:PATH_SEP) : ''
 endfu
 
+function! s:nr2hex(nr)
+  let n = a:nr
+  let r = ""
+  while n
+    let r = '0123456789ABCDEF'[n % 16] . r
+    let n = n / 16
+  endwhile
+  return r
+endfunction
+
+function s:encodeURI(path)
+  let ret = ''
+  let len = strlen(a:path)
+  let i = 0
+  while i < len
+    let ch = a:path[i]
+    if ch =~# '[0-9A-Za-z-._~!''()*]'
+      let ret .= ch
+    elseif ch == ' '
+      let ret .= '+'
+    else
+      let ret .= '%' . substitute('0' . s:nr2hex(char2nr(ch)), '^.*\(..\)$', '\1', '')
+    endif
+    let i = i + 1
+  endwhile
+  return ret
+endfunction
+
+function! s:FindClassPath() abort
+  if executable('mvn')
+    let key = s:encodeURI(fnamemodify('.', ':p'))
+    let base = expand('~/.mvnclasspath/')
+    if !isdirectory(base)
+      call mkdir(base)
+    endif
+    let path = base . key
+
+    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
+    if pom != "" && filereadable(path)
+      if getftime(path) >= getftime('pom.xml')
+        return join(readfile(path), '')
+      endif
+    endif
+    return s:GenerateClassPath(path)
+  else
+    return '.'
+  endif
+endfunction
+
+function! s:GenerateClassPath(path) abort
+  let lines = split(system('mvn dependency:build-classpath -DincludeScope=test'), "\n")
+  for i in range(len(lines))
+    if lines[i] =~ 'Dependencies classpath:'
+      let cp = lines[i+1]
+      call writefile([cp], a:path)
+      return cp
+    endif
+  endfor
+  return '.'
+endfunction
+
 " s:GetClassPath()							{{{2
 fu! s:GetClassPath()
   let jars = s:GetExtraPath()
@@ -2386,11 +2447,14 @@ function! s:GetExtraPath()
 endfunction
 
 function! s:ExpandPathToJars(path)
+  if s:IsJarOrZip(a:path)
+    return [a:path]
+  endif
+
   let jars = []
   let files = globpath(a:path, "*", 1, 1)
   for file in files
-    let filetype = strpart(file, len(file) - 4)
-    if filetype ==? ".jar" || filetype ==? ".zip"
+    if s:IsJarOrZip(file)
       call add(jars, s:PATH_SEP . file)
     elseif isdirectory(file)
       call extend(jars, s:ExpandPathToJars(file))
@@ -2398,6 +2462,15 @@ function! s:ExpandPathToJars(path)
   endfor
 
   return jars
+endfunction
+
+function! s:IsJarOrZip(path)
+    let filetype = strpart(a:path, len(a:path) - 4)
+    if filetype ==? ".jar" || filetype ==? ".zip"
+      return 1
+    endif
+
+    return 0
 endfunction
 
 " class information							{{{2
@@ -3053,17 +3126,22 @@ if !exists("g:JavaComplete_SourcesPath")
   call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
-if exists('g:JavaComplete_LibsPath')
-  let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
+let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+if s:pom != ""
+  let g:JavaComplete_LibsPath = s:FindClassPath()
 else
-  let g:JavaComplete_LibsPath = ""
-endif
+  if exists('g:JavaComplete_LibsPath')
+    let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath. s:PATH_SEP
+  else
+    let g:JavaComplete_LibsPath = ""
+  endif
 
-let g:JavaComplete_LibsPath = g:JavaComplete_LibsPath
-if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
-  let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+  if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
+    let g:JavaComplete_LibsPath .= "~/.m2/repository". s:PATH_SEP
+  endif
+
+  let g:JavaComplete_LibsPath .= s:GetClassPath()
 endif
-let g:JavaComplete_LibsPath .= s:GetClassPath()
 
 " }}}
 "}}}
