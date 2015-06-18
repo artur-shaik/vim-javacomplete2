@@ -121,4 +121,17 @@ describe 'javacomplete-test'
         Expect Call('s:ExtractCleanExpr', 'Boolean b = ((Boolean) var).method()') == '((Boolean)var).method()'
     end
 
+    it 'GetPackageName test'
+
+        Expect Call('s:GetPackageName') == ''
+
+        new 
+        put ='package foo.bar.baz'
+        Expect Call('s:GetPackageName') == ''
+
+        new 
+        put ='package foo.bar.baz;'
+        Expect Call('s:GetPackageName') == 'foo.bar.baz'
+    end
+
 end
