@@ -2447,11 +2447,14 @@ function! s:GetExtraPath()
 endfunction
 
 function! s:ExpandPathToJars(path)
+  if s:IsJarOrZip(a:path)
+    return [a:path]
+  endif
+
   let jars = []
   let files = globpath(a:path, "*", 1, 1)
   for file in files
-    let filetype = strpart(file, len(file) - 4)
-    if filetype ==? ".jar" || filetype ==? ".zip"
+    if s:IsJarOrZip(file)
       call add(jars, s:PATH_SEP . file)
     elseif isdirectory(file)
       call extend(jars, s:ExpandPathToJars(file))
@@ -2459,6 +2462,15 @@ function! s:ExpandPathToJars(path)
   endfor
 
   return jars
+endfunction
+
+function! s:IsJarOrZip(path)
+    let filetype = strpart(a:path, len(a:path) - 4)
+    if filetype ==? ".jar" || filetype ==? ".zip"
+      return 1
+    endif
+
+    return 0
 endfunction
 
 " class information							{{{2
