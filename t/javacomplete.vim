@@ -134,4 +134,23 @@ describe 'javacomplete-test'
         Expect Call('s:GetPackageName') == 'foo.bar.baz'
     end
 
+    it 'CollectTypeArguments test'
+        Expect Call('s:CollectTypeArguments', '', '', '') == ''
+
+        Expect Call('s:CollectTypeArguments', 'Integer', '', '') == '<(Integer|java.lang.Integer)>'
+        Expect Call('s:CollectTypeArguments', 'Integer[]', '', '') == '<(Integer[]|java.lang.Integer[])>'
+
+        new
+        put ='import java.util.List;'
+        put ='import java.util.HashMap;'
+        Expect Call('s:CollectTypeArguments', 'List<HashMap<String,BigDecimal>>', '', '') == '<java.util.List<HashMap<String,BigDecimal>>>'
+        Expect Call('s:CollectTypeArguments', 'HashMap<String,BigDecimal>', '', '') == '<java.util.HashMap<String,BigDecimal>>'
+        Expect Call('s:CollectTypeArguments', 'String,BigDecimal', '', '') == '<(String|java.lang.String),(BigDecimal|java.lang.BigDecimal)>'
+        put ='import java.math.BigDecimal;'
+        Expect Call('s:CollectTypeArguments', 'String,BigDecimal', '', '') == '<(String|java.lang.String),java.math.BigDecimal>'
+
+        Expect Call('s:CollectTypeArguments', 'MyClass', '', '') == '<(MyClass|java.lang.MyClass)>'
+        Expect Call('s:CollectTypeArguments', 'MyClass', 'foo.bar.baz', '') == '<(foo.bar.baz.MyClass|java.lang.MyClass)>'
+    end
+
 end
