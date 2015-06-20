@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.searchers;
 
 import java.io.File;
 import java.io.IOException;

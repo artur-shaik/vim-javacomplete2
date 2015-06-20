@@ -208,7 +208,7 @@ function! javacomplete#ShowPID()
   endif
 endfunction
 
-function! GetClassNameWithScope()
+function! s:GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
   let word_r = col('.') - 2
@@ -326,7 +326,7 @@ function! javacomplete#Complete(findstart, base)
 
 
     " *********
-    let classScope = GetClassNameWithScope()
+    let classScope = s:GetClassNameWithScope()
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
       let start = col('.') - 1
@@ -349,11 +349,12 @@ function! javacomplete#Complete(findstart, base)
     if statement =~ '[.0-9A-Za-z_]\s*$'
       let valid = 1
       if statement =~ '\.\s*$'
-        let valid = statement =~ '[")0-9A-Za-z_\]]\s*\.\s*$' && statement !~ '\<\H\w\+\.\s*$' && statement !~ '\<\(abstract\|assert\|break\|case\|catch\|const\|continue\|default\|do\|else\|enum\|extends\|final\|finally\|for\|goto\|if\|implements\|import\|instanceof\|interface\|native\|new\|package\|private\|protected\|public\|return\|static\|strictfp\|switch\|synchronized\|throw\|throws\|transient\|try\|volatile\|while\|true\|false\|null\)\.\s*$'
+        let valid = statement =~ '[")0-9A-Za-z_\]]\s*\.\s*$' && statement !~ '\<\H\w\+\.\s*$' && statement !~ '\C\<\(abstract\|assert\|break\|case\|catch\|const\|continue\|default\|do\|else\|enum\|extends\|final\|finally\|for\|goto\|if\|implements\|import\|instanceof\|interface\|native\|new\|package\|private\|protected\|public\|return\|static\|strictfp\|switch\|synchronized\|throw\|throws\|transient\|try\|volatile\|while\|true\|false\|null\)\.\s*$'
       endif
       if !valid
         return -1
       endif
+      call s:Info("stat:" .statement)
 
       let b:context_type = s:CONTEXT_AFTER_DOT
 
@@ -915,10 +916,6 @@ fu! s:MethodInvocation(expr, ti, itemkind)
     let methods = s:SearchForName(subs[0], 0, 1)[1]
   elseif type(a:ti) == type({}) && get(a:ti, 'tag', '') == 'CLASSDEF'
     let methods = s:SearchMember(a:ti, subs[0], 1, a:itemkind, 1, 0, a:itemkind == 2)[1]
-    "    let methods = s:filter(get(a:ti, 'methods', []), 'item.n == "' . subs[0] . '"')
-    "    if a:itemkind == 1 || a:itemkind == 2
-    "      let methods += s:filter(get(a:ti, 'declared_methods', []), 'item.n == "' . subs[0] . '"')
-    "    endif
   else
     let methods = []
   endif

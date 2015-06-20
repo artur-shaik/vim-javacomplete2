@@ -14,3 +14,6 @@ hs_err_pid*
 *~
 .*.sw?
 libs/javavi/target/
+
+*.lock
+.vim-flavor

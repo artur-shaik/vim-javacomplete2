@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.clazz;
 
 public class ClassImport {
     private String name;

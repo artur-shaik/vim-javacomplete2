@@ -1,6 +1,7 @@
 package kg.ash.javavi;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.StringBuilder;
@@ -36,53 +37,13 @@ public class Daemon extends Thread {
             try {
                 clientSocket = echoServer.accept();
                 try (
-                    DataInputStream is = new DataInputStream(clientSocket.getInputStream());
+                    BufferedReader is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     PrintStream os = new PrintStream(clientSocket.getOutputStream())
                 ) {
                     while (true) {
-                        line = is.readLine();
-                        if (line != null) {
-                            List<String> args = new LinkedList<>();
-
-                            /** Parse command arguments */
-                            StringBuilder buff = new StringBuilder();
-                            boolean quoteFlag = false;
-                            boolean slashFlag = false;
-                            for (char ch : line.toCharArray()) {
-                                if (quoteFlag) {
-                                    if (ch == '\\') {
-                                        slashFlag = true;
-                                        continue;
-                                    }
-                                    if (ch == '"' && !slashFlag) {
-                                        quoteFlag = false;
-                                        continue;
-                                    }
-                                }
-
-                                if (ch == '"' && !slashFlag) quoteFlag = true;
-
-                                if (!quoteFlag) {
-                                    if (ch == ' ') {
-                                        if (buff.length() > 0) {
-                                            args.add(buff.toString());
-                                            buff = new StringBuilder();
-                                        }
-                                        continue;
-                                    }
-                                }
-
-                                if ((ch != '"' && !slashFlag) || (ch == '"' && slashFlag)) {
-                                    buff.append(ch);
-                                }
-
-                                if (slashFlag) slashFlag = false;
-                            }
-                            if (buff.length() > 0) {
-                                args.add(buff.toString());
-                            }
-
-                            os.print(Javavi.makeResponse((String[])args.toArray(new String[0])));
+                        String[] request = parseRequest(is.readLine());
+                        if (request != null) {
+                            os.print(Javavi.makeResponse(request));
                         } 
 
                         break;
@@ -96,5 +57,50 @@ public class Daemon extends Thread {
             }
         }
     }
-    
+
+    public String[] parseRequest(String request) {
+        if (request == null) return null;
+
+        List<String> args = new LinkedList<>();
+
+        StringBuilder buff = new StringBuilder();
+        boolean quoteFlag = false;
+        boolean slashFlag = false;
+        for (char ch : request.toCharArray()) {
+            if (quoteFlag) {
+                if (ch == '\\') {
+                    slashFlag = true;
+                    continue;
+                }
+                if (ch == '"' && !slashFlag) {
+                    quoteFlag = false;
+                    continue;
+                }
+            }
+
+            if (ch == '"' && !slashFlag) quoteFlag = true;
+
+            if (!quoteFlag) {
+                if (ch == ' ') {
+                    if (buff.length() > 0) {
+                        args.add(buff.toString());
+                        buff = new StringBuilder();
+                    }
+                    continue;
+                }
+            }
+
+            if ((ch != '"' && !slashFlag) || (ch == '"' && slashFlag)) {
+                buff.append(ch);
+            }
+
+            if (slashFlag) slashFlag = false;
+        }
+        if (buff.length() > 0) {
+            args.add(buff.toString());
+        }
+
+        return (String[])args.toArray(new String[0]);
+    }
+
 }

@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.readers;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.StringTokenizer;
+import kg.ash.javavi.clazz.*;
+import kg.ash.javavi.searchers.*;
 
 public class Reflection implements ClassReader {
     

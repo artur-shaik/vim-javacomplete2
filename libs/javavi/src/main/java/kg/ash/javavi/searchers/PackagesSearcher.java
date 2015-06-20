@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.searchers;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 import com.github.javaparser.*;
 import com.github.javaparser.ast.*;
+import kg.ash.javavi.Javavi;
 
 public class PackagesSearcher {
 
@@ -51,7 +52,7 @@ public class PackagesSearcher {
         }
     }
 
-    private void appendEntry(String entry, HashMap packagesMap, HashMap<String,List<String>> classesMap) {
+    private void appendEntry(String entry, HashMap<String,StringBuilder[]> packagesMap, HashMap<String,List<String>> classesMap) {
         if (entry.endsWith(".class") && entry.indexOf('$') == -1) {
             int slashpos = entry.lastIndexOf('/');
             if (slashpos >= 0) {
@@ -79,7 +80,7 @@ public class PackagesSearcher {
         }
     }
 
-    private void putItem(HashMap map, String parent, String child, int index) {
+    private void putItem(HashMap<String,StringBuilder[]> map, String parent, String child, int index) {
         StringBuilder[] sbs = (StringBuilder[])map.get(parent);
         if (sbs == null) {
             sbs = new StringBuilder[] {  
@@ -95,7 +96,7 @@ public class PackagesSearcher {
         map.put(parent, sbs);
     }
 
-    private void addToParent(HashMap map, String parent, String child) {
+    private void addToParent(HashMap<String,StringBuilder[]> map, String parent, String child) {
         putItem(map, parent, child, Javavi.INDEX_PACKAGE);
 
         int slashpos = parent.lastIndexOf('/');
@@ -105,7 +106,7 @@ public class PackagesSearcher {
     }
 
     private List<String> collectClassPath() {
-        List result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
         String extdirs = System.getProperty("java.ext.dirs");
         for (StringTokenizer st = new StringTokenizer(extdirs, File.pathSeparator); st.hasMoreTokens(); ) {

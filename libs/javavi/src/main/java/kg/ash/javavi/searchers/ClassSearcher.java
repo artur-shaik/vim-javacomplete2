@@ -1,9 +1,11 @@
-package kg.ash.javavi;
+package kg.ash.javavi.searchers;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import kg.ash.javavi.Javavi;
+import kg.ash.javavi.readers.*;
 
 public class ClassSearcher {
 

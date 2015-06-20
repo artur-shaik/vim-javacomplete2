@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.readers;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -19,6 +19,9 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.*;
+import kg.ash.javavi.clazz.*;
+import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.Javavi;
 
 public class Parser implements ClassReader {
 
@@ -42,20 +45,13 @@ public class Parser implements ClassReader {
         if (Javavi.cachedClasses.containsKey(targetClass)) 
             return Javavi.cachedClasses.get(targetClass);
 
-        CompilationUnit cu;
         SourceClass clazz = new SourceClass();
 
         Javavi.cachedClasses.put(targetClass, clazz);
 
-        List<String> sourceLines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(sourceFile))) {
-            reader.mark(65536);
-            cu = JavaParser.parse(reader, true);
-            reader.reset();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sourceLines.add(line);
-            }
+        CompilationUnit cu;
+        try (FileInputStream in = new FileInputStream(sourceFile)) {
+            cu = JavaParser.parse(in);
         } catch (Exception ex) {
             ex.printStackTrace();
             Javavi.debug(ex);
@@ -181,7 +177,7 @@ public class Parser implements ClassReader {
         return result;
     }
 
-    private class ClassOrInterfaceVisitor extends VoidVisitorAdapter {
+    private class ClassOrInterfaceVisitor extends VoidVisitorAdapter<Object> {
 
         private SourceClass clazz;
 
@@ -240,7 +236,7 @@ public class Parser implements ClassReader {
 
     }
 
-    private class ClassVisitor extends VoidVisitorAdapter {
+    private class ClassVisitor extends VoidVisitorAdapter<Object> {
 
         private SourceClass clazz;
 
