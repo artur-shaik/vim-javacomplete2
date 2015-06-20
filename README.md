@@ -23,7 +23,7 @@ For now the main difference from the original plugin is the existence of a serve
 One more issue I had with the original javacomplete plugin is losing my classpath and as a result, completion not working.
 So now the javacomplete2 plugin detects the JRE library path, thus bringing standard java completion out of the box - no configuration required!
 The plugin will scan child directory tree for `src` directory and add it to the sources path (For this, it is nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin). 
-By default the plugin will look for a maven repository (`~/.m2/repository`).
+By default the plugin will look for a `pom.xml` file, and add libraries you use in path.
 
 For the first run the plugin will compile the Javavi library.
 
@@ -96,7 +96,7 @@ To enable inserting class imports with F4, add:
 
 ### Optional
 
-`g:JavaComplete_LibsPath` - path to additional jar files. This path will always be appended with '~/.m2/repository' directory. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
+`g:JavaComplete_LibsPath` - path to additional jar files. This path appends with you libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
 
 `g:JavaComplete_SourcesPath` - path of additional sources. Don't try to add all sources you have, this will slow down the parsing process. Instead, add your project sources and necessary library sources. If you have compiled classes add them to the previous config (`g:JavaComplete_LibsPath`) instead. By default the plugin will search the `src` directory and add it automatically.
 
