@@ -103,40 +103,6 @@ public class Parser implements ClassReader {
             }
         }
 
-        //List<String> linked = new ArrayList<>();
-        //for (ClassMethod cm : clazz.getMethods()) {
-        //    if (cm.getTypeName().equals("int")) continue;
-        //    if (cm.getTypeName().equals("long")) continue;
-        //    if (cm.getTypeName().equals("boolean")) continue;
-        //    if (cm.getTypeName().equals("void")) continue;
-        //    if (cm.getTypeName().equals("Object")) continue;
-        //    if (cm.getTypeName().equals("String")) continue;
-        //    linked.addAll(getFqns(clazz.getImports(), cm.getTypeName()));
-        //}
-
-        //for (ClassField cf : clazz.getFields()) {
-        //    if (cf.getTypeName().equals("int")) continue;
-        //    if (cf.getTypeName().equals("long")) continue;
-        //    if (cf.getTypeName().equals("boolean")) continue;
-        //    if (cf.getTypeName().equals("void")) continue;
-        //    if (cf.getTypeName().equals("Object")) continue;
-        //    if (cf.getTypeName().equals("String")) continue;
-        //    linked.addAll(getFqns(clazz.getImports(), cf.getTypeName()));
-        //}
-
-        //for (String link : linked) {
-        //    if (link.equals(clazz.getName())) continue;
-        //    if (!clazz.containsInLinked(link)) {
-        //        ClassSearcher seacher = new ClassSearcher();
-        //        if (seacher.find(link, sources)) {
-        //            SourceClass linkedClass = seacher.getReader().read(link);
-        //            if (linkedClass != null) {
-        //                clazz.addLinkedClass(linkedClass);
-        //            }
-        //        }
-        //    }
-        //}
-
         return clazz;
     }
 
