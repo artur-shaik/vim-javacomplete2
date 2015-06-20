@@ -18,7 +18,7 @@ public class SourceClass {
     private List<String> interfaces = new ArrayList<>();
 
     private List<SourceClass> linkedClasses = new ArrayList<>();
-    private List<String> typeArguments = new ArrayList();
+    private List<String> typeArguments = new ArrayList<>();
 
     public String getName() {
         String args = "";
