@@ -1,4 +1,5 @@
-package kg.ash.javavi;
+package kg.ash.javavi.clazz;
+
 import java.util.Objects;
 
 public class ClassField {

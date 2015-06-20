@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.searchers;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 import com.github.javaparser.*;
 import com.github.javaparser.ast.*;
+import kg.ash.javavi.Javavi;
 
 public class PackagesSearcher {
 

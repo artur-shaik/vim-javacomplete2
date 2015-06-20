@@ -18,36 +18,41 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kg.ash.javavi.readers.ClassReader;
+import kg.ash.javavi.searchers.ClassSearcher;
+import kg.ash.javavi.searchers.PackagesSearcher;
+import kg.ash.javavi.readers.Parser;
+import kg.ash.javavi.clazz.SourceClass;
 import java.util.zip.ZipFile;
 
 public class Javavi {
 
     static final String VERSION	= "2.1.0";
 
-    static final int STRATEGY_ALPHABETIC	= 128;
-    static final int STRATEGY_HIERARCHY		= 256;
-    static final int STRATEGY_DEFAULT		= 512;
+    public static final int STRATEGY_ALPHABETIC	= 128;
+    public static final int STRATEGY_HIERARCHY		= 256;
+    public static final int STRATEGY_DEFAULT		= 512;
 
-    static final String KEY_NAME		= "'n':";	// "'name':";
-    static final String KEY_TYPE		= "'t':";	// "'type':";
-    static final String KEY_MODIFIER		= "'m':";	// "'modifier':";
-    static final String KEY_PARAMETERTYPES	= "'p':";	// "'parameterTypes':";
-    static final String KEY_RETURNTYPE		= "'r':";	// "'returnType':";
-    static final String KEY_DESCRIPTION		= "'d':";	// "'description':";
-    static final String KEY_DECLARING_CLASS	= "'c':";	// "'declaringclass':";
+    public static final String KEY_NAME		= "'n':";	// "'name':";
+    public static final String KEY_TYPE		= "'t':";	// "'type':";
+    public static final String KEY_MODIFIER		= "'m':";	// "'modifier':";
+    public static final String KEY_PARAMETERTYPES	= "'p':";	// "'parameterTypes':";
+    public static final String KEY_RETURNTYPE		= "'r':";	// "'returnType':";
+    public static final String KEY_DESCRIPTION		= "'d':";	// "'description':";
+    public static final String KEY_DECLARING_CLASS	= "'c':";	// "'declaringclass':";
 
-    static final int INDEX_PACKAGE = 0;
-    static final int INDEX_CLASS = 1;
+    public static final int INDEX_PACKAGE = 0;
+    public static final int INDEX_CLASS = 1;
 
-    static String NEWLINE = "";
+    public static String NEWLINE = "";
 
-    static HashMap<String,SourceClass> cachedClasses = new HashMap<>();
-    static HashMap<String,StringBuilder[]> cachedPackages = new HashMap<>();
-    static HashMap<String,List<String>> cachedClassPackages = new HashMap<>();
+    public static HashMap<String,SourceClass> cachedClasses = new HashMap<>();
+    public static HashMap<String,StringBuilder[]> cachedPackages = new HashMap<>();
+    public static HashMap<String,List<String>> cachedClassPackages = new HashMap<>();
 
     static boolean debugMode = false;
 
-    static void debug(Object s) {
+    public static void debug(Object s) {
         if (debugMode)
             System.out.println(s);
     }
@@ -87,71 +92,12 @@ public class Javavi {
         output(response);
     }
 
-    private static Pattern pattern = Pattern.compile("^(.*?)<(.*)>$");
-    private static List<String> typeArguments = new ArrayList<>();
-
-    private static String parseTarget(String target) {
-        typeArguments.clear();
-
-        Matcher matcher = pattern.matcher(target);
-        if (matcher.find()) {
-            target = matcher.group(1);
-            ClassSearcher seacher = new ClassSearcher();
-            String ta = matcher.group(2);
-            List<String> args = new ArrayList<>();
-            int i = 0;
-            int lbr = 0;
-            int stidx = 0;
-            while (i < ta.length()) {
-                char c = ta.charAt(i);
-                if (c == '<') {
-                    lbr++;
-                } else if (c == '>') {
-                    lbr--;
-                } else if (c == ',' && lbr == 0) {
-                    ta = ta.substring(stidx, i - stidx) + "<_split_>" + ta.substring(i - stidx + 1, ta.length());
-                    stidx = i;
-                }
-
-                i++;
-            }
-
-            for (String arguments : ta.split("<_split_>")) {
-                arguments = arguments.replaceAll("(\\(|\\))", "");
-                String[] argumentVariants = arguments.split("\\|");
-                boolean added = false;
-                for (String arg : argumentVariants) { 
-                    Matcher argMatcher = pattern.matcher(arg);
-                    boolean matchResult = argMatcher.find();
-                    if (matchResult) {
-                        arg = argMatcher.group(1);
-                    }
-                    if (seacher.find(arg.replaceAll("(\\[|\\])", ""), sources)) {
-                        if (matchResult) {
-                            typeArguments.add(String.format("%s<%s>", arg, argMatcher.group(2)));
-                        } else {
-                            typeArguments.add(arg);
-                        }
-                        added = true;
-                        break;
-                    }
-                }
-
-                if (!added) {
-                    typeArguments.add("java.lang.Object");
-                }
-            }
-        }
-
-        return target;
-    }
-
-
     public static String makeResponse(String[] args) {
 
         String target = "";
         int command = 0;
         int daemonPort = 0;
+        TargetParser targetParser = null;
 
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -190,7 +136,8 @@ public class Javavi {
                     break;
                 default:
                     target += arg;
-                    target = parseTarget(target);
+                    targetParser = new TargetParser(sources);
+                    target = targetParser.parse(target);
                     break;
             }
         }
@@ -202,7 +149,7 @@ public class Javavi {
             ClassSearcher seacher = new ClassSearcher();
             if (seacher.find(target, sources)) {
                 ClassReader reader = seacher.getReader();
-                reader.setTypeArguments(typeArguments);
+                reader.setTypeArguments(targetParser.getTypeArguments());
                 SourceClass clazz = reader.read(target);
                 if (clazz != null) {
                     result = new OutputBuilder().outputClassInfo(clazz);

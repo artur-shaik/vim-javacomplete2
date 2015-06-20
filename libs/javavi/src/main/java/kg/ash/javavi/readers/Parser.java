@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.readers;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -19,6 +19,9 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.*;
+import kg.ash.javavi.clazz.*;
+import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.Javavi;
 
 public class Parser implements ClassReader {
 

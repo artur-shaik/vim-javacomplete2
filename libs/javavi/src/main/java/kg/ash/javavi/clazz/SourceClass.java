@@ -1,4 +1,4 @@
-package kg.ash.javavi;
+package kg.ash.javavi.clazz;
 
 import java.util.ArrayList;
 import java.util.List;
