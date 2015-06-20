@@ -136,7 +136,9 @@ public class Javavi {
                     break;
                 default:
                     target += arg;
-                    targetParser = new TargetParser(sources);
+                    if (targetParser == null) {
+                        targetParser = new TargetParser(sources);
+                    }
                     target = targetParser.parse(target);
                     break;
             }
