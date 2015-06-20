@@ -1,6 +1,7 @@
 package kg.ash.javavi;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.StringBuilder;
@@ -36,7 +37,7 @@ public class Daemon extends Thread {
             try {
                 clientSocket = echoServer.accept();
                 try (
-                    DataInputStream is = new DataInputStream(clientSocket.getInputStream());
+                    BufferedReader is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     PrintStream os = new PrintStream(clientSocket.getOutputStream())
                 ) {
                     while (true) {
