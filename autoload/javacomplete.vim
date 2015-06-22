@@ -1927,7 +1927,7 @@ function! s:nr2hex(nr)
   return r
 endfunction
 
-function s:encodeURI(path)
+function! s:encodeURI(path)
   let ret = ''
   let len = strlen(a:path)
   let i = 0
