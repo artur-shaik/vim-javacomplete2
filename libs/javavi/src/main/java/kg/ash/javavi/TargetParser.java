@@ -76,4 +76,15 @@ public class TargetParser {
         return typeArguments;
     }
 
+    public String getTypeArgumentsString() {
+        if (typeArguments.isEmpty()) return "";
+
+        StringBuilder builder = new StringBuilder("<");
+        for (String arg : typeArguments) {
+            builder.append(arg).append(",");
+        }
+        builder.setCharAt(builder.length() - 1, '>');
+        return builder.toString();
+    }
+
 }
