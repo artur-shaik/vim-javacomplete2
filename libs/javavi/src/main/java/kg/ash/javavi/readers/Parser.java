@@ -19,6 +19,7 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.type.*;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.*;
+import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
 import kg.ash.javavi.searchers.*;
 import kg.ash.javavi.Javavi;
@@ -35,19 +36,16 @@ public class Parser implements ClassReader {
 
     @Override
     public void setTypeArguments(List<String> typeArguments) {
-
+        // Not supported yet.
     }
 
     @Override
     public SourceClass read(String targetClass) {
         if (sourceFile == null || sourceFile.isEmpty()) return null;
 
-        if (Javavi.cachedClasses.containsKey(targetClass)) 
+        if (Javavi.cachedClasses.containsKey(targetClass)) {
             return Javavi.cachedClasses.get(targetClass);
-
-        SourceClass clazz = new SourceClass();
-
-        Javavi.cachedClasses.put(targetClass, clazz);
+        }
 
         CompilationUnit cu;
         try (FileInputStream in = new FileInputStream(sourceFile)) {
@@ -57,6 +55,9 @@ public class Parser implements ClassReader {
             Javavi.debug(ex);
             return null;
         }
+
+        SourceClass clazz = new SourceClass();
+        Javavi.cachedClasses.put(targetClass, clazz);
 
         clazz.setPackage(cu.getPackage().getName().toString());
 
@@ -106,43 +107,6 @@ public class Parser implements ClassReader {
         return clazz;
     }
 
-    private List<String> getFqns(List<ClassImport> imports, String name) {
-        if (name.indexOf('<') >= 0) {
-            name = name.substring(0, name.indexOf('<'));
-        }
-        List<String> result = new ArrayList<>();
-        for (ClassImport ci : imports) {
-            if (!ci.isAsterisk()){
-                String importName;
-                if (ci.getName().contains(".")) {
-                    String[] splitted = ci.getName().split("\\.");
-                    importName = splitted[splitted.length - 1];
-                } else {
-                    importName = ci.getName();
-                }
-
-                if (name.equals(importName)) {
-                    List<String> exactResult = new ArrayList<>();
-                    exactResult.add(ci.getName());
-                    return exactResult;
-                }
-            } else {
-                String[] splitted = ci.getName().split("\\.");
-                String importName = "";
-                for (String s : splitted) {
-                    if (!s.equals("*")) {
-                        importName += s + ".";
-                    }
-                }
-
-                importName += name;
-                result.add(importName);
-            }
-        }
-
-        return result;
-    }
-
     private class ClassOrInterfaceVisitor extends VoidVisitorAdapter<Object> {
 
         private SourceClass clazz;
@@ -162,16 +126,7 @@ public class Parser implements ClassReader {
             clazz.setIsInterface(n.isInterface());
             if (n.getExtends() != null && n.getExtends().size() > 0) {
                 String className = n.getExtends().get(0).getName();
-                List<String> fqns = getFqns(clazz.getImports(), className);
-                fqns.add(clazz.getPackage() + "." + className);
-                ClassSearcher seacher = new ClassSearcher();
-                for (String fqn : fqns) {
-                    if (seacher.find(fqn, sources)) {
-                        className = fqn;
-                        break;
-                    }
-                }
-                clazz.setSuperclass(className);
+                clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
             } else {
                 clazz.setSuperclass("java.lang.Object");
                 if (clazz.getConstructors().isEmpty()) {
@@ -187,15 +142,7 @@ public class Parser implements ClassReader {
                 ClassSearcher seacher = new ClassSearcher();
                 for (ClassOrInterfaceType iface : n.getImplements()) {
                     String className = iface.getName();
-                    List<String> fqns = getFqns(clazz.getImports(), className);
-                    fqns.add(clazz.getPackage() + "." + className);
-                    for (String fqn : fqns) {
-                        if (seacher.find(fqn, sources)) {
-                            className = fqn;
-                            break;
-                        }
-                    }
-                    clazz.addInterface(className);
+                    clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
                 }
             }
         }
@@ -235,16 +182,7 @@ public class Parser implements ClassReader {
             method.setDeclaration(Parser.getDeclarationName(n.toStringWithoutComments()));
 
             String className = n.getType().toString();
-            List<String> fqns = getFqns(clazz.getImports(), className);
-            fqns.add(clazz.getPackage() + "." + className);
-            ClassSearcher seacher = new ClassSearcher();
-            for (String fqn : fqns) {
-                if (seacher.find(fqn, sources)) {
-                    className = fqn;
-                    break;
-                }
-            }
-            method.setTypeName(className);
+            method.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));
 
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
@@ -262,16 +200,7 @@ public class Parser implements ClassReader {
                 field.setModifiers(n.getModifiers());
 
                 String className = n.getType().toString();
-                List<String> fqns = getFqns(clazz.getImports(), className);
-                fqns.add(clazz.getPackage() + "." + className);
-                ClassSearcher seacher = new ClassSearcher();
-                for (String fqn : fqns) {
-                    if (seacher.find(fqn, sources)) {
-                        className = fqn;
-                        break;
-                    }
-                }
-                field.setTypeName(className);
+                field.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));
 
                 clazz.addField(field);
             }
