@@ -1301,9 +1301,6 @@ fu! s:SearchStaticImports(name, fullmatch)
       let members = s:SearchMember(ti, a:name, a:fullmatch, 12, 1, 0)
       let result[1] += members[1]
       let result[2] += members[2]
-      "let pattern = 'item.n ' . (a:fullmatch ? '==# ''' : '=~# ''^') . a:name . ''' && s:IsStatic(item.m)'
-      "let result[1] += s:filter(get(ti, 'methods', []), pattern)
-      "let result[2]  += s:filter(get(ti, 'fields', []),  pattern)
     else
       " TODO: mark the wrong import declaration.
     endif
@@ -1326,17 +1323,6 @@ function! s:GetVariableDeclaration()
   if (lnum == lnum_old && col == col_old)
     return ''
   endif
-
-  "  silent call search('[;){]')
-  "  let lnum_end = line('.')
-  "  let col_end  = col('.')
-  "  let declaration = ''
-  "  while (lnum <= lnum_end)
-  "    let declaration = declaration . getline(lnum)
-  "    let lnum = lnum + 1
-  "  endwhile
-  "  let declaration = strpart(declaration, col-1)
-  "  let declaration = substitute(declaration, '\.[ \t]\+', '.', 'g')
 
   silent call cursor(lnum_old, col_old)
   return s:MergeLines(lnum, col, lnum_old, col_old)
