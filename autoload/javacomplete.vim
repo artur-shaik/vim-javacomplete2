@@ -1614,7 +1614,7 @@ fu! javacomplete#parse(...)
 
   if changed
     call java_parser#InitParser(lines)
-    call java_parser#SetLogLevel(5)
+    call java_parser#SetLogLevel(0)
     let props.unit = java_parser#compilationUnit()
 
     let package = has_key(props.unit, 'package') ? props.unit.package . '.' : ''
@@ -1663,7 +1663,7 @@ let s:TreeVisitor = {'visit': function('s:visitTree'),
       \ 'SWITCH'	: 'call self.visit(a:tree.selector, a:param) | call self.visit(a:tree.cases, a:param)',
       \ 'CASE'	: 'call self.visit(a:tree.pat,  a:param) | call self.visit(a:tree.stats, a:param)',
       \ 'SYNCHRONIZED': 'call self.visit(a:tree.lock, a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'TRY'		: 'call self.visit(a:tree.body, a:param) | call self.visit(a:tree.catchers, a:param) | call self.visit(a:tree.finalizer, a:param) ',
+      \ 'TRY'		: 'call self.visit(a:tree.params, a:param) | call self.visit(a:tree.body, a:param) | call self.visit(a:tree.catchers, a:param) | call self.visit(a:tree.finalizer, a:param) ',
       \ 'CATCH'	: 'call self.visit(a:tree.param,a:param) | call self.visit(a:tree.body, a:param)',
       \ 'CONDEXPR'	: 'call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.truepart, a:param) | call self.visit(a:tree.falsepart, a:param)',
       \ 'IF'		: 'call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.thenpart, a:param) | if has_key(a:tree, "elsepart") | call self.visit(a:tree.elsepart, a:param) | endif',

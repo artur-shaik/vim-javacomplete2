@@ -2359,6 +2359,7 @@ fu! s:statement()
 
   elseif b:token == 'TRY'
     call s:nextToken()
+    let params = s:formalParameters()
     let body = s:block()
     let catchers = []
     let finalizer = {}
@@ -2373,7 +2374,7 @@ fu! s:statement()
     else
       call s:Log(4, b:pos, 'try.without.catch.or.finally')
     endif
-    return {'tag': 'TRY', 'pos': pos, 'endpos': b:pos, 'body': body, 'catchers': catchers, 'finalizer': finalizer}
+    return {'tag': 'TRY', 'pos': pos, 'endpos': b:pos, 'params': params, 'body': body, 'catchers': catchers, 'finalizer': finalizer}
 
   elseif b:token == 'SWITCH'
     call s:nextToken()
