@@ -51,10 +51,8 @@ javaparser library and javacomplete.txt.
 
 1.2 Requirements				*javacomplete-requirements*
 
-It works on all the platforms wherever
-- Vim version 7.0 and above,
+- Vim version 7.4 and above with python support;
 - JDK8.
-exists.
 
 1.3 Download					*javacomplete-download*
 
