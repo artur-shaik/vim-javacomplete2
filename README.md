@@ -50,7 +50,7 @@ Features borrowed and ported to vimscript from vim-javacompleteex:
 ## Requirements
 
 - Vim version 7.0 or above, with python support;
-- JDK version 7 or above in classpath.
+- JDK8.
 
 ## Installation
 
