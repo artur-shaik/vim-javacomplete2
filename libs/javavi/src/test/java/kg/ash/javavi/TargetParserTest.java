@@ -20,6 +20,15 @@ public class TargetParserTest {
         Assert.assertEquals(2, parser.getTypeArguments().size());
         Assert.assertEquals("java.lang.String", parser.getTypeArguments().get(0));
         Assert.assertEquals("java.math.BigDecimal", parser.getTypeArguments().get(1));
+
+        Assert.assertEquals("java.util.List", parser.parse("java.util.List<? super Integer>"));
+        Assert.assertEquals("Integer", parser.getTypeArguments().get(0));
+
+        Assert.assertEquals("java.util.List", parser.parse("java.util.List<? super Integer[]>"));
+        Assert.assertEquals("Integer[]", parser.getTypeArguments().get(0));
+
+        Assert.assertEquals("java.util.List", parser.parse("java.util.List<? extends Integer>"));
+        Assert.assertEquals("Integer", parser.getTypeArguments().get(0));
     }
 
     @Test
