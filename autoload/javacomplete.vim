@@ -18,6 +18,7 @@ let s:CONTEXT_NEED_TYPE		    = 7
 let s:CONTEXT_COMPLETE_CLASS	= 8
 let s:CONTEXT_OTHER 		    = 0
 
+let s:MODIFIER_ABSTRACT         = '10000000001'
 
 let s:ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm',		'word': 'clone(',	'abbr': 'clone()',	'menu': 'Object clone()', },
@@ -80,6 +81,7 @@ let s:RE_REFERENCE_TYPE	= s:RE_QUALID . s:RE_BRACKETS . '*'
 let s:RE_TYPE		= s:RE_REFERENCE_TYPE
 
 let s:RE_TYPE_ARGUMENT	= '\%(?\s\+\%(extends\|super\)\s\+\)\=' . s:RE_TYPE
+let s:RE_TYPE_ARGUMENT_EXTENDS	= '\%(?\s\+\%(extends\|super\)\s\+\)' . s:RE_TYPE
 let s:RE_TYPE_ARGUMENTS	= '<' . s:RE_TYPE_ARGUMENT . '\%(\s*,\s*' . s:RE_TYPE_ARGUMENT . '\)*>'
 let s:RE_TYPE_WITH_ARGUMENTS_I	= s:RE_IDENTIFIER . '\s*' . s:RE_TYPE_ARGUMENTS
 let s:RE_TYPE_WITH_ARGUMENTS	= s:RE_TYPE_WITH_ARGUMENTS_I . '\%(\s*' . s:RE_TYPE_WITH_ARGUMENTS_I . '\)*'
@@ -147,6 +149,10 @@ fu! s:Log(level, key, ...)
   if a:level >= javacomplete#GetLogLevel()
     call add(s:log, a:key)
   endif
+endfu
+
+fu! SScope()
+  return s:
 endfu
 
 fu! s:System(cmd, caller)
@@ -1505,11 +1511,16 @@ fu! s:SearchForName(name, first, fullmatch)
     let trees = s:SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
     for tree in trees
       if tree.tag == 'VARDEF'
-	call add(result[2], tree)
+        call add(result[2], tree)
       elseif tree.tag == 'METHODDEF'
-	call add(result[1], tree)
+        call add(result[1], tree)
       elseif tree.tag == 'CLASSDEF'
-	call add(result[0], tree.name)
+        call add(result[0], tree.name)
+      elseif tree.tag == 'LAMBDA'
+        let t = s:DetermineLambdaArguments(tree, a:name)
+        if !empty(t)
+          call add(result[2], t)
+        endif
       endif
     endfor
 
@@ -1531,6 +1542,90 @@ fu! s:SearchForName(name, first, fullmatch)
   endif
 
   return result
+endfu
+
+fu! s:DetermineLambdaArguments(ti, name)
+  let nameInLambda = 0
+  let argIdx = 0
+  let argPos = 0
+  if type(a:ti.args) == type({})
+    if a:name == a:ti.args.name
+      let nameInLambda = 1
+    endif
+  elseif type(a:ti.args) == type([])
+    for arg in a:ti.args
+      if arg.name == a:name
+        let nameInLambda = 1
+        let argPos = arg.pos
+        break
+      endif
+      let argIdx += 1
+    endfor
+  endif
+
+  if !nameInLambda
+    return {}
+  endif
+
+  let t = a:ti
+  let result = []
+  while 1
+    if has_key(t, 'meth')
+      let t = t.meth
+    elseif t.tag == 'SELECT' && has_key(t, 'selected')
+      call add(result, t.name. '()')
+      let t = t.selected
+    elseif t.tag == 'IDENT'
+      call add(result, t.name)
+      break
+    endif
+  endwhile
+
+  let items = reverse(result)
+  let typename = s:GetDeclaredClassName(items[0])
+  let ti = {}
+  if (typename != '')
+    if typename[0] == '[' || typename[-1:] == ']'
+      let ti = s:ARRAY_TYPE_INFO
+    elseif typename != 'void' && !s:IsBuiltinType(typename)
+      let ti = s:DoGetClassInfo(typename)
+    endif
+  endif
+
+  let ii = 1
+  while !empty(ti) && ii < len(items) - 1
+    " method invocation:	"PrimaryExpr.method(parameters)[].|"
+    if items[ii] =~ '^\s*' . s:RE_IDENTIFIER . '\s*('
+      let ti = s:MethodInvocation(items[ii], ti, 0)
+    endif
+    let ii += 1
+  endwhile
+
+  let method = {}
+  if has_key(ti, 'methods')
+    for m in ti.methods
+      if m.n == split(items[-1], '(')[0]
+        let method = m
+      endif
+    endfor
+
+    if a:ti.idx < len(method.p)
+      let type = method.p[a:ti.idx]
+      let functionalMembers = s:DoGetClassInfo(type)
+      for m in functionalMembers.methods
+        if m.m == s:MODIFIER_ABSTRACT
+          if argIdx < len(m.p)
+            let type = m.p[argIdx]
+            break
+          endif
+        endif
+      endfor
+
+      return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
+    endif
+  endif
+
+  return {}
 endfu
 
 " TODO: how to determine overloaded functions
@@ -1642,34 +1737,45 @@ fu! s:UpdateFQN(tree, qn)
 endfu
 
 " TreeVisitor						{{{2
-fu! s:visitTree(tree, param) dict
+
+fu! s:visitTree(tree, param, parent) dict
   if type(a:tree) == type({})
     exe get(self, get(a:tree, 'tag', ''), '')
   elseif type(a:tree) == type([])
     for tree in a:tree
-      call self.visit(tree, a:param)
+      call self.visit(tree, a:param, a:parent)
     endfor
   endif
 endfu
 
+fu! s:lambdaMeth(tree)
+  if a:tree.tag == 'APPLY'
+    return a:tree.meth
+  endif
+  return {}
+endfu
+
 let s:TreeVisitor = {'visit': function('s:visitTree'),
-      \ 'TOPLEVEL'	: 'call self.visit(a:tree.types, a:param)',
-      \ 'BLOCK'	: 'let stats = a:tree.stats | if stats == [] | call java_parser#GotoPosition(a:tree.pos) | let stats = java_parser#block().stats | endif | call self.visit(stats, a:param)',
-      \ 'DOLOOP'	: 'call self.visit(a:tree.body, a:param) | call self.visit(a:tree.cond, a:param)',
-      \ 'WHILELOOP'	: 'call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'FORLOOP'	: 'call self.visit(a:tree.init, a:param) | call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.step, a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'FOREACHLOOP'	: 'call self.visit(a:tree.var, a:param)  | call self.visit(a:tree.expr, a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'LABELLED'	: 'call self.visit(a:tree.body, a:param)',
-      \ 'SWITCH'	: 'call self.visit(a:tree.selector, a:param) | call self.visit(a:tree.cases, a:param)',
-      \ 'CASE'	: 'call self.visit(a:tree.pat,  a:param) | call self.visit(a:tree.stats, a:param)',
-      \ 'SYNCHRONIZED': 'call self.visit(a:tree.lock, a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'TRY'		: 'call self.visit(a:tree.params, a:param) | call self.visit(a:tree.body, a:param) | call self.visit(a:tree.catchers, a:param) | call self.visit(a:tree.finalizer, a:param) ',
-      \ 'CATCH'	: 'call self.visit(a:tree.param,a:param) | call self.visit(a:tree.body, a:param)',
-      \ 'CONDEXPR'	: 'call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.truepart, a:param) | call self.visit(a:tree.falsepart, a:param)',
-      \ 'IF'		: 'call self.visit(a:tree.cond, a:param) | call self.visit(a:tree.thenpart, a:param) | if has_key(a:tree, "elsepart") | call self.visit(a:tree.elsepart, a:param) | endif',
-      \ 'EXEC'	: 'call self.visit(a:tree.expr, a:param)',
-      \ 'APPLY'	: 'call self.visit(a:tree.meth, a:param) | call self.visit(a:tree.args, a:param)',
-      \ 'NEWCLASS'	: 'call self.visit(a:tree.def, a:param)'
+      \ 'lambdameth': function('s:lambdaMeth'),
+      \ 'TOPLEVEL'	: 'call self.visit(a:tree.types, a:param, a:tree)',
+      \ 'BLOCK'	: 'let stats = a:tree.stats | if stats == [] | call java_parser#GotoPosition(a:tree.pos) | let stats = java_parser#block().stats | endif | call self.visit(stats, a:param, a:tree)',
+      \ 'DOLOOP'	: 'call self.visit(a:tree.body, a:param, a:tree) | call self.visit(a:tree.cond, a:param, a:tree)',
+      \ 'WHILELOOP'	: 'call self.visit(a:tree.cond, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'FORLOOP'	: 'call self.visit(a:tree.init, a:param, a:tree) | call self.visit(a:tree.cond, a:param, a:tree) | call self.visit(a:tree.step, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'FOREACHLOOP'	: 'call self.visit(a:tree.var, a:param, a:tree)  | call self.visit(a:tree.expr, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'LABELLED'	: 'call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'SWITCH'	: 'call self.visit(a:tree.selector, a:param, a:tree) | call self.visit(a:tree.cases, a:param, a:tree)',
+      \ 'CASE'	: 'call self.visit(a:tree.pat,  a:param, a:tree) | call self.visit(a:tree.stats, a:param, a:tree)',
+      \ 'SYNCHRONIZED': 'call self.visit(a:tree.lock, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'TRY'		: 'call self.visit(a:tree.params, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree) | call self.visit(a:tree.catchers, a:param, a:tree) | call self.visit(a:tree.finalizer, a:param, a:tree) ',
+      \ 'RARROW'		: 'call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'CATCH'	: 'call self.visit(a:tree.param,a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)',
+      \ 'CONDEXPR'	: 'call self.visit(a:tree.cond, a:param, a:tree) | call self.visit(a:tree.truepart, a:param, a:tree) | call self.visit(a:tree.falsepart, a:param, a:tree)',
+      \ 'IF'		: 'call self.visit(a:tree.cond, a:param, a:tree) | call self.visit(a:tree.thenpart, a:param, a:tree) | if has_key(a:tree, "elsepart") | call self.visit(a:tree.elsepart, a:param, a:tree) | endif',
+      \ 'EXEC'	: 'call self.visit(a:tree.expr, a:param, a:tree)',
+      \ 'APPLY'	: 'call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree)',
+      \ 'NEWCLASS'	: 'call self.visit(a:tree.def, a:param, a:tree)',
+      \ 'LAMBDA'	: 'let a:tree.meth = self.lambdameth(a:parent) | call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)'
       \}
 
 let s:TV_CMP_POS = 'a:tree.pos <= a:param.pos && a:param.pos <= get(a:tree, "endpos", -1)'
@@ -1678,12 +1784,13 @@ let s:TV_CMP_POS_BODY = 'has_key(a:tree, "body") && a:tree.body.pos <= a:param.p
 " Return a stack of enclosing types (including local or anonymous classes).
 " Given the optional argument, return all (toplevel or static member) types besides enclosing types.
 fu! s:SearchTypeAt(tree, targetPos, ...)
-  let s:TreeVisitor.CLASSDEF	= 'if a:param.allNonLocal || ' . s:TV_CMP_POS . ' | call add(a:param.result, a:tree) | call self.visit(a:tree.defs, a:param) | endif'
-  let s:TreeVisitor.METHODDEF	= 'if ' . s:TV_CMP_POS_BODY . ' | call self.visit(a:tree.body, a:param) | endif'
-  let s:TreeVisitor.VARDEF	= 'if has_key(a:tree, "init") && !a:param.allNonLocal && ' . s:TV_CMP_POS . ' | call self.visit(a:tree.init, a:param) | endif'
+  let s:TreeVisitor.CLASSDEF	= 'if a:param.allNonLocal || ' . s:TV_CMP_POS . ' | call add(a:param.result, a:tree) | call self.visit(a:tree.defs, a:param, a:tree) | endif'
+  let s:TreeVisitor.METHODDEF	= 'if ' . s:TV_CMP_POS_BODY . ' | call self.visit(a:tree.body, a:param, a:tree) | endif'
+  let s:TreeVisitor.VARDEF	= 'if has_key(a:tree, "init") && !a:param.allNonLocal && ' . s:TV_CMP_POS . ' | call self.visit(a:tree.init, a:param, a:tree) | endif'
+  let s:TreeVisitor.IDENT = ''
 
   let result = []
-  call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'allNonLocal': a:0 == 0 ? 0 : 1})
+  call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'allNonLocal': a:0 == 0 ? 0 : 1}, {})
   return result
 endfu
 
@@ -1692,13 +1799,15 @@ endfu
 fu! s:SearchNameInAST(tree, name, targetPos, fullmatch)
   let comparator = a:fullmatch ? '==#' : '=~# "^" .'
   let cmd = 'if a:tree.name ' .comparator. ' a:param.name | call add(a:param.result, a:tree) | endif'
-  let s:TreeVisitor.CLASSDEF	= 'if ' . s:TV_CMP_POS . ' | ' . cmd . ' | call self.visit(a:tree.defs, a:param) | endif'
-  let s:TreeVisitor.METHODDEF	= cmd . ' | if ' . s:TV_CMP_POS_BODY . ' | call self.visit(a:tree.params, a:param) | call self.visit(a:tree.body, a:param) | endif'
-  let s:TreeVisitor.VARDEF	= cmd . ' | if has_key(a:tree, "init") && ' . s:TV_CMP_POS . ' | call self.visit(a:tree.init, a:param) | endif'
+  let cmdPos = 'if a:tree.name ' .comparator. ' a:param.name && a:tree.pos <= a:param.pos | call add(a:param.result, a:tree) | endif'
+  let s:TreeVisitor.CLASSDEF	= 'if ' . s:TV_CMP_POS . ' | ' . cmd . ' | call self.visit(a:tree.defs, a:param, a:tree) | endif'
+  let s:TreeVisitor.METHODDEF	= cmd . ' | if ' . s:TV_CMP_POS_BODY . ' | call self.visit(a:tree.params, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree) | endif'
+  let s:TreeVisitor.VARDEF	= cmdPos . ' | if has_key(a:tree, "init") && ' . s:TV_CMP_POS . ' | call self.visit(a:tree.init, a:param, a:tree) | endif'
+  let s:TreeVisitor.IDENT = 'if a:parent.tag == "LAMBDA" && a:parent.body.pos <= a:param.pos | call add(a:param.result, a:parent) | endif'
 
   let result = []
-  call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name})
-  "call s:Info(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.')) . ' ' . a:targetPos
+  call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name}, {})
+  " call s:Info(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.')) . ' ' . a:targetPos
   return result
 endfu
 
@@ -2520,17 +2629,18 @@ function! s:DoGetClassInfo(class, ...)
     return {}
   endif
 
-  let typename	= substitute(a:class, '\s', '', 'g')
-
+  let typename = a:class 
+  "substitute(a:class, '\s', '', 'g')
   let typeArguments = ''
-  if a:class =~ s:RE_TYPE_WITH_ARGUMENTS
-    let lbridx = stridx(typename, '<')
-    let typeArguments = typename[lbridx + 1 : -2]
-    let typename = typename[0 : lbridx - 1]
+
+  let splittedType = s:SplitTypeArguments(typename)
+  if type(splittedType) == type([])
+    let typename = splittedType[0]
+    let typeArguments = splittedType[1]
   endif
 
   if typename !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(typename)
-    call s:Info("No qualid")
+    call s:Info("No qualid: ". typename)
     return {}
   endif
 
@@ -2553,6 +2663,16 @@ function! s:DoGetClassInfo(class, ...)
 
   return {}
 endfu
+
+function! s:SplitTypeArguments(typename)
+  if a:typename =~ s:RE_TYPE_WITH_ARGUMENTS
+    let lbridx = stridx(a:typename, '<')
+    let typeArguments = a:typename[lbridx + 1 : -2]
+    let typename = a:typename[0 : lbridx - 1]
+    return [typename, typeArguments]
+  endif
+  return a:typename
+endfunction
 
 function! s:CollectTypeArguments(typeArguments, packagename, filekey)
   let typeArgumentsCollected = ''
@@ -2582,6 +2702,11 @@ function! s:CollectTypeArguments(typeArguments, packagename, filekey)
         let lbridx = stridx(arg, '<')
         let argTypeArguments = arg[lbridx : -1]
         let arg = arg[0 : lbridx - 1]
+      endif
+
+      if arg =~ s:RE_TYPE_ARGUMENT_EXTENDS
+        let i = matchend(arg, s:RE_TYPE)
+        let arg = arg[i+1 : -1]
       endif
 
       let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
@@ -2649,6 +2774,7 @@ function! s:CollectFQNs(typename, packagename, filekey)
   for p in imports
     call add(fqns, p . a:typename)
   endfor
+  call add(fqns, 'java.lang.Object')
   return fqns
 endfunction
 

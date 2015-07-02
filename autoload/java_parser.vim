@@ -16,7 +16,7 @@ let g:loaded_javaparser = 'v0.67'
 " Constants used by scanner and parser					{{{1
 let s:EOI = ''
 
-let s:keywords = {'+': 'PLUS', '-': 'SUB', '!': 'BANG', '%': 'PERCENT', '^': 'CARET', '&': 'AMP', '*': 'STAR', '|': 'BAR', '~': 'TILDE', '/': 'SLASH', '>': 'GT', '<': 'LT', '?': 'QUES', ':': 'COLON', '=': 'EQ', '++': 'PLUSPLUS', '--': 'SUBSUB', '==': 'EQEQ', '<=': 'LTEQ', '>=': 'GTEQ', '!=': 'BANGEQ', '<<': 'LTLT', '>>': 'GTGT', '>>>': 'GTGTGT', '+=': 'PLUSEQ', '-=': 'SUBEQ', '*=': 'STAREQ', '/=': 'SLASHEQ', '&=': 'AMPEQ', '|=': 'BAREQ', '^=': 'CARETEQ', '%=': 'PERCENTEQ', '<<=': 'LTLTEQ', '>>=': 'GTGTEQ', '>>>=': 'GTGTGTEQ', '||': 'BARBAR', '&&': 'AMPAMP', 'abstract': 'ABSTRACT', 'assert': 'ASSERT', 'boolean': 'BOOLEAN', 'break': 'BREAK', 'byte': 'BYTE', 'case': 'CASE', 'catch': 'CATCH', 'char': 'CHAR', 'class': 'CLASS', 'const': 'CONST', 'continue': 'CONTINUE', 'default': 'DEFAULT', 'do': 'DO', 'double': 'DOUBLE', 'else': 'ELSE', 'extends': 'EXTENDS', 'final': 'FINAL', 'finally': 'FINALLY', 'float': 'FLOAT', 'for': 'FOR', 'goto': 'GOTO', 'if': 'IF', 'implements': 'IMPLEMENTS', 'import': 'IMPORT', 'instanceof': 'INSTANCEOF', 'int': 'INT', 'interface': 'INTERFACE', 'long': 'LONG', 'native': 'NATIVE', 'new': 'NEW', 'package': 'PACKAGE', 'private': 'PRIVATE', 'protected': 'PROTECTED', 'public': 'PUBLIC', 'return': 'RETURN', 'short': 'SHORT', 'static': 'STATIC', 'strictfp': 'STRICTFP', 'super': 'SUPER', 'switch': 'SWITCH', 'synchronized': 'SYNCHRONIZED', 'this': 'THIS', 'throw': 'THROW', 'throws': 'THROWS', 'transient': 'TRANSIENT', 'try': 'TRY', 'void': 'VOID', 'volatile': 'VOLATILE', 'while': 'WHILE', 'true': 'TRUE', 'false': 'FALSE', 'null': 'NULL', '(': 'LPAREN', ')': 'RPAREN', '{': 'LBRACE', '}': 'RBRACE', '[': 'LBRACKET', ']': 'RBRACKET', ';': 'SEMI', ',': 'COMMA', '.': 'DOT', 'enum': 'ENUM', '...': 'ELLIPSIS', '@': 'MONKEYS_AT'}
+let s:keywords = {'+': 'PLUS', '-': 'SUB', '!': 'BANG', '%': 'PERCENT', '^': 'CARET', '&': 'AMP', '*': 'STAR', '|': 'BAR', '~': 'TILDE', '/': 'SLASH', '>': 'GT', '<': 'LT', '?': 'QUES', ':': 'COLON', '=': 'EQ', '++': 'PLUSPLUS', '--': 'SUBSUB', '==': 'EQEQ', '<=': 'LTEQ', '>=': 'GTEQ', '!=': 'BANGEQ', '<<': 'LTLT', '>>': 'GTGT', '>>>': 'GTGTGT', '+=': 'PLUSEQ', '-=': 'SUBEQ', '*=': 'STAREQ', '/=': 'SLASHEQ', '&=': 'AMPEQ', '|=': 'BAREQ', '^=': 'CARETEQ', '%=': 'PERCENTEQ', '<<=': 'LTLTEQ', '>>=': 'GTGTEQ', '>>>=': 'GTGTGTEQ', '||': 'BARBAR', '&&': 'AMPAMP', '->': 'RARROW', 'abstract': 'ABSTRACT', 'assert': 'ASSERT', 'boolean': 'BOOLEAN', 'break': 'BREAK', 'byte': 'BYTE', 'case': 'CASE', 'catch': 'CATCH', 'char': 'CHAR', 'class': 'CLASS', 'const': 'CONST', 'continue': 'CONTINUE', 'default': 'DEFAULT', 'do': 'DO', 'double': 'DOUBLE', 'else': 'ELSE', 'extends': 'EXTENDS', 'final': 'FINAL', 'finally': 'FINALLY', 'float': 'FLOAT', 'for': 'FOR', 'goto': 'GOTO', 'if': 'IF', 'implements': 'IMPLEMENTS', 'import': 'IMPORT', 'instanceof': 'INSTANCEOF', 'int': 'INT', 'interface': 'INTERFACE', 'long': 'LONG', 'native': 'NATIVE', 'new': 'NEW', 'package': 'PACKAGE', 'private': 'PRIVATE', 'protected': 'PROTECTED', 'public': 'PUBLIC', 'return': 'RETURN', 'short': 'SHORT', 'static': 'STATIC', 'strictfp': 'STRICTFP', 'super': 'SUPER', 'switch': 'SWITCH', 'synchronized': 'SYNCHRONIZED', 'this': 'THIS', 'throw': 'THROW', 'throws': 'THROWS', 'transient': 'TRANSIENT', 'try': 'TRY', 'void': 'VOID', 'volatile': 'VOLATILE', 'while': 'WHILE', 'true': 'TRUE', 'false': 'FALSE', 'null': 'NULL', '(': 'LPAREN', ')': 'RPAREN', '{': 'LBRACE', '}': 'RBRACE', '[': 'LBRACKET', ']': 'RBRACKET', ';': 'SEMI', ',': 'COMMA', '.': 'DOT', 'enum': 'ENUM', '...': 'ELLIPSIS', '@': 'MONKEYS_AT'}
 
 let s:Flags = {'PUBLIC': 0x1, 'PRIVATE': 0x2, 'PROTECTED': 0x4, 'STATIC': 0x8, 'FINAL': 0x10, 'SYNCHRONIZED': 0x20, 'VOLATILE': 0x40, 'TRANSIENT': 0x80, 'NATIVE': 0x100, 'INTERFACE': 0x200, 'ABSTRACT': 0x400, 'STRICTFP': 0x800, 'SYNTHETIC': 0x1000, 'ANNOTATION': 0x2000, 'ENUM': 	0x4000, 'StandardFlags':0x0fff, 'ACC_SUPER': 0x20, 'ACC_BRIDGE': 0x40, 'ACC_VARARGS': 0x80, 'DEPRECATED': 0x20000, 'HASINIT': 0x40000, 'BLOCK': 0x100000, 'IPROXY': 0x200000, 'NOOUTERTHIS': 0x400000, 'EXISTS': 0x800000, 'COMPOUND': 0x1000000, 'CLASS_SEEN': 0x2000000, 'SOURCE_SEEN': 0x4000000, 'LOCKED': 0x8000000, 'UNATTRIBUTED': 0x10000000, 'ANONCONSTR': 0x20000000, 'ACYCLIC': 0x40000000, 'BRIDGE': 1.repeat('0', 31), 'PARAMETER': 1.repeat('0', 33), 'VARARGS': 1.repeat('0', 34), 'ACYCLIC_ANN': 1.repeat('0', 35), 'GENERATEDCONSTR': 1.repeat('0', 36), 'HYPOTHETICAL': 1.repeat('0', 37), 'PROPRIETARY': 1.repeat('0', 38)}
 
@@ -40,6 +40,8 @@ let s:RE_THROWS			= 'throws\s\+' . s:RE_TYPE_NAME . '\(\s*,\s*' . s:RE_TYPE_NAME
 let s:RE_FORMAL_PARAM		= '\(final\s*\)\='. s:RE_TYPE . '\s\+' . s:RE_VAR_DECL_ID
 let s:RE_FORMAL_PARAM_LIST	= s:RE_FORMAL_PARAM . '\(\s*,\s*' . s:RE_FORMAL_PARAM . '\)*'
 let s:RE_FORMAL_PARAM2		= '^\s*\(final\s*\)\=\('. s:RE_TYPE . '\)\s\+\(' . s:RE_IDENTIFIER . '\)' . s:RE_BRACKETS . '*'
+
+let s:RE_METHOD_ARGS	= s:RE_IDENTIFIER . '\(\s*,\s*' . s:RE_IDENTIFIER . '\)*'
 
 let s:RE_MEMBER_MODS		= '\%(PUBLIC\|PROTECTED\|PRIVATE\|ABSTRACT\|STATIC\|FINAL\|TRANSIENT\|VOLATILE\|SYNCHRONIZED\|NATIVE\|STRICTFP\)'
 let s:RE_MEMBER_HEADER		= '\s*\(\%(' .s:RE_MEMBER_MODS. '\s\+\)\+\)\(' .s:RE_IDENTIFIER. '\%(\s*\.\s*' .s:RE_IDENTIFIER. '\)*\%(\s*\[\s*\]\)*\)\s\+\(' .s:RE_IDENTIFIER. '\)'
@@ -214,6 +216,69 @@ fu! s:Modifiers(pos, flags, annotations)
   return mods
 endfu
 
+fu! java_parser#SScope()
+  return s:
+endfu
+
+fu! s:GetInnerText(left)
+  let line = b:line
+  let col = b:col
+  while b:lines[line][col] != a:left
+    if col == 0
+      if line == 0
+        return ''
+      endif
+      let line -= 1
+      let col = len(b:lines[line])
+    else
+      let col -= 1
+    endif
+  endwhile
+
+  let right = s:GetPair(a:left)
+  let startPos = java_parser#MakePos(line, col)
+  let endPos = 0
+  let br = 0
+  while b:lines[line][col] != right || br > 0
+    let col += 1
+    if col >= len(b:lines[line])
+      let col = 0
+      let line += 1
+      if line >= len(b:lines)
+        return ''
+      endif
+    endif
+
+    if b:lines[line][col] == a:left
+      let br += 1
+    elseif b:lines[line][col] == right
+      if br > 0
+        let br -= 1
+      else
+        let endPos = java_parser#MakePos(line, col)
+        break
+      endif
+    endif
+  endwhile
+  let result = ""
+  while startPos <= endPos
+    let pos = java_parser#DecodePos(startPos)
+    let result .= b:lines[pos.line][pos.col]
+    let startPos += 1
+  endwhile
+  return result
+endfu
+
+fu! s:GetPair(left)
+  if a:left == '('
+    return ')'
+  elseif a:left == '{'
+    return '}'
+  elseif a:left == '<'
+    return '>'
+  endif
+  return a:left
+endfu
 
 " 				{{{2
 fu! java_parser#IsStatement(tree)
@@ -1170,7 +1235,7 @@ fu! java_parser#SetLogLevel(level)
 endfu
 
 fu! java_parser#GetLogLevel()
-  return exists('b:loglevel') ? b:loglevel : 2
+  return exists('b:loglevel') ? b:loglevel : 0
 endfu
 
 fu! java_parser#GetLogContent()
@@ -1192,7 +1257,6 @@ endfu
 
 fu! s:Log(level, pos, key, ...)
   if a:level >= java_parser#GetLogLevel()
-    echo a:key
     call add(s:log, a:key)
   endif
 endfu
@@ -1432,13 +1496,29 @@ fu! s:term(...)
   let b:mode = a:0 == 0 ? b:mode : a:1
 
   let t = s:term1()
-  if s:modeAndEXPR() && b:token == 'EQ' || b:token =~# '^\(PLUSEQ\|SUBEQ\|STAREQ\|SLASHEQ\|AMPEQ\|BAREQ\|CARETEQ\|PERCENTEQ\|LTLTEQ\|GTGTEQ\|GTGTGTEQ\)$'
+  if s:modeAndEXPR() && b:token == 'EQ' || b:token =~# '^\(RARROW\|PLUSEQ\|SUBEQ\|STAREQ\|SLASHEQ\|AMPEQ\|BAREQ\|CARETEQ\|PERCENTEQ\|LTLTEQ\|GTGTEQ\|GTGTGTEQ\)$'
     let t = s:termRest(t)
   endif
 
   let b:lastmode = b:mode
   let b:mode = prevmode
   return t
+endfu
+
+fu! s:lambdaDeclaration(lhs)
+  if has_key(a:lhs, 'args')
+    let lambdadef = {'tag': 'LAMBDA', 'args': a:lhs.args, 'pos': a:lhs.pos}
+  else
+    let lambdadef = {'tag': 'LAMBDA', 'args': a:lhs}
+  endif
+  call s:nextToken()
+  if b:token == 'LBRACE'
+    let lambdadef.body = s:block()
+  else
+    let lambdadef.body = s:statement()
+  endif
+
+  return lambdadef
 endfu
 
 fu! s:termRest(t)
@@ -1454,6 +1534,9 @@ fu! s:termRest(t)
     call s:nextToken()
     let b:mode = s:EXPR
     return {'tag': s:optag(token), 'pos': pos, 'lhs': a:t, 'rhs': s:term()}
+
+  elseif b:token == 'RARROW'
+    return s:lambdaDeclaration(a:t)
 
   else
     return a:t
@@ -1639,10 +1722,18 @@ fu! s:term3()
 
   elseif b:token == 'LPAREN'
     if typeArgs == [] && s:modeAndEXPR()
-      call s:nextToken()
-      let b:mode = s:EXPR_OR_TYPE_OR_NOPARAMS
-      let t = s:term3()
-      if s:modeAndEXPR() && b:token == 'LT'
+      let nextText = s:GetInnerText("(")
+      if nextText =~ s:RE_FORMAL_PARAM_LIST 
+        let args = s:formalParameters()
+        return {'tag': 'TYPEAPPLY', 'pos': b:pos, 'clazz': t, 'args': args}
+      elseif nextText =~ s:RE_METHOD_ARGS
+        let args = s:arguments()
+        return {'tag': 'TYPEAPPLY', 'pos': b:pos, 'clazz': t, 'args': args}
+      elseif s:modeAndEXPR() && b:token == 'LT'
+        call s:nextToken()
+        let b:mode = s:EXPR_OR_TYPE_OR_NOPARAMS
+        let t = s:term3()
+
         let op = 'LT'
         let pos1 = b:pos
         call s:nextToken()
@@ -1938,10 +2029,16 @@ fu! s:arguments(...)
   if b:token == 'LPAREN'
     call s:nextToken()
     if b:token != 'RPAREN'
-      call add(args, s:expression())
+      let idx = 0
+      let arg = s:expression()
+      let arg.idx = idx
+      call add(args, arg)
       while b:token == 'COMMA'
+        let idx += 1
         call s:nextToken()
-        call add(args, s:expression())
+        let arg = s:expression()
+        let arg.idx = idx
+        call add(args, arg)
       endwhile
     endif
     call s:accept('RPAREN')
@@ -2377,6 +2474,11 @@ fu! s:statement()
       call s:Log(4, b:pos, 'try.without.catch.or.finally')
     endif
     return {'tag': 'TRY', 'pos': pos, 'endpos': b:pos, 'params': params, 'body': body, 'catchers': catchers, 'finalizer': finalizer}
+
+  elseif b:token == 'RARROW'
+    let body = s:block()
+    let params = ''
+    return {'tag': 'RARROW', 'pos': pos, 'endpos': b:pos, 'params': params, 'body': body}
 
   elseif b:token == 'SWITCH'
     call s:nextToken()
@@ -3300,7 +3402,7 @@ fu! s:variableDeclaratorRest(pos, mods, type, name, reqInit, dc)
     call s:Info('field init ' . b:token)
     let vardef.init = s:variableInitializer()
   elseif a:reqInit
-    echo '[syntax error]:' . s:token2string('EQ') . " expected"
+    call s:Trace('[syntax error]:' . s:token2string('EQ') . " expected")
   endif
 
   let vardef.endpos = b:pos
