@@ -1568,61 +1568,71 @@ fu! s:DetermineLambdaArguments(ti, name)
   endif
 
   let t = a:ti
-  let result = []
-  while 1
-    if has_key(t, 'meth')
-      let t = t.meth
-    elseif t.tag == 'SELECT' && has_key(t, 'selected')
-      call add(result, t.name. '()')
-      let t = t.selected
-    elseif t.tag == 'IDENT'
-      call add(result, t.name)
-      break
-    endif
-  endwhile
-
-  let items = reverse(result)
-  let typename = s:GetDeclaredClassName(items[0])
-  let ti = {}
-  if (typename != '')
-    if typename[0] == '[' || typename[-1:] == ']'
-      let ti = s:ARRAY_TYPE_INFO
-    elseif typename != 'void' && !s:IsBuiltinType(typename)
-      let ti = s:DoGetClassInfo(typename)
-    endif
-  endif
-
-  let ii = 1
-  while !empty(ti) && ii < len(items) - 1
-    " method invocation:	"PrimaryExpr.method(parameters)[].|"
-    if items[ii] =~ '^\s*' . s:RE_IDENTIFIER . '\s*('
-      let ti = s:MethodInvocation(items[ii], ti, 0)
-    endif
-    let ii += 1
-  endwhile
-
-  let method = {}
-  if has_key(ti, 'methods')
-    for m in ti.methods
-      if m.n == split(items[-1], '(')[0]
-        let method = m
+  let type = ''
+  if has_key(t, 'meth') && !empty(t.meth)
+    let result = []
+    while 1
+      if has_key(t, 'meth')
+        let t = t.meth
+      elseif t.tag == 'SELECT' && has_key(t, 'selected')
+        call add(result, t.name. '()')
+        let t = t.selected
+      elseif t.tag == 'IDENT'
+        call add(result, t.name)
+        break
       endif
-    endfor
+    endwhile
 
-    if a:ti.idx < len(method.p)
-      let type = method.p[a:ti.idx]
-      let functionalMembers = s:DoGetClassInfo(type)
-      for m in functionalMembers.methods
-        if m.m == s:MODIFIER_ABSTRACT
-          if argIdx < len(m.p)
-            let type = m.p[argIdx]
-            break
-          endif
+    let items = reverse(result)
+    let typename = s:GetDeclaredClassName(items[0])
+    let ti = {}
+    if (typename != '')
+      if typename[1] == '[' || typename[-1:] == ']'
+        let ti = s:ARRAY_TYPE_INFO
+      elseif typename != 'void' && !s:IsBuiltinType(typename)
+        let ti = s:DoGetClassInfo(typename)
+      endif
+    endif
+
+    let ii = 1
+    while !empty(ti) && ii < len(items) - 1
+      " method invocation:	"PrimaryExpr.method(parameters)[].|"
+      if items[ii] =~ '^\s*' . s:RE_IDENTIFIER . '\s*('
+        let ti = s:MethodInvocation(items[ii], ti, 0)
+      endif
+      let ii += 1
+    endwhile
+
+    if has_key(ti, 'methods')
+      let method = {}
+      for m in ti.methods
+        if m.n == split(items[-1], '(')[0]
+          let method = m
         endif
       endfor
 
-      return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
+      if a:ti.idx < len(method.p)
+        let type = method.p[a:ti.idx]
+      endif
     endif
+  elseif has_key(t, 'stats') && !empty(t.stats)
+    if t.stats.tag == 'VARDEF'
+      let type = t.stats.t
+    endif
+  endif
+
+  if !empty(type)
+    let functionalMembers = s:DoGetClassInfo(type)
+    for m in functionalMembers.methods
+      if m.m == s:MODIFIER_ABSTRACT
+        if argIdx < len(m.p)
+          let type = m.p[argIdx]
+          break
+        endif
+      endif
+    endfor
+
+    return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
   endif
 
   return {}
@@ -1750,7 +1760,9 @@ endfu
 
 fu! s:lambdaMeth(tree)
   if a:tree.tag == 'APPLY'
-    return a:tree.meth
+    return {'meth': a:tree.meth, 'stats': {}}
+  elseif a:tree.tag == 'VARDEF'
+    return {'stats': {'tag': a:tree.tag, 't': a:tree.t, 'name': a:tree.name, 'endpos': a:tree.endpos, 'n': a:tree.n, 'pos': a:tree.pos, 'm': a:tree.m}, 'meth': {}}
   endif
   return {}
 endfu
@@ -1775,7 +1787,7 @@ let s:TreeVisitor = {'visit': function('s:visitTree'),
       \ 'EXEC'	: 'call self.visit(a:tree.expr, a:param, a:tree)',
       \ 'APPLY'	: 'call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree)',
       \ 'NEWCLASS'	: 'call self.visit(a:tree.def, a:param, a:tree)',
-      \ 'LAMBDA'	: 'let a:tree.meth = self.lambdameth(a:parent) | call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)'
+      \ 'LAMBDA'	: 'call extend(a:tree, self.lambdameth(a:parent)) | call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.stats, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)'
       \}
 
 let s:TV_CMP_POS = 'a:tree.pos <= a:param.pos && a:param.pos <= get(a:tree, "endpos", -1)'
