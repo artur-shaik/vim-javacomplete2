@@ -1517,7 +1517,7 @@ fu! s:SearchForName(name, first, fullmatch)
       elseif tree.tag == 'CLASSDEF'
         call add(result[0], tree.name)
       elseif tree.tag == 'LAMBDA'
-        let t = s:DetermineLambdaArguments(tree, a:name)
+        let t = s:DetermineLambdaArguments(unit, tree, a:name)
         if !empty(t)
           call add(result[2], t)
         endif
@@ -1544,7 +1544,7 @@ fu! s:SearchForName(name, first, fullmatch)
   return result
 endfu
 
-fu! s:DetermineLambdaArguments(ti, name)
+fu! s:DetermineLambdaArguments(unit, ti, name)
   let nameInLambda = 0
   let argIdx = 0
   let argPos = 0
@@ -1618,6 +1618,17 @@ fu! s:DetermineLambdaArguments(ti, name)
   elseif has_key(t, 'stats') && !empty(t.stats)
     if t.stats.tag == 'VARDEF'
       let type = t.stats.t
+    elseif t.stats.tag == 'RETURN'
+      for ty in a:unit.types
+        for def in ty.defs
+          if def.tag == 'METHODDEF'
+            if t.stats.pos >= def.body.pos && t.stats.endpos <= def.body.endpos
+              let type = def.r
+            endif
+          endif
+        endfor
+      endfor
+
     endif
   endif
 
@@ -1763,8 +1774,10 @@ fu! s:lambdaMeth(tree)
     return {'meth': a:tree.meth, 'stats': {}}
   elseif a:tree.tag == 'VARDEF'
     return {'stats': {'tag': a:tree.tag, 't': a:tree.t, 'name': a:tree.name, 'endpos': a:tree.endpos, 'n': a:tree.n, 'pos': a:tree.pos, 'm': a:tree.m}, 'meth': {}}
+  elseif a:tree.tag == 'RETURN'
+    return {'stats': {'tag': a:tree.tag, 'endpos': a:tree.endpos, 'pos': a:tree.pos}, 'meth': {}}
   endif
-  return {}
+  return {'meth': {}, 'stats': {}}
 endfu
 
 let s:TreeVisitor = {'visit': function('s:visitTree'),
@@ -1787,6 +1800,7 @@ let s:TreeVisitor = {'visit': function('s:visitTree'),
       \ 'EXEC'	: 'call self.visit(a:tree.expr, a:param, a:tree)',
       \ 'APPLY'	: 'call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree)',
       \ 'NEWCLASS'	: 'call self.visit(a:tree.def, a:param, a:tree)',
+      \ 'RETURN'	: 'if has_key(a:tree, "expr") | call self.visit(a:tree.expr, a:param, a:tree) | endif',
       \ 'LAMBDA'	: 'call extend(a:tree, self.lambdameth(a:parent)) | call self.visit(a:tree.meth, a:param, a:tree) | call self.visit(a:tree.stats, a:param, a:tree) | call self.visit(a:tree.args, a:param, a:tree) | call self.visit(a:tree.body, a:param, a:tree)'
       \}
 
@@ -1819,7 +1833,7 @@ fu! s:SearchNameInAST(tree, name, targetPos, fullmatch)
 
   let result = []
   call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name}, {})
-  " call s:Info(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.')) . ' ' . a:targetPos
+  " call s:Info(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
   return result
 endfu
 
