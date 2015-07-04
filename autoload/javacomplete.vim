@@ -1546,7 +1546,7 @@ endfu
 
 fu! s:DetermineLambdaArguments(unit, ti, name)
   let nameInLambda = 0
-  let argIdx = 0
+  let argIdx = 0 " argument index in methods arguments declaration
   let argPos = 0
   if type(a:ti.args) == type({})
     if a:name == a:ti.args.name
@@ -1632,6 +1632,7 @@ fu! s:DetermineLambdaArguments(unit, ti, name)
     endif
   endif
 
+  " type should be FunctionInterface, and it contains only one abstract method
   if !empty(type)
     let functionalMembers = s:DoGetClassInfo(type)
     if has_key(functionalMembers, 'methods')
@@ -1759,7 +1760,7 @@ fu! s:UpdateFQN(tree, qn)
 endfu
 
 " TreeVisitor						{{{2
-
+" parent argument exist for lambdas only
 fu! s:visitTree(tree, param, parent) dict
   if type(a:tree) == type({})
     exe get(self, get(a:tree, 'tag', ''), '')
@@ -1770,6 +1771,7 @@ fu! s:visitTree(tree, param, parent) dict
   endif
 endfu
 
+" we need to return to parent leafs to get lambda's arguments declaration
 fu! s:lambdaMeth(tree)
   if a:tree.tag == 'APPLY'
     return {'meth': a:tree.meth, 'stats': {}}
