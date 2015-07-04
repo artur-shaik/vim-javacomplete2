@@ -328,10 +328,8 @@ function! javacomplete#Complete(findstart, base)
     let b:context_type = s:CONTEXT_OTHER
 
     let statement = s:GetStatement()
-    call s:WatchVariant('statement: "' . statement . '"')
 
 
-    " *********
     let classScope = s:GetClassNameWithScope()
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
       let curline = getline(".")
@@ -341,18 +339,9 @@ function! javacomplete#Complete(findstart, base)
         let start -= 1
       endwhile
 
-      let b:context_type = s:CONTEXT_COMPLETE_CLASS
-
       return start
-    endif
-    " *********
 
-
-    let s:et_whole = reltime()
-    let start = col('.') - 1
-    " let s:log = []
-
-    if statement =~ '[.0-9A-Za-z_]\s*$'
+    elseif statement =~ '[.0-9A-Za-z_]\s*$'
       let valid = 1
       if statement =~ '\.\s*$'
         let valid = statement =~ '[")0-9A-Za-z_\]]\s*\.\s*$' && statement !~ '\<\H\w\+\.\s*$' && statement !~ '\C\<\(abstract\|assert\|break\|case\|catch\|const\|continue\|default\|do\|else\|enum\|extends\|final\|finally\|for\|goto\|if\|implements\|import\|instanceof\|interface\|native\|new\|package\|private\|protected\|public\|return\|static\|strictfp\|switch\|synchronized\|throw\|throws\|transient\|try\|volatile\|while\|true\|false\|null\)\.\s*$'
@@ -360,7 +349,6 @@ function! javacomplete#Complete(findstart, base)
       if !valid
         return -1
       endif
-      call s:Info("stat:" .statement)
 
       let b:context_type = s:CONTEXT_AFTER_DOT
 
