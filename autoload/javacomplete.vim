@@ -382,7 +382,7 @@ function! javacomplete#Complete(findstart, base)
         return start - strlen(b:incomplete)
 
       else
-        " type declaration		NOTE: not supported generic yet.
+        " type declaration
         let idx_type = matchend(statement, '^\s*' . s:RE_TYPE_DECL)
         if idx_type != -1
           let b:dotexpr = strpart(statement, idx_type)
