@@ -188,6 +188,15 @@ describe 'javacomplete-test'
         Expect result[1].args[0].name == 't'
     end
 
+    it 'Lambdas in method return'
+        let tree = Call('javacomplete#parse', 't/data/LambdaReturnClass.java')
+
+        let result = Call('s:SearchNameInAST', tree, 'p', 171, 1)
+        Expect result[0].tag == 'LAMBDA'
+        Expect result[0].args.tag == 'IDENT'
+        Expect result[0].args.name == 'p'
+    end
+
     it 'SplitTypeArguments test'
         Expect Call('s:SplitTypeArguments', 'java.util.List<Integer>') == ['java.util.List', 'Integer']
         Expect Call('s:SplitTypeArguments', 'java.util.List<java.lang.Integer>') == ['java.util.List', 'java.lang.Integer']
