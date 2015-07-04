@@ -1634,16 +1634,17 @@ fu! s:DetermineLambdaArguments(unit, ti, name)
 
   if !empty(type)
     let functionalMembers = s:DoGetClassInfo(type)
-    for m in functionalMembers.methods
-      if m.m == s:MODIFIER_ABSTRACT
-        if argIdx < len(m.p)
-          let type = m.p[argIdx]
-          break
+    if has_key(functionalMembers, 'methods')
+      for m in functionalMembers.methods
+        if m.m == s:MODIFIER_ABSTRACT
+          if argIdx < len(m.p)
+            let type = m.p[argIdx]
+            break
+          endif
         endif
-      endif
-    endfor
+      endfor
 
-    return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
+      return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
   endif
 
   return {}
