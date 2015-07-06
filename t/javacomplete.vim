@@ -142,6 +142,10 @@ describe 'javacomplete-test'
         Expect 'Integer[]' !~ reTypeArgumentExtends
         Expect '? super Integer[]' =~ reTypeArgument
         Expect '? super Integer[]' =~ reTypeArgumentExtends
+
+        let qualid = Ref('s:RE_QUALID')
+        Expect 'java.util.function.ToIntFunction' =~ '^\s*' . qualid . '\s*$'
+        Expect Call('s:HasKeyword', 'java.util.function.ToIntFunction') == 0
     end
 
     it 'CollectTypeArguments test'
@@ -205,10 +209,6 @@ describe 'javacomplete-test'
         Expect Call('s:SplitTypeArguments', 'List<? extends java.lang.Integer[]>') == ['List', '? extends java.lang.Integer[]']
         Expect Call('s:SplitTypeArguments', 'java.util.HashMap<? super Integer,? extends String>') == ['java.util.HashMap', '? super Integer,? extends String']
         Expect Call('s:SplitTypeArguments', 'java.util.function.ToIntFunction<? super java.lang.Integer[]>') == ['java.util.function.ToIntFunction', '? super java.lang.Integer[]']
-
-        let qualid = Ref('s:RE_QUALID')
-        Expect 'java.util.function.ToIntFunction' =~ '^\s*' . qualid . '\s*$'
-        Expect Call('s:HasKeyword', 'java.util.function.ToIntFunction') == 0
     end
 
 end
