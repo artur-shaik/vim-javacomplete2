@@ -1734,7 +1734,7 @@ fu! javacomplete#parse(...)
 
   if changed
     call java_parser#InitParser(lines)
-    call java_parser#SetLogLevel(0)
+    call java_parser#SetLogLevel(2)
     let props.unit = java_parser#compilationUnit()
 
     let package = has_key(props.unit, 'package') ? props.unit.package . '.' : ''
