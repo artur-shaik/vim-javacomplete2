@@ -472,7 +472,7 @@ function! javacomplete#Complete(findstart, base)
   endif
 
   if b:dotexpr !~ '^\s*$'
-    if b:context_type == s:CONTEXT_AFTER_DOT
+    if b:context_type == s:CONTEXT_AFTER_DOT || b:context_type == s:CONTEXT_METHOD_REFERENCE
       let result = s:CompleteAfterDot(b:dotexpr)
     elseif b:context_type == s:CONTEXT_IMPORT || b:context_type == s:CONTEXT_IMPORT_STATIC || b:context_type == s:CONTEXT_PACKAGE_DECL || b:context_type == s:CONTEXT_NEED_TYPE
       let result = s:GetMembers(b:dotexpr[:-2])
@@ -482,8 +482,6 @@ function! javacomplete#Complete(findstart, base)
       else
         let result = s:CompleteAfterDot(b:dotexpr)
       endif
-    elseif b:context_type == s:CONTEXT_METHOD_REFERENCE
-      let result = s:CompleteAfterDot(b:dotexpr)
     endif
 
     " only incomplete word
