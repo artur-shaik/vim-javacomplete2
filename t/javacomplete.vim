@@ -113,6 +113,8 @@ describe 'javacomplete-test'
         Expect Call('s:ParseExpr', '(Boolean) var.') == [' var']
         Expect Call('s:ParseExpr', '((Boolean) var).') == ['(Boolean)obj.']
         Expect Call('s:ParseExpr', '((Boolean) var).method()') == ['(Boolean)obj.', 'method()']
+        Expect Call('s:ParseExpr', 'System.out::') == ['System', 'out']
+        Expect Call('s:ParseExpr', 'System.out:') == ['System', 'out']
     end
 
     it 'ExtractCleanExpr test'
@@ -120,6 +122,7 @@ describe 'javacomplete-test'
         Expect Call('s:ExtractCleanExpr', ' var.') == 'var.'
         Expect Call('s:ExtractCleanExpr', 'var [ 0 ].') == 'var[0].'
         Expect Call('s:ExtractCleanExpr', 'Boolean b = ((Boolean) var).method()') == '((Boolean)var).method()'
+        Expect Call('s:ExtractCleanExpr', 'List<String>::') == 'List<String>::'
     end
 
     it 'GetPackageName test'

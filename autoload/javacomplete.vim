@@ -9,14 +9,15 @@
 
 " constants							{{{1
 " input context type
-let s:CONTEXT_AFTER_DOT		    = 1
-let s:CONTEXT_METHOD_PARAM	    = 2
-let s:CONTEXT_IMPORT		    = 3
-let s:CONTEXT_IMPORT_STATIC	    = 4
-let s:CONTEXT_PACKAGE_DECL	    = 6 
-let s:CONTEXT_NEED_TYPE		    = 7 
-let s:CONTEXT_COMPLETE_CLASS	= 8
-let s:CONTEXT_OTHER 		    = 0
+let s:CONTEXT_AFTER_DOT		     = 1
+let s:CONTEXT_METHOD_PARAM	     = 2
+let s:CONTEXT_IMPORT		     = 3
+let s:CONTEXT_IMPORT_STATIC	     = 4
+let s:CONTEXT_PACKAGE_DECL	     = 6 
+let s:CONTEXT_NEED_TYPE		     = 7 
+let s:CONTEXT_COMPLETE_CLASS	 = 8
+let s:CONTEXT_METHOD_REFERENCE   = 9
+let s:CONTEXT_OTHER 		     = 0
 
 let s:MODIFIER_ABSTRACT         = '10000000001'
 
@@ -329,9 +330,13 @@ function! javacomplete#Complete(findstart, base)
 
     let statement = s:GetStatement()
 
+    let s:et_whole = reltime()
+    let start = col('.') - 1
 
     let classScope = s:GetClassNameWithScope()
     if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
+      let b:context_type = s:CONTEXT_COMPLETE_CLASS
+
       let curline = getline(".")
       let start = col('.') - 1
 
@@ -434,6 +439,13 @@ function! javacomplete#Complete(findstart, base)
           return start - strlen(b:incomplete)
         endif
       endif
+
+    elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
+      let b:context_type = s:CONTEXT_METHOD_REFERENCE
+      call s:Info("state: ". statement)
+      let b:dotexpr = s:ExtractCleanExpr(statement)
+      call s:Info("clean: ". b:dotexpr)
+      return start - strlen(b:incomplete)
     endif
 
     return -1
@@ -472,6 +484,8 @@ function! javacomplete#Complete(findstart, base)
       else
         let result = s:CompleteAfterDot(b:dotexpr)
       endif
+    elseif b:context_type == s:CONTEXT_METHOD_REFERENCE
+      let result = s:CompleteAfterDot(b:dotexpr)
     endif
 
     " only incomplete word
@@ -1045,7 +1059,7 @@ fu! s:MergeLines(lnum, col, lnum_old, col_old)
   let str = s:RemoveBlockComments(str)
   " generic in JAVA 5+
   while match(str, s:RE_TYPE_ARGUMENTS) != -1
-    let str = substitute(str, '\(' . s:RE_TYPE_ARGUMENTS . '\)', '\=repeat(" ", len(submatch(1)))', 'g')
+    let str = substitute(str, '\(' . s:RE_TYPE_ARGUMENTS . '\)', '\=repeat("", len(submatch(1)))', 'g')
   endwhile
   let str = substitute(str, '\s\s\+', ' ', 'g')
   let str = substitute(str, '\([.()]\)[ \t]\+', '\1', 'g')
@@ -1059,7 +1073,7 @@ fu! s:ExtractCleanExpr(expr)
   let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
 
   let pos = strlen(cmd)-1 
-  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]]'
+  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>]'
     if cmd[pos] == ')'
       let pos = s:SearchPairBackward(cmd, pos, '(', ')')
     elseif cmd[pos] == ']'
@@ -1080,15 +1094,19 @@ fu! s:ParseExpr(expr)
   " recognize ClassInstanceCreationExpr as a whole
   let e = matchend(a:expr, '^\s*new\s\+' . s:RE_QUALID . '\s*[([]')-1
   if e < 0
-    let e = match(a:expr, '[.([]')
+    let e = match(a:expr, '[.([:]')
   endif
   let isparen = 0
   while e >= 0
-    if a:expr[e] == '.'
+    if a:expr[e] == '.' || a:expr[e] == ':'
       let subexpr = strpart(a:expr, s, e-s)
       call extend(items, isparen ? s:ProcessParentheses(subexpr) : [subexpr])
       let isparen = 0
-      let s = e + 1
+      if a:expr[e] == ':' && a:expr[e+1] == ':'
+        let s = e + 2
+      else
+        let s = e + 1
+      endif
     elseif a:expr[e] == '('
       let e = s:GetMatchedIndexEx(a:expr, e, '(', ')')
       let isparen = 1
@@ -1107,7 +1125,7 @@ fu! s:ParseExpr(expr)
         continue
       endif
     endif
-    let e = match(a:expr, '[.([]', s)
+    let e = match(a:expr, '[.([:]', s)
   endwhile
   let tail = strpart(a:expr, s)
   if tail !~ '^\s*$'
@@ -3068,7 +3086,7 @@ fu! s:DoGetMethodList(methods, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : ''
   let s = ''
   for method in a:methods
-    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . paren . "','abbr':'" . method.n . "()','menu':'" . method.d . "','dup':'1'},"
+    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "" : paren) . "','abbr':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "": "()"). "','menu':'" . method.d . "','dup':'1'},"
   endfor
   return s
 endfu
@@ -3080,16 +3098,25 @@ endfu
 "	13 - for import or extends or implements, only nested types
 "	20 - for package
 fu! s:DoGetMemberList(ci, kind)
+  let kind = a:kind
   if type(a:ci) != type({}) || a:ci == {}
     return []
   endif
 
-  let s = a:kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
+  let s = ''
+  if b:context_type == s:CONTEXT_METHOD_REFERENCE
+    let kind = 0
+    if a:kind != 0
+      let s = "{'kind': 'M', 'word': 'new', 'menu': 'new'},"
+    endif
+  endif
 
-  let members = s:SearchMember(a:ci, '', 1, a:kind, 1, 0, a:kind == 2)
+  let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
+
+  let members = s:SearchMember(a:ci, '', 1, kind, 1, 0, kind == 2)
 
   " add accessible member types
-  if a:kind / 10 != 0
+  if kind / 10 != 0
     " Use dup here for member type can share name with field.
     for class in members[0]
       "for class in get(a:ci, 'classes', [])
@@ -3100,14 +3127,14 @@ fu! s:DoGetMemberList(ci, kind)
     endfor
   endif
 
-  if a:kind != 13
+  if kind != 13
     let fieldlist = []
     let sfieldlist = []
     for field in members[2]
       "for field in get(a:ci, 'fields', [])
       if s:IsStatic(field['m'])
         call add(sfieldlist, field)
-      elseif a:kind / 10 == 0
+      elseif kind / 10 == 0
         call add(fieldlist, field)
       endif
     endfor
@@ -3117,17 +3144,20 @@ fu! s:DoGetMemberList(ci, kind)
     for method in members[1]
       if s:IsStatic(method['m'])
         call add(smethodlist, method)
-      elseif a:kind / 10 == 0
+      elseif kind / 10 == 0
         call add(methodlist, method)
       endif
     endfor
 
-    if a:kind / 10 == 0
+    if kind / 10 == 0
       let s .= s:DoGetFieldList(fieldlist)
       let s .= s:DoGetMethodList(methodlist)
     endif
-    let s .= s:DoGetFieldList(sfieldlist)
-    let s .= s:DoGetMethodList(smethodlist, a:kind == 12)
+    if b:context_type != s:CONTEXT_METHOD_REFERENCE
+      let s .= s:DoGetFieldList(sfieldlist)
+    endif
+
+    let s .= s:DoGetMethodList(smethodlist, kind == 12)
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
     let s = substitute(s, '\<java\.lang\.', '', 'g')
