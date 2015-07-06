@@ -442,9 +442,7 @@ function! javacomplete#Complete(findstart, base)
 
     elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
       let b:context_type = s:CONTEXT_METHOD_REFERENCE
-      call s:Info("state: ". statement)
       let b:dotexpr = s:ExtractCleanExpr(statement)
-      call s:Info("clean: ". b:dotexpr)
       return start - strlen(b:incomplete)
     endif
 
@@ -630,8 +628,8 @@ function! s:CompleteAfterDot(expr)
 
 
   " 0. String literal
-  call s:Info('P1. "str".|')
   if items[-1] =~  '"$'
+    call s:Info('P1. "str".|')
     return s:GetMemberList("java.lang.String")
   endif
 
@@ -1073,7 +1071,7 @@ fu! s:ExtractCleanExpr(expr)
   let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
 
   let pos = strlen(cmd)-1 
-  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>]'
+  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>"]'
     if cmd[pos] == ')'
       let pos = s:SearchPairBackward(cmd, pos, '(', ')')
     elseif cmd[pos] == ']'
