@@ -1648,6 +1648,7 @@ fu! s:DetermineLambdaArguments(unit, ti, name)
       endfor
 
       return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
+    endif
   endif
 
   return {}
