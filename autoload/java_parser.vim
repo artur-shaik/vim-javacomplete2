@@ -1,9 +1,8 @@
 " Vim autoload script for a JAVA PARSER and more.
 " Language:	Java
-" Maintainer:	cheng fang <fangread@yahoo.com.cn>
-" Last Changed: 2007-09-16
-" Version:	0.68
-" Copyright:	Copyright (C) 2007 cheng fang.	All rights reserved.
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Changed: 2015-07-08
+" Version:	0.69
 " License:	Vim License	(see vim's :help license)
 
 

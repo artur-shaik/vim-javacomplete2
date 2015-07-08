@@ -32,7 +32,8 @@ For the first run the plugin will compile the Javavi library.
 Features:
 - Server side java reflection class loader and parsing library;
 - Searches class files automatically, using `pom.xml` to append completion classpath;
-- Generics.
+- Generics;
+- Lambdas.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -137,10 +138,7 @@ manually run server compilation:
 ## Todo
 
 - Add javadoc;
-- Give a hint for class name conflict in different packages;
-- Support parameter information for template;
-- Make it faster and more robust;
-- Lambda support;
+- ~~Lambda support~~;
 - Cross session cache;
 - Most used (classes, methods, vars) at first place (smart suggestions);
 - FXML support;
@@ -148,7 +146,6 @@ manually run server compilation:
 - Refactoring support?;
 - Class creation helpers;
 - ~~Generics~~;
-- Clean old unused code;
 - etc...
 
 ## Thanks

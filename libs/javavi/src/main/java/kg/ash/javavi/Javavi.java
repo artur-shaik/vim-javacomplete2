@@ -27,7 +27,7 @@ import java.util.zip.ZipFile;
 
 public class Javavi {
 
-    static final String VERSION	= "2.1.0";
+    static final String VERSION	= "2.2.0";
 
     public static final int STRATEGY_ALPHABETIC	= 128;
     public static final int STRATEGY_HIERARCHY		= 256;
