@@ -29,6 +29,8 @@ public class TargetParserTest {
 
         Assert.assertEquals("java.util.List", parser.parse("java.util.List<? extends Integer>"));
         Assert.assertEquals("Integer", parser.getTypeArguments().get(0));
+
+        Assert.assertEquals("java.lang.Class", parser.parse("java.lang.Class<?>"));
     }
 
     @Test

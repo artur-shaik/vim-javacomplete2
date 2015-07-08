@@ -212,6 +212,7 @@ describe 'javacomplete-test'
         Expect Call('s:SplitTypeArguments', 'List<? extends java.lang.Integer[]>') == ['List', '? extends java.lang.Integer[]']
         Expect Call('s:SplitTypeArguments', 'java.util.HashMap<? super Integer,? extends String>') == ['java.util.HashMap', '? super Integer,? extends String']
         Expect Call('s:SplitTypeArguments', 'java.util.function.ToIntFunction<? super java.lang.Integer[]>') == ['java.util.function.ToIntFunction', '? super java.lang.Integer[]']
+        Expect Call('s:SplitTypeArguments', 'java.lang.Class<?>') == ['java.lang.Class', 0]
     end
 
 end

@@ -2702,6 +2702,13 @@ function! s:SplitTypeArguments(typename)
     let typename = a:typename[0 : lbridx - 1]
     return [typename, typeArguments]
   endif
+
+  let lbridx = stridx(a:typename, '<')
+  if lbridx > 0
+    let typename = a:typename[0 : lbridx - 1]
+    return [typename, 0]
+  endif
+
   return a:typename
 endfunction
 

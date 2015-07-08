@@ -46,7 +46,7 @@ public class TargetParser {
             }
             String name = getExactName(arg);
             if (seacher.find(name.replaceAll("(\\[|\\])", ""), sources)) {
-                if (matchResult) {
+                if (matchResult && argMatcher.group(2) != "?") {
                     typeArguments.add(String.format("%s<%s>", name, argMatcher.group(2)));
                 } else {
                     typeArguments.add(name);
