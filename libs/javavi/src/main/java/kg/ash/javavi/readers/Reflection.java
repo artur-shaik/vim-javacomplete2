@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -69,7 +69,7 @@ public class Reflection implements ClassReader {
     }
 
     public SourceClass getSourceClass(Class cls) {
-        HashMap<String,String> typeArgumentsAccordance = new HashMap<>();
+        TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
 
         SourceClass clazz = new SourceClass();
         clazz.setName(cls.getSimpleName());
@@ -94,10 +94,14 @@ public class Reflection implements ClassReader {
             linkedClasses.add(superclass.getName());
         }
 
-        Class[] interfaces = cls.getInterfaces();
-        for (Class iface : interfaces) {
-            clazz.addInterface(iface.getName().replace('$', '.'));
-            linkedClasses.add(iface.getName().replace('$', '.'));
+        Type[] interfaces = cls.getGenericInterfaces();
+        for (Type iface : interfaces) {
+            String genericName = iface.getTypeName().replace('$', '.');
+            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
+                genericName = genericName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
+            }
+            clazz.addInterface(genericName);
+            linkedClasses.add(genericName);
         }
 
         ClassSearcher seacher = new ClassSearcher();
@@ -148,19 +152,30 @@ public class Reflection implements ClassReader {
 
         Method[] methods = cls.getMethods();
         for (Method m : methods) {
+
+            // workaround for Iterable<T> that give us
+            // another generic name in List::forEach method
+            TreeMap<String,String> tAA = (TreeMap<String,String>)typeArgumentsAccordance.clone();
+            for (int i = 0; i < m.getDeclaringClass().getTypeParameters().length; i++) {
+                Type type = m.getDeclaringClass().getTypeParameters()[i];
+                if (!((String)tAA.keySet().toArray()[i]).trim().equals(type.getTypeName().trim())) {
+                    tAA.put(type.getTypeName(), ((String)tAA.keySet().toArray()[i]).trim());
+                }
+            }
+
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
             method.setModifiers(m.getModifiers());
             
             String genericDeclaration = m.toGenericString();
-            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
+            for (Entry<String,String> kv : tAA.entrySet()) {
                 genericDeclaration = genericDeclaration.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
             }
 
             method.setDeclaration(genericDeclaration);
 
             String genericReturnType = m.getGenericReturnType().getTypeName();
-            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
+            for (Entry<String,String> kv : tAA.entrySet()) {
                 genericReturnType = genericReturnType.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
             }
             method.setTypeName(genericReturnType);
@@ -168,7 +183,7 @@ public class Reflection implements ClassReader {
             Type[] parameterTypes = m.getGenericParameterTypes();
             for (Type t : parameterTypes) {
                 String name = t.getTypeName();
-                for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
+                for (Entry<String,String> kv : tAA.entrySet()) {
                     name = name.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
                 }
                 method.addTypeParameter(new ClassTypeParameter(name));
