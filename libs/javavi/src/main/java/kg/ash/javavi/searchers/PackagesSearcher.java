@@ -21,67 +21,70 @@ import kg.ash.javavi.Javavi;
 
 public class PackagesSearcher {
 
-    private HashMap htClasspath = new HashMap();
+    private String sourceDirectories;
+    private HashMap<String,StringBuilder[]> packagesMap = new HashMap<>(); 
+    private HashMap<String,ClassMap> classesMap = new HashMap<>();
 
-    private String sourcesDirectories;
-
-    public PackagesSearcher(String sourcesDirectories) {
-        this.sourcesDirectories = sourcesDirectories;
+    public PackagesSearcher(String sourceDirectories) {
+        this.sourceDirectories = sourceDirectories;
     }
 
-    public void collectPackages(HashMap<String,StringBuilder[]> packagesMap, HashMap<String,List<String>> classesMap) {
+    public void collectPackages(HashMap<String,StringBuilder[]> packagesMap, HashMap<String,ClassMap> classesMap) {
+        this.packagesMap = packagesMap;
+        this.classesMap = classesMap;
+
         for (String path : collectClassPath()) {
             if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
-                appendListFromJar(path, packagesMap, classesMap);
+                appendListFromJar(path);
             }
         }
 
-        for (String entry : getSourcePackages(sourcesDirectories)) {
-            appendEntry(entry, packagesMap, classesMap);
+        for (String entry : getSourcePackages(sourceDirectories)) {
+            appendEntry(entry, ClassMap.SOURCES);
         }
     }
 
-    private void appendListFromJar(String path, HashMap<String,StringBuilder[]> packagesMap, HashMap<String,List<String>> classesMap) {
+    private void appendListFromJar(String path) {
         try {
             for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
                 String entry = entries.nextElement().toString();
-                appendEntry(entry, packagesMap, classesMap);
+                appendEntry(entry, ClassMap.CLASSPATH);
             }
         } catch (Exception e) {
             Javavi.debug(e);
         }
     }
 
-    private void appendEntry(String entry, HashMap<String,StringBuilder[]> packagesMap, HashMap<String,List<String>> classesMap) {
+    private void appendEntry(String entry, int source) {
         if (entry.endsWith(".class") && entry.indexOf('$') == -1) {
             int slashpos = entry.lastIndexOf('/');
             if (slashpos >= 0) {
                 String parent = entry.substring(0, slashpos);
                 String child  = entry.substring(slashpos + 1, entry.length() - 6);
                 String parentDots = parent.replaceAll("/", ".");
-                putItem(packagesMap, parentDots, child, Javavi.INDEX_CLASS);
-                putClassPath(classesMap, parentDots, child);
+                putItem(parentDots, child, Javavi.INDEX_CLASS);
+                putClassPath(parentDots, child, source);
 
                 slashpos = parent.lastIndexOf('/');
                 if (slashpos != -1) {
-                    addToParent(packagesMap, parent.substring(0, slashpos), parent.substring(slashpos + 1));
+                    addToParent(parent.substring(0, slashpos), parent.substring(slashpos + 1));
                 }
             }
         }
     }
 
-    private void putClassPath(HashMap<String,List<String>> classesMap, String parent, String child) {
+    private void putClassPath(String parent, String child, int source) {
         if (!classesMap.containsKey(child)) {
-            classesMap.put(child, new ArrayList<String>());
+            classesMap.put(child, new ClassMap(child));
         }
 
         if (!classesMap.get(child).contains(parent)) {
-            classesMap.get(child).add(parent);
+            classesMap.get(child).add(parent, source);
         }
     }
 
-    private void putItem(HashMap<String,StringBuilder[]> map, String parent, String child, int index) {
-        StringBuilder[] sbs = (StringBuilder[])map.get(parent);
+    private void putItem(String parent, String child, int index) {
+        StringBuilder[] sbs = (StringBuilder[])packagesMap.get(parent);
         if (sbs == null) {
             sbs = new StringBuilder[] {  
                 new StringBuilder(), 	// packages
@@ -93,15 +96,15 @@ public class PackagesSearcher {
             sbs[index].append("'").append(child).append("',");
         }
 
-        map.put(parent, sbs);
+        packagesMap.put(parent, sbs);
     }
 
-    private void addToParent(HashMap<String,StringBuilder[]> map, String parent, String child) {
-        putItem(map, parent, child, Javavi.INDEX_PACKAGE);
+    private void addToParent(String parent, String child) {
+        putItem(parent, child, Javavi.INDEX_PACKAGE);
 
         int slashpos = parent.lastIndexOf('/');
         if (slashpos != -1) {
-            addToParent(map, parent.substring(0, slashpos), parent.substring(slashpos + 1));
+            addToParent(parent.substring(0, slashpos), parent.substring(slashpos + 1));
         }
     }
 

@@ -76,6 +76,7 @@ endif
 
 let s:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
 let s:RE_IDENTIFIER	= '[a-zA-Z_$][a-zA-Z0-9_$]*'
+let s:RE_ANNOTATION	= '@[a-zA-Z_][a-zA-Z0-9_$]*'
 let s:RE_QUALID		= s:RE_IDENTIFIER. '\%(\s*\.\s*' .s:RE_IDENTIFIER. '\)*'
 
 let s:RE_REFERENCE_TYPE	= s:RE_QUALID . s:RE_BRACKETS . '*'
@@ -219,7 +220,10 @@ function! s:GetClassNameWithScope()
   let curline = getline('.')
   let word_l = col('.') - 1
   let word_r = col('.') - 2
-  while curline[word_l - 1] =~ '[.A-Za-z0-9_]'
+  while curline[word_l - 1] =~ '[.@A-Za-z0-9_]'
+    if curline[word_l - 1] == '@'
+      break
+    endif
     let word_l -= 1
   endwhile
   while curline[word_r + 1] =~ '[.A-Za-z0-9_]'
@@ -333,15 +337,17 @@ function! javacomplete#Complete(findstart, base)
     let s:et_whole = reltime()
     let start = col('.') - 1
 
-    let classScope = s:GetClassNameWithScope()
-    if classScope =~ '^[A-Z][A-Za-z0-9_]*$'
+    if s:GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
       let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       let curline = getline(".")
       let start = col('.') - 1
 
-      while start > 0 && curline[start - 1] =~ '[A-Za-z0-9_]'
+      while start > 0 && curline[start - 1] =~ '[@A-Za-z0-9_]'
         let start -= 1
+        if curline[start] == '@'
+          break
+        endif
       endwhile
 
       return start
@@ -454,8 +460,12 @@ function! javacomplete#Complete(findstart, base)
   let result = []
 
   " Try to complete incomplete class name
-  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[A-Z][A-Za-z0-9_]*$'
-    let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
+  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z][A-Za-z0-9_]*$'
+    if a:base =~ s:RE_ANNOTATION
+      let response = s:RunReflection("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
+    else
+      let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
+    endif
     if response =~ '^['
       let result = eval(response)
     endif

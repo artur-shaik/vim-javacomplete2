@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import kg.ash.javavi.searchers.ClassMap;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.clazz.*;
 
@@ -148,9 +149,6 @@ public class OutputBuilder {
     public String outputPackageInfo(String pathTarget) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        //if (pathTarget.contains(".")) {
-        //    pathTarget = pathTarget.replaceAll("\\.", "/");
-        //}
         if (Javavi.cachedPackages.containsKey(pathTarget)) {
             StringBuilder[] sbs = (StringBuilder[])Javavi.cachedPackages.get(pathTarget);
             sb.append("'").append( pathTarget ).append("':")
@@ -176,33 +174,40 @@ public class OutputBuilder {
         return sb.toString();
     }
 
-    public String outputSimilarClasses(String target) {
+    public String outputSimilarAnnotations(String target) {
         Set<String> keys = Javavi.cachedClassPackages.keySet();
         List<String> keysResult = new ArrayList<>();
-        for (String key : keys) {
-            if (key.startsWith(target)) {
-                keysResult.add(key);
-            }
-        }
 
-        Collections.sort(keysResult, new Comparator<String>() {
+        keys.parallelStream().filter(s -> s.startsWith(target)).forEach(key -> {
+            ClassMap map = Javavi.cachedClassPackages.get(key);
+            map.getPaths().parallelStream().filter(s -> map.getSource(s) == ClassMap.CLASSPATH).forEach(fqn -> {
+                try {
+                    Class cls = Class.forName(fqn + "." + key, false, this.getClass().getClassLoader());
+                    if (cls.isAnnotation()) {
+                        keysResult.add(key);
+                    }
+                } catch (NoClassDefFoundError | ClassNotFoundException ex) {}
+            });
+        });
 
-            @Override
-            public int compare(String s1, String s2) {
-                int i1 = s1.length(); int i2 = s2.length();
-                if (i1 < i2) return -1;
-                if (i1 == i2) {
-                    return s1.compareTo(s2);
-                }
-                return 1;
+        return outputSimilar(keysResult, true);
+    }
+
+    private String outputSimilar(List<String> keysResult, boolean annotations) {
+        Collections.sort(keysResult, (String s1, String s2) -> {
+            int i1 = s1.length(); int i2 = s2.length();
+            if (i1 < i2) return -1;
+            if (i1 == i2) {
+                return s1.compareTo(s2);
             }
+            return 1;
         });
 
         StringBuilder builder = new StringBuilder("[");
         for (String key : keysResult) {
-            for (String scope : Javavi.cachedClassPackages.get(key)) {
-                builder.append("{").append("\"word\":\"").append(key)
-                    .append("\", \"menu\":\"").append(scope.replaceAll("/", "."))
+            for (String scope : Javavi.cachedClassPackages.get(key).getPaths()) {
+                builder.append("{").append("\"word\":\"").append(annotations ? "@" : "")
+                    .append(key).append("\", \"menu\":\"").append(scope.replaceAll("/", "."))
                     .append("\", \"type\": \"c\"},").append(Javavi.NEWLINE);
             }
         }
@@ -210,9 +215,17 @@ public class OutputBuilder {
         return builder.toString();
     }
 
+    public String outputSimilarClasses(String target) {
+        Set<String> keys = Javavi.cachedClassPackages.keySet();
+        List<String> keysResult = new ArrayList<>();
+        keys.stream().filter(k -> k.startsWith(target)).forEach(key -> keysResult.add(key));
+
+        return outputSimilar(keysResult, false);
+    }
+
     public String outputClassPackages(String target) {
         StringBuilder builder = new StringBuilder("[");
-        for (String scope : Javavi.cachedClassPackages.get(target)) {
+        for (String scope : Javavi.cachedClassPackages.get(target).getPaths()) {
             builder.append("\"").append(scope.replaceAll("/", "."))
                 .append(".").append(target).append("\",").append(Javavi.NEWLINE);
         }

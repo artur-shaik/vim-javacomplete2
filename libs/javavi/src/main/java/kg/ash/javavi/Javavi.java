@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
+import kg.ash.javavi.searchers.ClassMap;
 import kg.ash.javavi.searchers.PackagesSearcher;
 import kg.ash.javavi.readers.Parser;
 import kg.ash.javavi.clazz.SourceClass;
@@ -48,7 +49,7 @@ public class Javavi {
 
     public static HashMap<String,SourceClass> cachedClasses = new HashMap<>();
     public static HashMap<String,StringBuilder[]> cachedPackages = new HashMap<>();
-    public static HashMap<String,List<String>> cachedClassPackages = new HashMap<>();
+    public static HashMap<String,ClassMap> cachedClassPackages = new HashMap<>();
 
     static boolean debugMode = false;
 
@@ -78,6 +79,7 @@ public class Javavi {
     private static final int COMMAND__PACKAGESLIST = 2;
     private static final int COMMAND__SOURCE_PATH_CLASS_INFO = 3;
     private static final int COMMAND__SIMILAR_CLASSES = 4;
+    private static final int COMMAND__SIMILAR_ANNOTATIONS = 7;
     private static final int COMMAND__CLASSNAME_PACKAGES = 5;
     private static final int COMMAND__EXECUTE_DAEMON = 6;
 
@@ -122,6 +124,9 @@ public class Javavi {
                     break;
                 case "-similar-classes":
                     command = COMMAND__SIMILAR_CLASSES;
+                    break;
+                case "-similar-annotations":
+                    command = COMMAND__SIMILAR_ANNOTATIONS;
                     break;
                 case "-sources": 
                     sources = args[++i];
@@ -176,6 +181,12 @@ public class Javavi {
                 new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
             }
             return new OutputBuilder().outputSimilarClasses(target);
+
+        } else if (command == COMMAND__SIMILAR_ANNOTATIONS) {
+            if (cachedPackages.isEmpty()) {
+                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
+            }
+            return new OutputBuilder().outputSimilarAnnotations(target);
 
         } else if (command == COMMAND__PACKAGESLIST) {
             if (cachedPackages.isEmpty()) {
