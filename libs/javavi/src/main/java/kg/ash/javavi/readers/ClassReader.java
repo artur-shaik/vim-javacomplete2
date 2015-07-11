@@ -7,6 +7,6 @@ public interface ClassReader {
     
     public SourceClass read(String fqn);
 
-    public void setTypeArguments(List<String> typeArguments);
+    public ClassReader setTypeArguments(List<String> typeArguments);
 
 }

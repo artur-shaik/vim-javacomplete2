@@ -35,8 +35,9 @@ public class Parser implements ClassReader {
     }
 
     @Override
-    public void setTypeArguments(List<String> typeArguments) {
+    public ClassReader setTypeArguments(List<String> typeArguments) {
         // Not supported yet.
+        return this;
     }
 
     @Override
