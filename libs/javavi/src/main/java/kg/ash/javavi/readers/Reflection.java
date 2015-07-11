@@ -5,12 +5,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.StringTokenizer;
+import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
 import kg.ash.javavi.searchers.*;
 
@@ -20,8 +22,9 @@ public class Reflection implements ClassReader {
     private List<String> typeArguments = null;
 
     @Override
-    public void setTypeArguments(List<String> typeArguments) {
+    public ClassReader setTypeArguments(List<String> typeArguments) {
         this.typeArguments = typeArguments;
+        return this;
     }
 
     public Reflection(String sources) {
@@ -33,8 +36,7 @@ public class Reflection implements ClassReader {
         try {
             Class.forName(name);
             result = true;
-        }
-        catch (Exception ex) {}
+        } catch (Exception ex) {}
         return result;
     }
 
@@ -106,8 +108,10 @@ public class Reflection implements ClassReader {
 
         ClassSearcher seacher = new ClassSearcher();
         for (String linkedClass : linkedClasses) {
+            TargetParser parser = new TargetParser(sources);
+            linkedClass = parser.parse(linkedClass);
             if (seacher.find(linkedClass, sources)) {
-                clazz.addLinkedClass(seacher.getReader().read(linkedClass));
+                clazz.addLinkedClass(seacher.getReader().setTypeArguments(parser.getTypeArguments()).read(linkedClass));
             }
         }
 
@@ -156,10 +160,11 @@ public class Reflection implements ClassReader {
             // workaround for Iterable<T> that give us
             // another generic name in List::forEach method
             TreeMap<String,String> tAA = (TreeMap<String,String>)typeArgumentsAccordance.clone();
+            Set<String> keySet = tAA.keySet();
             for (int i = 0; i < m.getDeclaringClass().getTypeParameters().length; i++) {
                 Type type = m.getDeclaringClass().getTypeParameters()[i];
-                if (!((String)tAA.keySet().toArray()[i]).trim().equals(type.getTypeName().trim())) {
-                    tAA.put(type.getTypeName(), ((String)tAA.keySet().toArray()[i]).trim());
+                if (i < keySet.size() && !((String)keySet.toArray()[i]).trim().equals(type.getTypeName().trim())) {
+                    tAA.put(type.getTypeName(), ((String)keySet.toArray()[i]).trim());
                 }
             }
 
