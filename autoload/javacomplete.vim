@@ -113,6 +113,26 @@ let s:files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compi
 let s:history = {}	" 
 
 
+if exists('*uniq')
+  function! s:_uniq(list) abort
+    return uniq(a:list)
+  endfunction
+else
+  function! s:_uniq(list) abort
+    let i = len(a:list) - 1
+    while 0 < i
+      if a:list[i] ==# a:list[i - 1]
+        call remove(a:list, i)
+        let i -= 2
+      else
+        let i -= 1
+      endif
+    endwhile
+    return a:list
+  endfunction
+endif
+
+
 let s:log = []
 " level
 " 	5	off/fatal 
@@ -2542,7 +2562,7 @@ endfu
 
 function! s:ExpandAllPaths(path)
     let result = ''
-    let list = uniq(split(a:path, s:PATH_SEP))
+    let list = s:_uniq(sort(split(a:path, s:PATH_SEP)))
     for l in list
       let result = result. substitute(expand(l), '\\', '/', 'g') . s:PATH_SEP
     endfor
