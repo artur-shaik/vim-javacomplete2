@@ -2175,12 +2175,22 @@ fu! s:GetJavaviClassPath()
     call javacomplete#CompileJavavi()
   endif
 
-  if !empty(globpath(javaviDir. 'target/classes', '**/*.class', 1, 1))
+  if !empty(s:GlobPathList(javaviDir. 'target/classes', '**/*.class', 1))
     return javaviDir. "target/classes"
   else
     echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK7+ installed?"
   endif
 endfu
+
+" workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
+" should be removed in future versions
+function! s:GlobPathList(path, pattern, suf)
+  if has("patch-7.4.279")
+    return globpath(a:path, a:pattern, a:suf, 1)
+  else
+    return split(globpath(a:path, a:pattern, a:suf), "\n")
+  endif
+endfunction
 
 fu! s:GetClassPathOfJsp()
   if exists('b:classpath_jsp')
@@ -2576,7 +2586,7 @@ function! s:ExpandPathToJars(path)
   endif
 
   let jars = []
-  let files = globpath(a:path, "*", 1, 1)
+  let files = s:GlobPathList(a:path, "*", 1)
   for file in files
     if s:IsJarOrZip(file)
       call add(jars, s:PATH_SEP . file)
@@ -3277,7 +3287,7 @@ call s:Info("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
-  let sources = globpath(getcwd(), '**/src', 0, 1)
+  let sources = s:GlobPathList(getcwd(), '**/src', 0)
   for src in sources
     if match(src, '.*build.*') < 0
       let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. s:PATH_SEP
