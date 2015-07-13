@@ -2133,7 +2133,6 @@ fu! s:GetClassPath()
   if empty($CLASSPATH)
     if s:JAVA_HOME == ''
       let java = javacomplete#GetJVMLauncher()
-      call s:Info(exepath(java))
       let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
       for line in javaSettings
         if line =~ 'java\.home'
