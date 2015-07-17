@@ -2094,27 +2094,27 @@ endfunction
 
 function! s:FindClassPath() abort
   if executable('mvn')
-    let key = s:encodeURI(fnamemodify('.', ':p'))
     let base = expand('~/.javacomplete2/mvnclasspath/')
     if !isdirectory(base)
       call mkdir(base, "p")
     endif
+    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
+    let key = split(system('md5sum ' . pom))[0]
     let path = base . key
 
-    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
     if pom != "" && filereadable(path)
       if getftime(path) >= getftime('pom.xml')
         return join(readfile(path), '')
       endif
     endif
-    return s:GenerateClassPath(path)
+    return s:GenerateClassPath(path, pom)
   else
     return '.'
   endif
 endfunction
 
-function! s:GenerateClassPath(path) abort
-  let lines = split(system('mvn dependency:build-classpath -DincludeScope=test'), "\n")
+function! s:GenerateClassPath(path, pom) abort
+  let lines = split(system('mvn --file ' . a:pom . ' dependency:build-classpath -DincludeScope=test'), "\n")
   for i in range(len(lines))
     if lines[i] =~ 'Dependencies classpath:'
       let cp = lines[i+1]
