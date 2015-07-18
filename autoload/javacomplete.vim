@@ -2107,7 +2107,16 @@ function! s:FindClassPath() abort
         return join(readfile(path), '')
       endif
     endif
-    return s:GenerateClassPath(path)
+
+    let pomcachedir = expand('~/.javacomplete2/pomcache/')
+    let pomcachefile = pomcachedir . split(system('md5sum ' . pom))[0]
+    if !isdirectory(pomcachedir)
+      call mkdir(pomcachedir, "p")
+    endif
+    if !filereadable(pomcachefile)
+      call writefile([s:GenerateClassPath(path)], pomcachefile)
+    endif
+    return readfile(pomcachefile)[0]
   else
     return '.'
   endif
