@@ -146,7 +146,7 @@ fu! javacomplete#SetLogLevel(level)
 endfu
 
 fu! javacomplete#GetLogLevel()
-  return exists('s:loglevel') ? s:loglevel : 0
+  return exists('s:loglevel') ? s:loglevel : 5
 endfu
 
 fu! javacomplete#GetLogContent()

@@ -72,7 +72,6 @@ class JavaviBridge():
 
     def send(self, data):
         if self.sock is None:
-            print("creating socket")
             self.makeSocket()
             if self.sock is None:
                 return ''
