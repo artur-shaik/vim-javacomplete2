@@ -215,4 +215,11 @@ describe 'javacomplete-test'
         Expect Call('s:SplitTypeArguments', 'java.lang.Class<?>') == ['java.lang.Class', 0]
     end
 
+    it 'CleanFQN test'
+        Expect Call('s:CleanFQN', '') == ''
+        Expect Call('s:CleanFQN', 'java.lang.Object') == 'Object'
+        Expect Call('s:CleanFQN', 'java.lang.Object java.util.HashMap.get()') == 'Object get()'
+        Expect Call('s:CleanFQN', 'public java.math.BigDecimal java.util.HashMap.computeIfAbsent(java.lang.String,java.util.function.Function<? super java.lang.String, ? extends java.math.BigDecimal>)') == 'public BigDecimal computeIfAbsent(String,Function<? super String, ? extends BigDecimal>)'
+    end
+
 end

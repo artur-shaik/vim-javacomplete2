@@ -3097,6 +3097,7 @@ endfu
 
 fu! s:DoGetFieldList(fields)
   let s = ''
+  let useFQN = s:UseFQN()
   for field in a:fields
     if type(field.t) == type([])
       let fieldType = field.t[0]
@@ -3110,17 +3111,45 @@ fu! s:DoGetFieldList(fields)
     else
       let fieldType = field.t
     endif
+    if !useFQN
+      let fieldType = s:CleanFQN(fieldType)
+    endif
     let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . fieldType . "','dup':1},"
   endfor
   return s
 endfu
 
+function! s:CleanFQN(fqnDeclaration) 
+  let start = 0
+  let fqnDeclaration = a:fqnDeclaration
+  let result = matchlist(fqnDeclaration, '\<'. s:RE_IDENTIFIER. '\%(\s*\.\s*\('. s:RE_IDENTIFIER. '\)\)*', start)
+  while !empty(result)
+
+    if len(result[1]) > 0
+      let fqnDeclaration = substitute(fqnDeclaration, result[0], result[1], '')
+      let shift = result[1]
+    else
+      let shift = result[0]
+    endif
+    let start = match(fqnDeclaration, shift, start) + len(shift)
+
+    let result = matchlist(fqnDeclaration, '\<'. s:RE_IDENTIFIER. '\%(\s*\.\s*\('. s:RE_IDENTIFIER. '\)\)*', start)
+  endwhile
+
+  return fqnDeclaration
+endfunction
+
 fu! s:DoGetMethodList(methods, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : ''
+  let useFQN = s:UseFQN()
   let s = ''
   for method in a:methods
+    if !useFQN
+      let method.d = s:CleanFQN(method.d)
+    endif
     let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "" : paren) . "','abbr':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "": "()"). "','menu':'" . method.d . "','dup':'1'},"
   endfor
+
   return s
 endfu
 
@@ -3193,7 +3222,6 @@ fu! s:DoGetMemberList(ci, kind)
     let s .= s:DoGetMethodList(smethodlist, kind == 12)
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
-    let s = substitute(s, '\<java\.lang\.', '', 'g')
     let s = substitute(s, '\<\(public\|static\|synchronized\|transient\|volatile\|final\|strictfp\|serializable\|native\)\s\+', '', 'g')
   endif
   return eval('[' . s . ']')
@@ -3296,7 +3324,12 @@ fu! s:DoGetPackageInfoInDirs(package, onlyPackages, ...)
   return list
 endfu
 
-
+function! s:UseFQN() 
+  if exists('g:JavaComplete_UseFQN') && g:JavaComplete_UseFQN
+    return 1
+  endif
+  return 0
+endfunction
 
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
