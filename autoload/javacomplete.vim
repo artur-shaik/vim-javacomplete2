@@ -9,15 +9,16 @@
 
 " constants							{{{1
 " input context type
-let s:CONTEXT_AFTER_DOT		     = 1
-let s:CONTEXT_METHOD_PARAM	     = 2
-let s:CONTEXT_IMPORT		     = 3
-let s:CONTEXT_IMPORT_STATIC	     = 4
-let s:CONTEXT_PACKAGE_DECL	     = 6 
-let s:CONTEXT_NEED_TYPE		     = 7 
-let s:CONTEXT_COMPLETE_CLASS	 = 8
-let s:CONTEXT_METHOD_REFERENCE   = 9
-let s:CONTEXT_OTHER 		     = 0
+let s:CONTEXT_AFTER_DOT		        = 1
+let s:CONTEXT_METHOD_PARAM	        = 2
+let s:CONTEXT_IMPORT		        = 3
+let s:CONTEXT_IMPORT_STATIC	        = 4
+let s:CONTEXT_PACKAGE_DECL	        = 6 
+let s:CONTEXT_NEED_TYPE		        = 7 
+let s:CONTEXT_COMPLETE_CLASS	    = 8
+let s:CONTEXT_METHOD_REFERENCE      = 9
+let s:CONTEXT_ANNOTATION_FIELDS     = 10
+let s:CONTEXT_OTHER 		        = 0
 
 let s:MODIFIER_ABSTRACT         = '10000000001'
 
@@ -400,6 +401,11 @@ function! javacomplete#Complete(findstart, base)
       let b:dotexpr = strpart(b:dotexpr, 0, strridx(b:dotexpr, '.')+1)
       return start - strlen(b:incomplete)
 
+    elseif statement =~ '^@'. s:RE_IDENTIFIER
+      let b:context_type = s:CONTEXT_ANNOTATION_FIELDS
+      let b:incomplete = substitute(statement, '\s*(\s*$', '', '')
+
+      return start - strlen(b:incomplete)
 
       " method parameters, treat methodname or 'new' as an incomplete word
     elseif statement =~ '(\s*$'
@@ -501,6 +507,23 @@ function! javacomplete#Complete(findstart, base)
       let methods = s:SearchForName(b:incomplete, 0, 1)[1]
       call extend(result, eval('[' . s:DoGetMethodList(methods) . ']'))
 
+    elseif b:context_type == s:CONTEXT_ANNOTATION_FIELDS
+      let last = split(b:incomplete, '@')[-1]
+      let identList = matchlist(last, '\('. s:RE_IDENTIFIER. '\)\((\|$\)')
+      if !empty(identList)
+        let name = identList[1]
+        let ti = s:DoGetClassInfo(name)
+        if has_key(ti, 'methods') 
+          let methods = []
+          for m in ti.methods
+            if m.m == s:MODIFIER_ABSTRACT && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+              call add(methods, m)
+            endif
+          endfor
+          call extend(result, eval('[' . s:DoGetMethodList(methods, 2) . ']'))
+        endif
+
+      endif
     else
       let result = s:CompleteAfterWord(b:incomplete)
     endif
@@ -3097,10 +3120,17 @@ fu! s:DoGetFieldList(fields)
 endfu
 
 fu! s:DoGetMethodList(methods, ...)
-  let paren = a:0 == 0 || !a:1 ? '(' : ''
+  let paren = a:0 == 0 || !a:1 ? '(' : (a:1 == 2) ? ' = ' : ''
+  let abbrEnd = ''
+  if b:context_type != s:CONTEXT_METHOD_REFERENCE 
+    if a:0 == 0 || !a:1 
+      let abbrEnd = '()'
+    endif
+  endif
+
   let s = ''
   for method in a:methods
-    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "" : paren) . "','abbr':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "": "()"). "','menu':'" . method.d . "','dup':'1'},"
+    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "" : paren) . "','abbr':'" . method.n . abbrEnd. "','menu':'" . method.d . "','dup':'1'},"
   endfor
   return s
 endfu
