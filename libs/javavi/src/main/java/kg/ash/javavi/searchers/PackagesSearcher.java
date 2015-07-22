@@ -17,6 +17,8 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 import com.github.javaparser.*;
 import com.github.javaparser.ast.*;
+import kg.ash.javavi.searchers.ArchFileFinder;
+import kg.ash.javavi.searchers.ClassMap;
 import kg.ash.javavi.Javavi;
 
 public class PackagesSearcher {
@@ -33,25 +35,13 @@ public class PackagesSearcher {
         this.packagesMap = packagesMap;
         this.classesMap = classesMap;
 
-        for (String path : collectClassPath()) {
-            if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
-                appendListFromJar(path);
-            }
+        List<PackageEntry> entries = new ReflectionPackageSearcher().loadEntries();
+        for (PackageEntry entry : entries) {
+            appendEntry(entry.getEntry(), entry.getSource());
         }
 
         for (String entry : getSourcePackages(sourceDirectories)) {
             appendEntry(entry, ClassMap.SOURCES);
-        }
-    }
-
-    private void appendListFromJar(String path) {
-        try {
-            for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
-                String entry = entries.nextElement().toString();
-                appendEntry(entry, ClassMap.CLASSPATH);
-            }
-        } catch (Exception e) {
-            Javavi.debug(e);
         }
     }
 
@@ -106,53 +96,6 @@ public class PackagesSearcher {
         if (slashpos != -1) {
             addToParent(parent.substring(0, slashpos), parent.substring(slashpos + 1));
         }
-    }
-
-    private List<String> collectClassPath() {
-        List<String> result = new ArrayList<>();
-
-        String extdirs = System.getProperty("java.ext.dirs");
-        for (StringTokenizer st = new StringTokenizer(extdirs, File.pathSeparator); st.hasMoreTokens(); ) {
-            result.addAll(addClasspathesFromDir(st.nextToken() + File.separator));
-        }
-
-        result.addAll(addClasspathesFromDir(System.getProperty("java.home")));
-
-        String classPath = System.getProperty("java.class.path") + File.pathSeparator;
-        StringTokenizer st = new StringTokenizer(classPath, File.pathSeparator);
-        while (st.hasMoreTokens()) {
-            String path = st.nextToken();
-            File f = new File(path);
-            if (!f.exists())
-                continue;
-
-            if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
-                result.add(f.toString());
-            } else if (f.isDirectory()) {
-                result.addAll(addClasspathesFromDir(path));
-            }
-        }
-
-        return result;
-    }
-
-    private List<String> addClasspathesFromDir(String dirpath) {
-        List<String> result = new ArrayList<>();
-        File dir = new File(dirpath);
-        if (dir.isDirectory()) {
-            ArchFileFinder finder = new ArchFileFinder(Arrays.asList("*.jar", "*.zip", "*.ZIP"));
-            try {
-                Files.walkFileTree(Paths.get(dir.getPath()), finder);
-
-                for (String path : finder.getResultList()) {
-                    result.add(path);
-                }
-            } catch (IOException ex) {
-                Javavi.debug(ex);
-            }
-        }
-
-        return result;
     }
 
     private List<String> getSourcePackages(String dirpaths) {
