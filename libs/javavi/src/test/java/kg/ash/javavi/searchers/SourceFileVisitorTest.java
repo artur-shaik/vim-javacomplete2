@@ -36,5 +36,13 @@ public class SourceFileVisitorTest {
 
         Assert.assertEquals(null, visitor.getTargetFile());
     }
+
+    @Test
+    public void testNullClassname() {
+        SourceFileVisitor visitor = new SourceFileVisitor(null);
+        visitor.visitFile(new File("src/foo/bar/Baz.java").toPath(), null);
+
+        Assert.assertEquals(null, visitor.getTargetFile());
+    }
     
 }

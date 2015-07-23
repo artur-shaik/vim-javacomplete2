@@ -17,7 +17,9 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     private String pattern = null;
 
     public SourceFileVisitor(String pattern) {
-        String path = "";
+        if (pattern == null) pattern = "";
+
+        String path;
         if (pattern.contains(".")) {
             String[] splitted = pattern.split("\\.");
             path = splitted[splitted.length - 1];
