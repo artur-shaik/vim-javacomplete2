@@ -11,12 +11,11 @@ import java.util.ArrayList;
 import java.util.zip.ZipFile;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.searchers.ClassMap;
-import kg.ash.javavi.searchers.ArchFileFinder;
 
 public class ReflectionPackageSearcher {
 
-    private ArchFileFinder finder 
-        = new ArchFileFinder(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP"));
+    private ByExtensionVisitor finder 
+        = new ByExtensionVisitor(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP"));
     
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();

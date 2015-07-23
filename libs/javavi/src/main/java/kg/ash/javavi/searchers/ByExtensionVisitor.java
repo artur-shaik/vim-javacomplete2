@@ -11,18 +11,22 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import kg.ash.javavi.Javavi;
 import java.util.ArrayList;
+import kg.ash.javavi.Javavi;
 
-public class ArchFileFinder extends SimpleFileVisitor<Path> {
+public class ByExtensionVisitor extends SimpleFileVisitor<Path> {
 
     private final List<PathMatcher> matchers = new ArrayList<>();
     private List<String> resultList = new ArrayList<>();
 
-    public ArchFileFinder(List<String> patterns) {
-        matchers.addAll(patterns.stream()
+    public ByExtensionVisitor(List<String> patterns) {
+        matchers.addAll(getMatchers(patterns));
+    }
+
+    private List<PathMatcher> getMatchers(List<String> patterns) {
+        return patterns.stream()
             .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p))
-            .collect(Collectors.toList()));
+            .collect(Collectors.toList());
     }
 
     public List<String> getResultList() {
