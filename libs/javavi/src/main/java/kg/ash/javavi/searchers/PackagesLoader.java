@@ -25,7 +25,7 @@ public class PackagesLoader {
     private List<PackageSeacherIFace> searchers = new ArrayList<>();
 
     public PackagesLoader(String sourceDirectories) {
-        searchers.add(new ReflectionPackageSearcher());
+        searchers.add(new ClasspathPackageSearcher());
         searchers.add(new SourcePackageSearcher(sourceDirectories));
     }
 

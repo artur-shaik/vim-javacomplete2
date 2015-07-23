@@ -8,15 +8,15 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import kg.ash.javavi.Javavi;
 
-public class SourceFileFinder extends SimpleFileVisitor<Path> {
+public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
     private String targetFile = null;
     private String pattern = null;
 
-    public SourceFileFinder(String pat) {
-        pattern = pat;
+    public SourceFileVisitor(String pattern) {
         String path = "";
         if (pattern.contains(".")) {
             String[] splitted = pattern.split("\\.");
@@ -26,7 +26,9 @@ public class SourceFileFinder extends SimpleFileVisitor<Path> {
         }
 
         matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:" + path + ".java");
+                .getPathMatcher(String.format("glob:%s.java", path));
+
+        this.pattern = pattern;
     }
 
     public String getTargetFile() {
@@ -37,24 +39,28 @@ public class SourceFileFinder extends SimpleFileVisitor<Path> {
         Path name = file.getFileName();
         if (name != null && matcher.matches(name)) {
             if (pattern.contains(".")) {
-                String[] splitted = pattern.split("\\.");
-                Path parent = file;
-                for (int i = splitted.length - 2; i >= 0; i--) {
-                    parent = parent.getParent();
-                    if (parent != null) {
-                        if (!parent.getFileName().toString().equals(splitted[i])) {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
+                return checkPattern(file);
             }
-            targetFile = file.toFile().getPath();
             return true;
         }
 
         return false;
+    }
+
+    private boolean checkPattern(Path file) {
+        String[] splitted = pattern.split("\\.");
+        for (int i = splitted.length - 2; i >= 0; i--) {
+            file = file.getParent();
+            if (file != null) {
+                String filename = file.getFileName().toString();
+                if (!filename.equals(splitted[i])) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -63,6 +69,8 @@ public class SourceFileFinder extends SimpleFileVisitor<Path> {
         if (!find(file)) {
             return FileVisitResult.CONTINUE;
         }
+
+        targetFile = file.toFile().getPath();
 
         return FileVisitResult.TERMINATE;
     }
@@ -80,7 +88,7 @@ public class SourceFileFinder extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFileFailed(Path file,
             IOException exc) {
-        System.err.println(exc);
+        Javavi.debug(exc);
         return FileVisitResult.CONTINUE;
     }
 }

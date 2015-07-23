@@ -24,12 +24,12 @@ public class ClassSearcher {
         } else {
             String[] sourcesArray = sources.split(File.pathSeparator);
             for (String sourceDir : sourcesArray) {
-                SourceFileFinder finder = new SourceFileFinder(targetClass);
+                SourceFileVisitor visitor = new SourceFileVisitor(targetClass);
                 try {
-                    Files.walkFileTree(Paths.get(sourceDir), finder);
+                    Files.walkFileTree(Paths.get(sourceDir), visitor);
 
-                    if (finder.getTargetFile() != null) {
-                        sourceFile = finder.getTargetFile();
+                    if (visitor.getTargetFile() != null) {
+                        sourceFile = visitor.getTargetFile();
                         isInSource = true;
                         return true;
                     }
