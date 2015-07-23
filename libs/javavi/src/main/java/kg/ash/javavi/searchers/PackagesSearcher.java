@@ -17,8 +17,6 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipFile;
 import com.github.javaparser.*;
 import com.github.javaparser.ast.*;
-import kg.ash.javavi.searchers.ArchFileFinder;
-import kg.ash.javavi.searchers.ClassMap;
 import kg.ash.javavi.Javavi;
 
 public class PackagesSearcher {
@@ -35,14 +33,11 @@ public class PackagesSearcher {
         this.packagesMap = packagesMap;
         this.classesMap = classesMap;
 
-        List<PackageEntry> entries = new ReflectionPackageSearcher().loadEntries();
-        for (PackageEntry entry : entries) {
-            appendEntry(entry.getEntry(), entry.getSource());
-        }
+        List<PackageEntry> entries = new ArrayList<>();
+        entries.addAll(new ReflectionPackageSearcher().loadEntries());
+        entries.addAll(new SourcePackageSearcher(sourceDirectories).loadEntries());
 
-        for (String entry : getSourcePackages(sourceDirectories)) {
-            appendEntry(entry, ClassMap.SOURCES);
-        }
+        entries.forEach(entry -> appendEntry(entry.getEntry(), entry.getSource()));
     }
 
     private void appendEntry(String entry, int source) {
@@ -98,48 +93,4 @@ public class PackagesSearcher {
         }
     }
 
-    private List<String> getSourcePackages(String dirpaths) {
-        List<String> result = new ArrayList<>();
-        String[] splitted = dirpaths.split(File.pathSeparator);
-        for (String dirpath : splitted) {
-            File dir = new File(dirpath);
-            if (dir.isDirectory()) {
-                ArchFileFinder finder = new ArchFileFinder(Arrays.asList("*.java"));
-                try {
-                    Files.walkFileTree(Paths.get(dir.getPath()), finder);
-
-                    for (String path : finder.getResultList()) {
-                        String packagePath = fetchPackagePath(path);
-                        if (packagePath != null) {
-                            packagePath = packagePath.substring(0, packagePath.length() - 4) + "class";
-                            result.add(packagePath);
-                        }
-                    }
-                } catch (IOException ex) {
-                    Javavi.debug(ex);
-                }
-            }
-        }
-        return result;
-    }
-
-    private String fetchPackagePath(String sourcePath) {
-        System.out.println(sourcePath);
-        CompilationUnit cu = null;
-        try (FileInputStream in = new FileInputStream(sourcePath)) {
-            cu = JavaParser.parse(in);
-        } catch (Exception ex) {
-            return null;
-        }
-
-        if (cu.getPackage() != null) {
-            int lastslash = sourcePath.lastIndexOf(File.separator);
-            if (lastslash >= 0) {
-                return 
-                    cu.getPackage().getName().toString().replace(".", File.separator) 
-                    + File.separator + sourcePath.substring(lastslash + 1);
-            }
-        }
-        return null;
-    }
 }
