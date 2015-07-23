@@ -8,11 +8,12 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.Predicate;
 import java.util.zip.ZipFile;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.searchers.ClassMap;
 
-public class ReflectionPackageSearcher {
+public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
     private ByExtensionVisitor finder 
         = new ByExtensionVisitor(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP"));
@@ -20,8 +21,13 @@ public class ReflectionPackageSearcher {
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
 
+        Predicate<String> archive = path -> {
+            return path.toLowerCase().endsWith(".jar") 
+                || path.toLowerCase().endsWith(".zip");
+        };
+
         collectClassPath().stream()
-            .filter(path -> path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip"))
+            .filter(archive)
             .forEach(path -> {
                 try {
                     for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {

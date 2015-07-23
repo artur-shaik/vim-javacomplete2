@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.ClassMap;
-import kg.ash.javavi.searchers.PackagesSearcher;
+import kg.ash.javavi.searchers.PackagesLoader;
 import kg.ash.javavi.readers.Parser;
 import kg.ash.javavi.clazz.SourceClass;
 import java.util.zip.ZipFile;
@@ -41,9 +41,6 @@ public class Javavi {
     public static final String KEY_RETURNTYPE		= "'r':";	// "'returnType':";
     public static final String KEY_DESCRIPTION		= "'d':";	// "'description':";
     public static final String KEY_DECLARING_CLASS	= "'c':";	// "'declaringclass':";
-
-    public static final int INDEX_PACKAGE = 0;
-    public static final int INDEX_CLASS = 1;
 
     public static String NEWLINE = "";
 
@@ -171,26 +168,26 @@ public class Javavi {
             }
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {
-            if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
+            if (cachedClassPackages.isEmpty()) {
+                new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
             return new OutputBuilder().outputClassPackages(target);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
-            if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
+            if (cachedClassPackages.isEmpty()) {
+                new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
             return new OutputBuilder().outputSimilarClasses(target);
 
         } else if (command == COMMAND__SIMILAR_ANNOTATIONS) {
-            if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
+            if (cachedClassPackages.isEmpty()) {
+                new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
             return new OutputBuilder().outputSimilarAnnotations(target);
 
         } else if (command == COMMAND__PACKAGESLIST) {
-            if (cachedPackages.isEmpty()) {
-                new PackagesSearcher(sources).collectPackages(cachedPackages, cachedClassPackages);
+            if (cachedClassPackages.isEmpty()) {
+                new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
             result = new OutputBuilder().outputPackageInfo(target);
 

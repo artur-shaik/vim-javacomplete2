@@ -6,12 +6,12 @@ import org.junit.Test;
 import java.io.File;
 import java.util.List;
 
-public class ReflectionPackageSearcherTest {
+public class ClasspathPackageSearcherTest {
 
     @Ignore
     @Test
     public void testGetEntries() {
-        List<PackageEntry> entries = new ReflectionPackageSearcher().loadEntries();
+        List<PackageEntry> entries = new ClasspathPackageSearcher().loadEntries();
         Assert.assertTrue(entries.size() > 0);
     }
     

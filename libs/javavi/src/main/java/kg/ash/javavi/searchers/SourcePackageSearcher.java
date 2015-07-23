@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 import java.util.List;
 import kg.ash.javavi.Javavi;
 
-public class SourcePackageSearcher {
+public class SourcePackageSearcher implements PackageSeacherIFace {
 
     private String sourceDirectories;
-    private ByExtensionVisitor finder = new ByExtensionVisitor(Arrays.asList("*.java"));
+    private ByExtensionVisitor finder = 
+        new ByExtensionVisitor(Arrays.asList("*.java"));
 
     public SourcePackageSearcher(String sourceDirectories) {
         this.sourceDirectories = sourceDirectories;

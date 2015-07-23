@@ -146,30 +146,26 @@ public class OutputBuilder {
         sb.append("],");
     }
 
+    private String getPaths(Set<String> set) {
+        StringBuilder result = new StringBuilder();
+        for (String s : set) {
+            result.append("'").append(s).append("',");
+        }
+
+        return result.toString();
+    }
+
     public String outputPackageInfo(String pathTarget) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        if (Javavi.cachedPackages.containsKey(pathTarget)) {
-            StringBuilder[] sbs = (StringBuilder[])Javavi.cachedPackages.get(pathTarget);
+        if (Javavi.cachedClassPackages.containsKey(pathTarget)) {
+            ClassMap sbs = Javavi.cachedClassPackages.get(pathTarget);
             sb.append("'").append( pathTarget ).append("':")
                 .append("{'tag':'PACKAGE'");
-            if (sbs[Javavi.INDEX_PACKAGE].length() > 0)
-                sb.append(",'subpackages':[").append(sbs[Javavi.INDEX_PACKAGE]).append("]");
-            if (sbs[Javavi.INDEX_CLASS].length() > 0)
-                sb.append(",'classes':[").append(sbs[Javavi.INDEX_CLASS]).append("]");
+            sb.append(",'subpackages':[").append(sbs.getCachedSubpackages()).append("]");
+            sb.append(",'classes':[").append(sbs.getCachedClasses().toString()).append("]");
             sb.append("},");
-        } else {
-            /* Maybe target is class */
-            if (pathTarget.lastIndexOf(".") >= 0) {
-                ClassSearcher seacher = new ClassSearcher();
-                if (seacher.find(pathTarget, Javavi.sources)) {
-                    SourceClass clazz = seacher.getReader().read(pathTarget);
-                    if (clazz != null) {
-                        return outputClassInfo(clazz);
-                    }
-                }
-            }
-        }
+        } 
         sb.append("}");
         return sb.toString();
     }
