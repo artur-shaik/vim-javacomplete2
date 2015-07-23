@@ -8,7 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import kg.ash.javavi.Javavi;
 import java.util.ArrayList;
 
 public class ArchFileFinder extends SimpleFileVisitor<Path> {
@@ -17,9 +20,9 @@ public class ArchFileFinder extends SimpleFileVisitor<Path> {
     private List<String> resultList = new ArrayList<>();
 
     public ArchFileFinder(List<String> patterns) {
-        for (String pattern : patterns) {
-            matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + pattern));
-        }
+        matchers.addAll(patterns.stream()
+            .map(p -> FileSystems.getDefault().getPathMatcher("glob:" + p))
+            .collect(Collectors.toList()));
     }
 
     public List<String> getResultList() {
@@ -51,7 +54,7 @@ public class ArchFileFinder extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        System.err.println(exc);
+        Javavi.debug(exc);
         return FileVisitResult.CONTINUE;
     }
 }
