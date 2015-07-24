@@ -146,30 +146,6 @@ public class OutputBuilder {
         sb.append("],");
     }
 
-    private String getPaths(Set<String> set) {
-        StringBuilder result = new StringBuilder();
-        for (String s : set) {
-            result.append("'").append(s).append("',");
-        }
-
-        return result.toString();
-    }
-
-    public String outputPackageInfo(String pathTarget) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        if (Javavi.cachedClassPackages.containsKey(pathTarget)) {
-            ClassMap sbs = Javavi.cachedClassPackages.get(pathTarget);
-            sb.append("'").append( pathTarget ).append("':")
-                .append("{'tag':'PACKAGE'");
-            sb.append(",'subpackages':[").append(sbs.getCachedSubpackages()).append("]");
-            sb.append(",'classes':[").append(sbs.getCachedClasses().toString()).append("]");
-            sb.append("},");
-        } 
-        sb.append("}");
-        return sb.toString();
-    }
-
     public String outputSimilarAnnotations(String target) {
         Set<String> keys = Javavi.cachedClassPackages.keySet();
         List<String> keysResult = new ArrayList<>();

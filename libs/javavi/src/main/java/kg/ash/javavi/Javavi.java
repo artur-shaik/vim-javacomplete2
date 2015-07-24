@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.ClassMap;
@@ -189,7 +190,7 @@ public class Javavi {
             if (cachedClassPackages.isEmpty()) {
                 new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
-            result = new OutputBuilder().outputPackageInfo(target);
+            result = new OutputPackageInfo(target).get(Javavi.cachedClassPackages);
 
         } else if (command == COMMAND__EXECUTE_DAEMON) {
             if (daemon == null) {
