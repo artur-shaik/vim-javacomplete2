@@ -5,13 +5,14 @@ import java.util.HashMap;
 
 public class OutputPackageInfo {
 
-    private String targetPackage;
+    private HashMap<String,ClassMap> classPackages;
 
-    public OutputPackageInfo(String targetPackage) {
-        this.targetPackage = targetPackage;
+    public OutputPackageInfo(HashMap<String,ClassMap> classPackages) {
+        this.classPackages = classPackages;
     }
     
-    public String get(HashMap<String,ClassMap> classPackages) {
+    public String get(String targetPackage) {
+
         StringBuilder sb = new StringBuilder();
         if (classPackages != null && classPackages.containsKey(targetPackage)) {
             ClassMap classMap = classPackages.get(targetPackage);

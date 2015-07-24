@@ -24,33 +24,24 @@ public class OutputPackageInfoTest {
 
     @Test
     public void testCorrect() {
-        OutputPackageInfo opi = new OutputPackageInfo(target);
-        String result = opi.get(classPackages);
+        OutputPackageInfo opi = new OutputPackageInfo(classPackages);
+        String result = opi.get(target);
 
         Assert.assertEquals(String.format("{'%s':{'tag':'PACKAGE','subpackages':['baz','bax',],'classes':['Bat',]},}", target), result);
     }
     
     @Test
     public void testCorrectUknownTarget() {
-        OutputPackageInfo opi = new OutputPackageInfo("foo.baa");
-        String result = opi.get(classPackages);
-
-        Assert.assertEquals("{}", result);
+        Assert.assertEquals("{}", new OutputPackageInfo(classPackages).get("foo.baa"));
     }
     
     @Test
     public void testNullTarget() {
-        OutputPackageInfo opi = new OutputPackageInfo(null);
-        String result = opi.get(classPackages);
-
-        Assert.assertEquals("{}", result);
+        Assert.assertEquals("{}", new OutputPackageInfo(classPackages).get(null));
     }
     
     @Test
     public void testNullPackages() {
-        OutputPackageInfo opi = new OutputPackageInfo(target);
-        String result = opi.get(null);
-
-        Assert.assertEquals("{}", result);
+        Assert.assertEquals("{}", new OutputPackageInfo(null).get(target));
     }
 }

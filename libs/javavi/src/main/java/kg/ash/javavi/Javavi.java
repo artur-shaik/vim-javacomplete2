@@ -19,6 +19,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kg.ash.javavi.output.OutputPackageInfo;
+import kg.ash.javavi.output.OutputClassPackages;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.ClassMap;
@@ -172,7 +173,7 @@ public class Javavi {
             if (cachedClassPackages.isEmpty()) {
                 new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
-            return new OutputBuilder().outputClassPackages(target);
+            return new OutputClassPackages(Javavi.cachedClassPackages).get(target);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
             if (cachedClassPackages.isEmpty()) {
@@ -190,7 +191,7 @@ public class Javavi {
             if (cachedClassPackages.isEmpty()) {
                 new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
-            result = new OutputPackageInfo(target).get(Javavi.cachedClassPackages);
+            result = new OutputPackageInfo(Javavi.cachedClassPackages).get(target);
 
         } else if (command == COMMAND__EXECUTE_DAEMON) {
             if (daemon == null) {

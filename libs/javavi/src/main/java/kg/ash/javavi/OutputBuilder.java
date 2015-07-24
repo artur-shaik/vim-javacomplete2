@@ -195,14 +195,4 @@ public class OutputBuilder {
         return outputSimilar(keysResult, false);
     }
 
-    public String outputClassPackages(String target) {
-        StringBuilder builder = new StringBuilder("[");
-        for (String scope : Javavi.cachedClassPackages.get(target).getPaths()) {
-            builder.append("\"").append(scope.replaceAll("/", "."))
-                .append(".").append(target).append("\",").append(Javavi.NEWLINE);
-        }
-        builder.append("]");
-        return builder.toString();
-    }
-
 }
