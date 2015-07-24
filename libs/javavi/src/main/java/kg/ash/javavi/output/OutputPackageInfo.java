@@ -12,10 +12,6 @@ public class OutputPackageInfo {
     }
     
     public String get(HashMap<String,ClassMap> classPackages) {
-        return String.format("{%s}", filterAndCompose(classPackages).toString());
-    }
-
-    private StringBuilder filterAndCompose(HashMap<String,ClassMap> classPackages) {
         StringBuilder sb = new StringBuilder();
         if (classPackages != null && classPackages.containsKey(targetPackage)) {
             ClassMap classMap = classPackages.get(targetPackage);
@@ -27,7 +23,7 @@ public class OutputPackageInfo {
                 .append("},");
         } 
 
-        return sb;
+        return String.format("{%s}", sb);
     }
 
 }
