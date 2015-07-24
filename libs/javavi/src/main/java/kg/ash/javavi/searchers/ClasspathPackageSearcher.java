@@ -21,13 +21,13 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
 
-        Predicate<String> archive = path -> {
+        Predicate<String> isArchive = path -> {
             return path.toLowerCase().endsWith(".jar") 
                 || path.toLowerCase().endsWith(".zip");
         };
 
         collectClassPath().stream()
-            .filter(archive)
+            .filter(isArchive)
             .forEach(path -> {
                 try {
                     for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
