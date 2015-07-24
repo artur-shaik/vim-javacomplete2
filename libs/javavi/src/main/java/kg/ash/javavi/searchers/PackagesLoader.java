@@ -33,9 +33,7 @@ public class PackagesLoader {
         this.classesMap = classesMap;
 
         List<PackageEntry> entries = new ArrayList<>();
-        for (PackageSeacherIFace searcher : searchers) {
-            entries.addAll(searcher.loadEntries());
-        }
+        searchers.parallelStream().forEach(s -> entries.addAll(s.loadEntries()));
 
         entries.forEach(entry -> appendEntry(entry.getEntry(), entry.getSource()));
     }
@@ -57,10 +55,7 @@ public class PackagesLoader {
         String parent = name.substring(0, seppos);
         String child  = name.substring(seppos + 1, name.length() - 6);
 
-        String parentDots = parent
-            .replaceAll(File.separator, ".")
-            .replaceAll("[.]{2,}", "");
-
+        String parentDots = makeDots(parent);
         putClassPath(parentDots, child, source, ClassMap.SUBPACKAGE);
         putClassPath(child, parentDots, source, ClassMap.CLASS);
 
@@ -80,7 +75,7 @@ public class PackagesLoader {
         String parent = name.substring(0, seppos);
         String child = name.substring(seppos + 1);
 
-        putClassPath(child, parent, source, ClassMap.SUBPACKAGE);
+        putClassPath(child, makeDots(parent), source, ClassMap.SUBPACKAGE);
 
         addToParent(parent, source);
     }
@@ -97,4 +92,7 @@ public class PackagesLoader {
         classesMap.get(child).add(parent, source, type);
     }
 
+    private String makeDots(String name) {
+        return name.replaceAll(File.separator, ".").replaceAll("[.]{2,}", "");
+    }
 }

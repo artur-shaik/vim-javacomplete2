@@ -43,6 +43,7 @@ public class PackagesLoaderTest {
         Assert.assertNotEquals(null, result.get("java"));
         Assert.assertEquals(2, result.get("java.util").getPaths().size());
         Assert.assertEquals(1, result.get("kg.ash.javavi").getPaths().size());
+        Assert.assertEquals(1, result.get("kg.ash").getPaths().size());
         Assert.assertEquals(null, result.get("foo.bar"));
     }
 
