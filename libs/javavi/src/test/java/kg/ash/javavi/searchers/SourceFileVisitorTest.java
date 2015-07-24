@@ -9,16 +9,19 @@ import java.util.List;
 public class SourceFileVisitorTest {
 
     @Test
-    public void testCorrect() {
+    public void testCorrectPackageClass() {
         SourceFileVisitor visitor = new SourceFileVisitor("foo.bar.Baz");
         visitor.visitFile(new File("src/foo/bar/Baz.java").toPath(), null);
 
         Assert.assertEquals("src/foo/bar/Baz.java", visitor.getTargetFile());
+    }
 
-        visitor = new SourceFileVisitor("Baz");
-        visitor.visitFile(new File("src/foo/bar/Baz.java").toPath(), null);
+    @Test
+    public void testCorrectClass() {
+        SourceFileVisitor visitor = new SourceFileVisitor("Baz");
+        visitor.visitFile(new File("/root/src/foo/bar/Baz.java").toPath(), null);
 
-        Assert.assertEquals("src/foo/bar/Baz.java", visitor.getTargetFile());
+        Assert.assertEquals("/root/src/foo/bar/Baz.java", visitor.getTargetFile());
     }
 
     @Test
