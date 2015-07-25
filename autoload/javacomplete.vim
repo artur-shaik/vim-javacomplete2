@@ -1,5 +1,5 @@
 " Vim completion script
-" Version:	2.3
+" Version:	2.2
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 " Last Change:	2015-07-08
@@ -25,8 +25,8 @@ let s:CONTEXT_AFTER_DOT		     = 1
 let s:CONTEXT_METHOD_PARAM	     = 2
 let s:CONTEXT_IMPORT		     = 3
 let s:CONTEXT_IMPORT_STATIC	     = 4
-let s:CONTEXT_PACKAGE_DECL	     = 6
-let s:CONTEXT_NEED_TYPE		     = 7
+let s:CONTEXT_PACKAGE_DECL	     = 6 
+let s:CONTEXT_NEED_TYPE		     = 7 
 let s:CONTEXT_COMPLETE_CLASS	 = 8
 let s:CONTEXT_METHOD_REFERENCE   = 9
 let s:CONTEXT_OTHER 		     = 0
@@ -46,7 +46,7 @@ let s:ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout) throws InterruptedException', },
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout, int nanos) throws InterruptedException', }]
 
-let s:ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [],
+let s:ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [], 
       \     'fields': [{'n': 'length', 'm': '1', 't': 'int'}],
       \     'methods':[
       \	{'n': 'clone',	  'm': '1',		'r': 'Object',	'p': [],		'd': 'Object clone()'},
@@ -66,7 +66,7 @@ let s:PRIMITIVE_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '!', 'fields': [{'n': 'c
 let s:JSP_BUILTIN_OBJECTS = {'session':	'javax.servlet.http.HttpSession',
       \	'request':	'javax.servlet.http.HttpServletRequest',
       \	'response':	'javax.servlet.http.HttpServletResponse',
-      \	'pageContext':	'javax.servlet.jsp.PageContext',
+      \	'pageContext':	'javax.servlet.jsp.PageContext', 
       \	'application':	'javax.servlet.ServletContext',
       \	'config':	'javax.servlet.ServletConfig',
       \	'out':		'javax.servlet.jsp.JspWriter',
@@ -122,7 +122,7 @@ let b:errormsg = ''
 " script variables						{{{1
 let s:cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
 let s:files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
-let s:history = {}	"
+let s:history = {}	" 
 
 
 if exists('*uniq')
@@ -147,8 +147,8 @@ endif
 
 let s:log = []
 " level
-" 	5	off/fatal
-" 	4	error
+" 	5	off/fatal 
+" 	4	error 
 " 	3	warn
 " 	2	info
 " 	1	debug
@@ -339,7 +339,7 @@ function! javacomplete#AddImport()
         let userinput = -1
       endif
       redraw!
-
+      
       if userinput < 0 || userinput > len(result)
         echo "JavaComplete: wrong input"
         return
@@ -457,7 +457,7 @@ function! javacomplete#Complete(findstart, base)
         if pos == 0
           let statement = substitute(statement, '^\s*', '', '')
           " treat "this" or "super" as a type name.
-          if statement == 'this' || statement == 'super'
+          if statement == 'this' || statement == 'super' 
             let b:dotexpr = statement
             let b:incomplete = '+'
             return start - len(b:dotexpr)
@@ -1098,12 +1098,12 @@ fu! s:MergeLines(lnum, col, lnum_old, col_old)
   return s:Trim(str) . matchstr(lastline, '\s*$')
 endfu
 
-" Extract a clean expr, removing some non-necessary characters.
+" Extract a clean expr, removing some non-necessary characters. 
 fu! s:ExtractCleanExpr(expr)
   let cmd = substitute(a:expr, '[ \t\r\n]\+\([.()[\]]\)', '\1', 'g')
   let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
 
-  let pos = strlen(cmd)-1
+  let pos = strlen(cmd)-1 
   while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>"]'
     if cmd[pos] == ')'
       let pos = s:SearchPairBackward(cmd, pos, '(', ')')
@@ -1192,7 +1192,7 @@ endfu
 
 " return {'expr': , 'method': , 'params': }
 fu! s:GetMethodInvocationExpr(expr)
-  let idx = strlen(a:expr)-1
+  let idx = strlen(a:expr)-1 
   while idx >= 0
     if a:expr[idx] == '('
       break
@@ -1289,7 +1289,7 @@ fu! s:GetImports(kind, ...)
   return get(props, a:kind, [])
 endfu
 
-" search for name in
+" search for name in 
 " return the fqn matched
 fu! s:SearchSingleTypeImport(name, fqns)
   let matches = s:filter(a:fqns, 'item =~# ''\<' . a:name . '$''')
@@ -1446,7 +1446,7 @@ endfu
 " regexp samples:
 " echo search('\(\(public\|protected|private\)[ \t\n\r]\+\)\?\(\(static\)[ \t\n\r]\+\)\?\(\<class\>\|\<interface\>\)[ \t\n\r]\+HelloWorld[^a-zA-Z0-9_$]', 'W')
 " echo substitute(getline('.'), '.*\(\(public\|protected\|private\)[ \t\n\r]\+\)\?\(\(static\)[ \t\n\r]\+\)\?\(\<class\>\|\<interface\>\)\s\+\([a-zA-Z0-9_]\+\)\s\+\(\(implements\|extends\)\s\+\([^{]\+\)\)\?\s*{.*', '["\1", "\2", "\3", "\4", "\5", "\6", "\8", "\9"]', '')
-" code sample:
+" code sample: 
 function! s:GetClassDeclarationOf(type)
   call cursor(1, 1)
   let decl = []
@@ -1780,7 +1780,7 @@ fu! javacomplete#parse(...)
   return props.unit
 endfu
 
-" update fqn for toplevel types or nested types.
+" update fqn for toplevel types or nested types. 
 " not for local type or anonymous type
 fu! s:UpdateFQN(tree, qn)
   if a:tree.tag == 'TOPLEVEL'
@@ -2185,7 +2185,7 @@ function! javacomplete#CompileJavavi()
   call javacomplete#TerminateServer()
 
   let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
-  if isdirectory(javaviDir. "target/classes")
+  if isdirectory(javaviDir. "target/classes") 
     if s:IS_WINDOWS
       silent exe '!rmdir \s "'. javaviDir. "target/classes"
     else
@@ -2393,7 +2393,7 @@ fu! s:SplitAt(str, index)
   return [strpart(a:str, 0, a:index+1), strpart(a:str, a:index+1)]
 endfu
 
-" TODO: search pair used in string, like
+" TODO: search pair used in string, like 
 " 	'create(ao.fox("("), new String).foo().'
 function! s:GetMatchedIndexEx(str, idx, one, another)
   let pos = a:idx
@@ -2420,7 +2420,7 @@ function! s:SearchPairBackward(str, idx, one, another)
         break
       endif
       let n -= 1
-    elseif a:str[idx] == a:another  " nested
+    elseif a:str[idx] == a:another  " nested 
       let n += 1
     endif
   endwhile
@@ -2432,7 +2432,7 @@ fu! s:CountDims(str)
     return 0
   endif
 
-  " int[] -> [I, String[] ->
+  " int[] -> [I, String[] -> 
   let dims = len(matchstr(a:str, '^[\+'))
   if dims == 0
     let idx = len(a:str)-1
@@ -2709,7 +2709,7 @@ function! s:DoGetClassInfo(class, ...)
     return {}
   endif
 
-  let typename = a:class
+  let typename = a:class 
   "substitute(a:class, '\s', '', 'g')
   let typeArguments = ''
 
@@ -2782,7 +2782,7 @@ function! s:CollectTypeArguments(typeArguments, packagename, filekey)
       endif
       let i += 1
     endwhile
-
+    
     for arg in split(typeArguments, "<_split_>")
       let argTypeArguments = ''
       if arg =~ s:RE_TYPE_WITH_ARGUMENTS
@@ -2828,7 +2828,7 @@ function! s:KeyInCache(fqn)
 
   let keys = keys(s:cache)
   let idx = match(keys, '\v'. fqn. '$')
-
+  
   if idx >= 0
     return keys[idx]
   endif
@@ -3052,9 +3052,9 @@ endfu
 
 " search in members							{{{2
 " TODO: what about default access?
-" public for all
-" protected for this or super
-" private for this
+" public for all              
+" protected for this or super 
+" private for this            
 fu! s:CanAccess(mods, kind)
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
@@ -3138,7 +3138,7 @@ fu! s:DoGetFieldList(fields)
   return s
 endfu
 
-function! s:CleanFQN(fqnDeclaration)
+function! s:CleanFQN(fqnDeclaration) 
   let start = 0
   let fqnDeclaration = a:fqnDeclaration
   let result = matchlist(fqnDeclaration, '\<'. s:RE_IDENTIFIER. '\%(\s*\.\s*\('. s:RE_IDENTIFIER. '\)\)*', start)
@@ -3343,7 +3343,7 @@ fu! s:DoGetPackageInfoInDirs(package, onlyPackages, ...)
   return list
 endfu
 
-function! s:UseFQN()
+function! s:UseFQN() 
   if exists('g:JavaComplete_UseFQN') && g:JavaComplete_UseFQN
     return 1
   endif
