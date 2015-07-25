@@ -2196,7 +2196,7 @@ function! javacomplete#CompileJavavi()
     exe '!'. 'mvn -f "'. javaviDir. '/pom.xml" compile'
   else
     call mkdir(javaviDir. "target/classes", "p")
-    exe '!'. javacomplete#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar: -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
+    exe '!'. javacomplete#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar: -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
   endif
 endfunction
 
