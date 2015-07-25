@@ -20,6 +20,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
+import kg.ash.javavi.output.OutputSimilarAnnotations;
+import kg.ash.javavi.output.OutputSimilarClasses;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.ClassMap;
@@ -179,13 +181,13 @@ public class Javavi {
             if (cachedClassPackages.isEmpty()) {
                 new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
-            return new OutputBuilder().outputSimilarClasses(target);
+            return new OutputSimilarClasses(Javavi.cachedClassPackages).get(target);
 
         } else if (command == COMMAND__SIMILAR_ANNOTATIONS) {
             if (cachedClassPackages.isEmpty()) {
                 new PackagesLoader(sources).collectPackages(cachedClassPackages);
             }
-            return new OutputBuilder().outputSimilarAnnotations(target);
+            return new OutputSimilarAnnotations(Javavi.cachedClassPackages).get(target);
 
         } else if (command == COMMAND__PACKAGESLIST) {
             if (cachedClassPackages.isEmpty()) {
