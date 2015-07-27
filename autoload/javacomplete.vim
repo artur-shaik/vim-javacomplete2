@@ -327,8 +327,6 @@ endfunction
 
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#Complete(findstart, base)
-  call s:Info(a:findstart)
-  call s:Info(a:base)
   if a:findstart
     " reset enviroment
     let b:dotexpr = ''

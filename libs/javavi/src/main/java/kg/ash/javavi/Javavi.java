@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
 import kg.ash.javavi.output.OutputSimilarAnnotations;
@@ -160,7 +161,7 @@ public class Javavi {
                 reader.setTypeArguments(targetParser.getTypeArguments());
                 SourceClass clazz = reader.read(target);
                 if (clazz != null) {
-                    result = new OutputBuilder().outputClassInfo(clazz);
+                    result = new OutputClassInfo().get(clazz);
                 }
             }
 
@@ -168,7 +169,7 @@ public class Javavi {
             Parser parser = new Parser(sources, target);
             SourceClass clazz = parser.read(null);
             if (clazz != null) {
-                result = new OutputBuilder().outputClassInfo(clazz);
+                result = new OutputClassInfo().get(clazz);
             }
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {

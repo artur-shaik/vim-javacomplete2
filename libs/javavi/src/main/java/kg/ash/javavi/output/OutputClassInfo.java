@@ -1,0 +1,176 @@
+package kg.ash.javavi.output;
+
+import java.lang.StringBuilder;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import kg.ash.javavi.Javavi;
+import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.ClassSearcher;
+import kg.ash.javavi.clazz.*;
+
+public class OutputClassInfo {
+
+    public String get(SourceClass clazz) {
+        HashMap<String,String> classMap = new HashMap<>();
+        putClassInfo(classMap, clazz);
+
+        StringBuilder sb = new StringBuilder();
+        if (classMap.size() > 0) {
+            sb.append("{");
+            for (String s : classMap.keySet()) {
+                sb.append("'").append(s).append("':")
+                    .append(classMap.get(s)).append(",");
+            }
+            sb.append("}");
+        }
+
+        return sb.toString();
+    }
+    
+    private void putClassInfo(HashMap<String, String> map, SourceClass clazz) {
+        if (clazz == null || map.containsKey(clazz.getName()))
+            return;
+
+        StringBuilder sb = init(clazz);
+        isIntefaceOrClass(sb, clazz);
+        hasConstructors(sb, clazz);
+        hasFields(sb, clazz);
+        hasMethods(sb, clazz);
+        finish(sb, clazz, map);
+
+    }
+
+    private StringBuilder init(SourceClass clazz) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{")
+            .append("'tag':'CLASSDEF',").append(Javavi.NEWLINE)
+            .append("'flags':'")
+            .append(Integer.toString(clazz.getModifiers(), 2)).append("',")
+            .append(Javavi.NEWLINE)
+            .append("'name':'")
+            .append(clazz.getName()).append("',")
+            .append(Javavi.NEWLINE)
+            .append("'classpath':'1',").append(Javavi.NEWLINE)
+            .append("'fqn':'")
+            .append(clazz.getName()).append("',")
+            .append(Javavi.NEWLINE);
+
+        return sb;
+    }
+
+    private void isIntefaceOrClass(StringBuilder sb, SourceClass clazz) {
+        if (clazz.isInterface()) {
+            sb.append("'extends':[");
+        } else {
+            String superclass = clazz.getSuperclass();
+            if (superclass != null && !"java.lang.Object".equals(superclass)) {
+                sb.append("'extends':['").append(superclass)
+                    .append("'],").append(Javavi.NEWLINE);
+            }
+            sb.append("'implements':[");
+        }
+
+        clazz.getInterfaces().forEach(iface -> 
+                sb.append("'").append(iface).append("',"));
+        sb.append("],").append(Javavi.NEWLINE);;
+    }
+
+    private void hasConstructors(StringBuilder sb, SourceClass clazz) {
+        sb.append("'ctors':[");
+        for (ClassConstructor ctor : clazz.getConstructors()) {
+            sb.append("{");
+
+            appendModifier(sb, ctor.getModifiers());
+            appendParameterTypes(sb, ctor.getTypeParameters());
+
+            sb.append(Javavi.KEY_DESCRIPTION).append("'")
+                .append(ctor.getDeclaration()).append("'");
+
+            sb.append("},").append(Javavi.NEWLINE);
+        }
+
+        sb.append("],").append(Javavi.NEWLINE);
+    }
+
+
+    private void hasFields(StringBuilder sb, SourceClass clazz) {
+        sb.append("'fields':[");
+        for (ClassField field : clazz.getFields()){
+            sb.append("{");
+            sb.append(Javavi.KEY_NAME)
+                .append("'").append(field.getName()).append("',");
+
+            if (!field.getTypeName().equals(clazz.getName())) {
+                sb.append(Javavi.KEY_DECLARING_CLASS)
+                    .append("'").append(field.getTypeName()).append("',");
+            }
+
+            appendModifier(sb, field.getModifiers());
+            sb.append(Javavi.KEY_TYPE)
+                .append("'").append(field.getTypeName()).append("'")
+                .append("},").append(Javavi.NEWLINE);
+        }
+
+        sb.append("],").append(Javavi.NEWLINE);
+    }
+
+    private void hasMethods(StringBuilder sb, SourceClass clazz) {
+        sb.append("'methods':[");
+        for (ClassMethod method : clazz.getMethods()) {
+            sb.append("{");
+
+            sb.append(Javavi.KEY_NAME)
+                .append("'").append(method.getName()).append("',");
+
+            if (!method.getTypeName().equals(clazz.getName())) {
+                sb.append(Javavi.KEY_DECLARING_CLASS)
+                    .append("'").append(method.getTypeName()).append("',");
+            }
+
+            appendModifier(sb, method.getModifiers());
+
+            sb.append(Javavi.KEY_RETURNTYPE)
+                .append("'").append(method.getTypeName()).append("',");
+
+            appendParameterTypes(sb, method.getTypeParameters());
+
+            sb.append(Javavi.KEY_DESCRIPTION)
+                .append("'").append(method.getDeclaration()).append("'")
+                .append("},").append(Javavi.NEWLINE);
+        }
+        sb.append("],").append(Javavi.NEWLINE);
+    }
+
+    private void finish(StringBuilder sb, SourceClass clazz, HashMap<String,String> map) {
+
+        sb.append("}");
+
+        map.put(clazz.getName(), sb.toString());
+
+        for (SourceClass sourceClass : clazz.getLinkedClasses()) {
+            putClassInfo(map, sourceClass);
+        }
+
+    }
+
+    private void appendModifier(StringBuilder sb, int modifier) {
+        sb.append(Javavi.KEY_MODIFIER)
+            .append("'").append(Integer.toString(modifier, 2)).append("',");
+    }
+
+    private void appendParameterTypes(StringBuilder sb, List<ClassTypeParameter> paramTypes) {
+        if (paramTypes == null || paramTypes.isEmpty()) return;
+
+        sb.append(Javavi.KEY_PARAMETERTYPES).append("[");
+
+        paramTypes.forEach(parameter ->
+            sb.append("'").append(parameter.getName()).append("',"));
+
+        sb.append("],");
+    }
+
+}

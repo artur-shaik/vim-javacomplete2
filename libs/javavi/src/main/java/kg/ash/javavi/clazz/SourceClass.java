@@ -41,7 +41,7 @@ public class SourceClass {
     }
 
     public void addConstructor(ClassConstructor constructor) {
-        if (!constructors.contains(constructor)) {
+        if (constructor != null && !constructors.contains(constructor)) {
             constructors.add(constructor);
         }
     }
@@ -51,7 +51,7 @@ public class SourceClass {
     }
 
     public void addMethod(ClassMethod method) {
-        if (!methods.contains(method)) {
+        if (method != null && !methods.contains(method)) {
             methods.add(method);
         }
     }
@@ -61,7 +61,7 @@ public class SourceClass {
     }
 
     public void addField(ClassField field) {
-        if (!fields.contains(field)) {
+        if (field != null && !fields.contains(field)) {
             fields.add(field);
         }
     }
