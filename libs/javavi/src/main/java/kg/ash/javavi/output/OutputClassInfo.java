@@ -14,6 +14,14 @@ import kg.ash.javavi.clazz.*;
 
 public class OutputClassInfo {
 
+    public static final String KEY_NAME		= "'n':";	// "'name':";
+    public static final String KEY_TYPE		= "'t':";	// "'type':";
+    public static final String KEY_MODIFIER		= "'m':";	// "'modifier':";
+    public static final String KEY_PARAMETERTYPES	= "'p':";	// "'parameterTypes':";
+    public static final String KEY_RETURNTYPE		= "'r':";	// "'returnType':";
+    public static final String KEY_DESCRIPTION		= "'d':";	// "'description':";
+    public static final String KEY_DECLARING_CLASS	= "'c':";	// "'declaringclass':";
+
     public String get(SourceClass clazz) {
         HashMap<String,String> classMap = new HashMap<>();
         putClassInfo(classMap, clazz);
@@ -87,7 +95,7 @@ public class OutputClassInfo {
             appendModifier(sb, ctor.getModifiers());
             appendParameterTypes(sb, ctor.getTypeParameters());
 
-            sb.append(Javavi.KEY_DESCRIPTION).append("'")
+            sb.append(KEY_DESCRIPTION).append("'")
                 .append(ctor.getDeclaration()).append("'");
 
             sb.append("},").append(Javavi.NEWLINE);
@@ -101,16 +109,16 @@ public class OutputClassInfo {
         sb.append("'fields':[");
         for (ClassField field : clazz.getFields()){
             sb.append("{");
-            sb.append(Javavi.KEY_NAME)
+            sb.append(KEY_NAME)
                 .append("'").append(field.getName()).append("',");
 
             if (!field.getTypeName().equals(clazz.getName())) {
-                sb.append(Javavi.KEY_DECLARING_CLASS)
+                sb.append(KEY_DECLARING_CLASS)
                     .append("'").append(field.getTypeName()).append("',");
             }
 
             appendModifier(sb, field.getModifiers());
-            sb.append(Javavi.KEY_TYPE)
+            sb.append(KEY_TYPE)
                 .append("'").append(field.getTypeName()).append("'")
                 .append("},").append(Javavi.NEWLINE);
         }
@@ -123,22 +131,22 @@ public class OutputClassInfo {
         for (ClassMethod method : clazz.getMethods()) {
             sb.append("{");
 
-            sb.append(Javavi.KEY_NAME)
+            sb.append(KEY_NAME)
                 .append("'").append(method.getName()).append("',");
 
             if (!method.getTypeName().equals(clazz.getName())) {
-                sb.append(Javavi.KEY_DECLARING_CLASS)
+                sb.append(KEY_DECLARING_CLASS)
                     .append("'").append(method.getTypeName()).append("',");
             }
 
             appendModifier(sb, method.getModifiers());
 
-            sb.append(Javavi.KEY_RETURNTYPE)
+            sb.append(KEY_RETURNTYPE)
                 .append("'").append(method.getTypeName()).append("',");
 
             appendParameterTypes(sb, method.getTypeParameters());
 
-            sb.append(Javavi.KEY_DESCRIPTION)
+            sb.append(KEY_DESCRIPTION)
                 .append("'").append(method.getDeclaration()).append("'")
                 .append("},").append(Javavi.NEWLINE);
         }
@@ -158,14 +166,14 @@ public class OutputClassInfo {
     }
 
     private void appendModifier(StringBuilder sb, int modifier) {
-        sb.append(Javavi.KEY_MODIFIER)
+        sb.append(KEY_MODIFIER)
             .append("'").append(Integer.toString(modifier, 2)).append("',");
     }
 
     private void appendParameterTypes(StringBuilder sb, List<ClassTypeParameter> paramTypes) {
         if (paramTypes == null || paramTypes.isEmpty()) return;
 
-        sb.append(Javavi.KEY_PARAMETERTYPES).append("[");
+        sb.append(KEY_PARAMETERTYPES).append("[");
 
         paramTypes.forEach(parameter ->
             sb.append("'").append(parameter.getName()).append("',"));

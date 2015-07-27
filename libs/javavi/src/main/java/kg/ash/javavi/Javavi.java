@@ -35,18 +35,6 @@ public class Javavi {
 
     static final String VERSION	= "2.2.0";
 
-    public static final int STRATEGY_ALPHABETIC	= 128;
-    public static final int STRATEGY_HIERARCHY		= 256;
-    public static final int STRATEGY_DEFAULT		= 512;
-
-    public static final String KEY_NAME		= "'n':";	// "'name':";
-    public static final String KEY_TYPE		= "'t':";	// "'type':";
-    public static final String KEY_MODIFIER		= "'m':";	// "'modifier':";
-    public static final String KEY_PARAMETERTYPES	= "'p':";	// "'parameterTypes':";
-    public static final String KEY_RETURNTYPE		= "'r':";	// "'returnType':";
-    public static final String KEY_DESCRIPTION		= "'d':";	// "'description':";
-    public static final String KEY_DECLARING_CLASS	= "'c':";	// "'declaringclass':";
-
     public static String NEWLINE = "";
 
     public static HashMap<String,SourceClass> cachedClasses = new HashMap<>();
