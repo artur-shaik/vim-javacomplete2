@@ -76,7 +76,7 @@ class JavaviBridge():
             if self.sock is None:
                 return ''
 
-        self.sock.sendall(data + '\n')
+        self.sock.sendall((data + '\n').encode('UTF-8'))
         totalData = []
         while 1:
             try:
@@ -84,7 +84,7 @@ class JavaviBridge():
                 if not data or len(data) == 0:
                     break
 
-                totalData.append(data)
+                totalData.append(data.decode('UTF-8'))
                 time.sleep(.01)
             except:
                 if totalData: break
