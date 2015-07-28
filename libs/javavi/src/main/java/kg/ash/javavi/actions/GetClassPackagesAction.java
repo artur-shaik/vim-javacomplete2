@@ -4,7 +4,7 @@ import kg.ash.javavi.output.OutputClassPackages;
 import kg.ash.javavi.searchers.PackagesLoader;
 import kg.ash.javavi.Javavi;
 
-public class ClassPackagesAction implements Action {
+public class GetClassPackagesAction implements Action {
 
     @Override
     public String perform(String[] args) {

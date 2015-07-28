@@ -7,11 +7,11 @@ import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.output.OutputClassInfo;
 
-public class ClassInfoAction implements Action {
+public class GetClassInfoAction implements Action {
 
     private String sources;
 
-    public ClassInfoAction() {
+    public GetClassInfoAction() {
         sources = Javavi.system.get("sources");
     }
 

@@ -5,7 +5,7 @@ import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.readers.Parser;
 
-public class ClassInfoFromSourceAction implements Action {
+public class GetClassInfoFromSourceAction implements Action {
 
     @Override
     public String perform(String[] args) {

@@ -18,9 +18,9 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import kg.ash.javavi.actions.ClassInfoAction;
-import kg.ash.javavi.actions.ClassInfoFromSourceAction;
-import kg.ash.javavi.actions.ClassPackagesAction;
+import kg.ash.javavi.actions.GetClassInfoAction;
+import kg.ash.javavi.actions.GetClassInfoFromSourceAction;
+import kg.ash.javavi.actions.GetClassPackagesAction;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
@@ -148,13 +148,13 @@ public class Javavi {
 
         String result = "";
         if (command == COMMAND__CLASS_INFO){
-            result = new ClassInfoAction().perform(args);
+            result = new GetClassInfoAction().perform(args);
 
         } else if (command == COMMAND__SOURCE_PATH_CLASS_INFO) {
-            result = new ClassInfoFromSourceAction().perform(args);
+            result = new GetClassInfoFromSourceAction().perform(args);
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {
-            result = new ClassPackagesAction().perform(args);
+            result = new GetClassPackagesAction().perform(args);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
             if (cachedClassPackages.isEmpty()) {
