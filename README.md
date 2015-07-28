@@ -103,6 +103,8 @@ To enable inserting class imports with F4, add:
 
 `let g:JavaComplete_MavenRepositoryDisable = 1` - don't append classpath with libraries specified in `pom.xml` of your project. By default is `0`.
 
+`let g:JavaComplete_UseFQN = 1` - use full qualified name in completions description. By default is `0`.
+
 ## Commands
 
 manually run server:

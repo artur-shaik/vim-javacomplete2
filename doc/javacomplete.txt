@@ -202,6 +202,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
         let g:JavaComplete_MavenRepositoryDisable = 1 
         By default this option is disabled (0).
+
+    Use fully qualified name in description:
+
+        let g:JavaComplete_UseFQN = 1
+        By default this option is disabled (0).
         
 
 2.4 Commands					*javacomplete-commands*
