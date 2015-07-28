@@ -24,6 +24,7 @@ import kg.ash.javavi.actions.GetClassPackagesAction;
 import kg.ash.javavi.actions.FilterSimilarClassesAction;
 import kg.ash.javavi.actions.FilterSimilarAnnotationsAction;
 import kg.ash.javavi.actions.GetPackageInfoAction;
+import kg.ash.javavi.actions.ExecuteDaemonAction;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
@@ -82,7 +83,7 @@ public class Javavi {
 
     static String sources = "";
     public static HashMap<String,String> system = new HashMap<>();
-    private static Daemon daemon = null;
+    public static Daemon daemon = null;
 
     public static void main( String[] args ) throws Exception {
         String response = makeResponse(args);
@@ -135,14 +136,6 @@ public class Javavi {
                     break;
                 case "-D":
                     command = COMMAND__EXECUTE_DAEMON;
-                    daemonPort = Integer.parseInt(args[++i]);
-                    break;
-                default:
-                    target += arg;
-                    if (targetParser == null) {
-                        targetParser = new TargetParser(sources);
-                    }
-                    target = targetParser.parse(target);
                     break;
             }
         }
@@ -169,11 +162,7 @@ public class Javavi {
             result = new GetPackageInfoAction().perform(args);
 
         } else if (command == COMMAND__EXECUTE_DAEMON) {
-            if (daemon == null) {
-                debug("Starting daemon mode");
-                daemon = new Daemon(daemonPort);
-                daemon.start();
-            }
+            result = new ExecuteDaemonAction().perform(args);
 
         }
 
