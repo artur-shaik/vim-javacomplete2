@@ -9,11 +9,11 @@
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
 if has("python2")
-    command! -nargs=1 Py py <args>
-    command! -nargs=1 Pyfile pyfile <args>
+    command! -nargs=1 JavacompletePy py <args>
+    command! -nargs=1 JavacompletePyfile pyfile <args>
 elseif has("python3")
-    command! -nargs=1 Py py3 <args>
-    command! -nargs=1 Pyfile py3file <args>
+    command! -nargs=1 JavacompletePy py3 <args>
+    command! -nargs=1 JavacompletePyfile py3file <args>
 else
     echoerr "Javacomplete needs Python support to run!"
     finish
@@ -200,7 +200,7 @@ endfu
 
 function! s:PollServer()
   let a:value = 0
-Py << EOPC
+JavacompletePy << EOPC
 try:
   vim.command("let a:value = '%d'" % bridgeState.poll())
 except:
@@ -213,7 +213,7 @@ endfunction
 
 function! javacomplete#TerminateServer()
   if s:PollServer() != 0
-    Py bridgeState.terminateServer()
+    JavacompletePy bridgeState.terminateServer()
   endif
 endfunction
 
@@ -231,24 +231,24 @@ function! javacomplete#StartServer()
     call s:Info("Classpath: ". classpath)
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
-    execute "Pyfile ". file
+    execute "JavacompletePyfile ". file
 
-    Py import vim
-    Py bridgeState = JavaviBridge()
-    Py bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
+    JavacompletePy import vim
+    JavacompletePy bridgeState = JavaviBridge()
+    JavacompletePy bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
 
   endif
 endfunction
 
 function! javacomplete#ShowPort()
   if s:PollServer()
-    Py vim.command('echom "Javavi port: %d"' % bridgeState.port())
+    JavacompletePy vim.command('echom "Javavi port: %d"' % bridgeState.port())
   endif
 endfunction
 
 function! javacomplete#ShowPID()
   if s:PollServer()
-    Py vim.command('echom "Javavi pid: %d"' % bridgeState.pid())
+    JavacompletePy vim.command('echom "Javavi pid: %d"' % bridgeState.pid())
   endif
 endfunction
 
@@ -2603,7 +2603,7 @@ fu! s:RunReflection(option, args, log)
     let cmd = a:option. ' "'. a:args. '"'
     call s:Info("RunReflection: ". cmd. " [". a:log. "]")
     let a:result = ""
-Py << EOPC
+JavacompletePy << EOPC
 vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
 EOPC
     return a:result
