@@ -19,26 +19,9 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kg.ash.javavi.actions.Action;
-import kg.ash.javavi.actions.ActionFactory;
-import kg.ash.javavi.actions.GetClassInfoAction;
-import kg.ash.javavi.actions.GetClassInfoFromSourceAction;
-import kg.ash.javavi.actions.GetClassPackagesAction;
-import kg.ash.javavi.actions.FilterSimilarClassesAction;
-import kg.ash.javavi.actions.FilterSimilarAnnotationsAction;
-import kg.ash.javavi.actions.GetPackageInfoAction;
-import kg.ash.javavi.actions.ExecuteDaemonAction;
-import kg.ash.javavi.output.OutputClassInfo;
-import kg.ash.javavi.output.OutputPackageInfo;
-import kg.ash.javavi.output.OutputClassPackages;
-import kg.ash.javavi.output.OutputSimilarAnnotations;
-import kg.ash.javavi.output.OutputSimilarClasses;
-import kg.ash.javavi.readers.ClassReader;
-import kg.ash.javavi.searchers.ClassSearcher;
-import kg.ash.javavi.searchers.ClassMap;
-import kg.ash.javavi.searchers.PackagesLoader;
-import kg.ash.javavi.readers.Parser;
 import kg.ash.javavi.clazz.SourceClass;
-import java.util.zip.ZipFile;
+import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.actions.ActionFactory;
 
 public class Javavi {
 
@@ -74,7 +57,8 @@ public class Javavi {
     }
 
     private static void version() {
-        System.out.println("Reflection and parsing for javavi vim plugin (" + VERSION + ")");
+        System.out.println("Reflection and parsing for javavi " + 
+                "vim plugin (" + VERSION + ")");
     }
 
     public static HashMap<String,String> system = new HashMap<>();
