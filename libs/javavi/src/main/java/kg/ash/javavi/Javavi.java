@@ -18,6 +18,8 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kg.ash.javavi.actions.Action;
+import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.actions.GetClassInfoAction;
 import kg.ash.javavi.actions.GetClassInfoFromSourceAction;
 import kg.ash.javavi.actions.GetClassPackagesAction;
@@ -61,27 +63,20 @@ public class Javavi {
     }
 
     private static void usage() {
-        System.out.println("Reflection and parsing for javacomplete (" + VERSION + ")");
-        System.out.println("  java [-classpath] kg.ash.javavi.Javavi [-sources sourceDirs] [-jars jarDirs] [-h] [-v] [-p] [-E] [name]");
+        version();
+        System.out.println("  java [-classpath] kg.ash.javavi.Javavi [-sources sourceDirs] [-h] [-v] [-d] [-D port] [action]");
         System.out.println("Options:");
-        System.out.println("  -p	        check package existed and read package children");
-        System.out.println("  -E	        check class existed and read class information");
         System.out.println("  -h	        help");
         System.out.println("  -v	        version");
         System.out.println("  -sources      sources directory");
-        System.out.println("  -jars         jars directories");
+        System.out.println("  -d            enable debug mode");
+        System.out.println("  -D port       start daemon on specified port");
     }
 
-    private static final int COMMAND__CLASS_INFO = 1;
-    private static final int COMMAND__PACKAGESLIST = 2;
-    private static final int COMMAND__SOURCE_PATH_CLASS_INFO = 3;
-    private static final int COMMAND__SIMILAR_CLASSES = 4;
-    private static final int COMMAND__SIMILAR_ANNOTATIONS = 7;
-    private static final int COMMAND__CLASSNAME_PACKAGES = 5;
-    private static final int COMMAND__EXECUTE_DAEMON = 6;
+    private static void version() {
+        System.out.println("Reflection and parsing for javavi vim plugin (" + VERSION + ")");
+    }
 
-
-    static String sources = "";
     public static HashMap<String,String> system = new HashMap<>();
     public static Daemon daemon = null;
 
@@ -94,11 +89,7 @@ public class Javavi {
 
     public static String makeResponse(String[] args) {
 
-        String target = "";
-        int command = 0;
-        int daemonPort = 0;
-        TargetParser targetParser = null;
-
+        Action action = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             debug(arg);
@@ -107,63 +98,30 @@ public class Javavi {
                     usage();
                     return "";
                 case "-v":
-                    return "Reflection and parsing for javavi vim plugin (" + VERSION + ")";
-                case "-E":
-                    command = COMMAND__CLASS_INFO;
-                    break;
-                case "-p":
-                    command = COMMAND__PACKAGESLIST;
-                    break;
-                case "-s":
-                    command = COMMAND__SOURCE_PATH_CLASS_INFO;
-                    break;
-                case "-class-packages":
-                    command = COMMAND__CLASSNAME_PACKAGES;
-                    break;
-                case "-similar-classes":
-                    command = COMMAND__SIMILAR_CLASSES;
-                    break;
-                case "-similar-annotations":
-                    command = COMMAND__SIMILAR_ANNOTATIONS;
-                    break;
+                    version();
+                    return "";
                 case "-sources": 
-                    sources = args[++i];
-                    system.put("sources", sources);
-                    debug(sources);
+                    system.put("sources", args[++i]);
                     break;
                 case "-d":
                     Javavi.debugMode = true;
                     break;
-                case "-D":
-                    command = COMMAND__EXECUTE_DAEMON;
-                    break;
+                default:
+                    if (action == null) {
+                        action = ActionFactory.get(arg);
+                    }
+            }
+
+            if (action != null) {
+                break;
             }
         }
 
         if (debugMode) NEWLINE = "\n";
 
         String result = "";
-        if (command == COMMAND__CLASS_INFO){
-            result = new GetClassInfoAction().perform(args);
-
-        } else if (command == COMMAND__SOURCE_PATH_CLASS_INFO) {
-            result = new GetClassInfoFromSourceAction().perform(args);
-
-        } else if (command == COMMAND__CLASSNAME_PACKAGES) {
-            result = new GetClassPackagesAction().perform(args);
-            
-        } else if (command == COMMAND__SIMILAR_CLASSES) {
-            result = new FilterSimilarClassesAction().perform(args);
-
-        } else if (command == COMMAND__SIMILAR_ANNOTATIONS) {
-            result = new FilterSimilarAnnotationsAction().perform(args);
-
-        } else if (command == COMMAND__PACKAGESLIST) {
-            result = new GetPackageInfoAction().perform(args);
-
-        } else if (command == COMMAND__EXECUTE_DAEMON) {
-            result = new ExecuteDaemonAction().perform(args);
-
+        if (action != null) {
+            result = action.perform(args);
         }
 
         return result;
