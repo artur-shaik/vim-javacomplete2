@@ -18,6 +18,8 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import kg.ash.javavi.actions.ClassInfoAction;
+import kg.ash.javavi.actions.ClassInfoFromSourceAction;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
@@ -75,6 +77,7 @@ public class Javavi {
 
 
     static String sources = "";
+    public static HashMap<String,String> system = new HashMap<>();
     private static Daemon daemon = null;
 
     public static void main( String[] args ) throws Exception {
@@ -120,6 +123,7 @@ public class Javavi {
                     break;
                 case "-sources": 
                     sources = args[++i];
+                    system.put("sources", sources);
                     debug(sources);
                     break;
                 case "-d":
@@ -143,22 +147,10 @@ public class Javavi {
 
         String result = "";
         if (command == COMMAND__CLASS_INFO){
-            ClassSearcher seacher = new ClassSearcher();
-            if (seacher.find(target, sources)) {
-                ClassReader reader = seacher.getReader();
-                reader.setTypeArguments(targetParser.getTypeArguments());
-                SourceClass clazz = reader.read(target);
-                if (clazz != null) {
-                    result = new OutputClassInfo().get(clazz);
-                }
-            }
+            result = new ClassInfoAction().perform(args);
 
         } else if (command == COMMAND__SOURCE_PATH_CLASS_INFO) {
-            Parser parser = new Parser(sources, target);
-            SourceClass clazz = parser.read(null);
-            if (clazz != null) {
-                result = new OutputClassInfo().get(clazz);
-            }
+            result = new ClassInfoFromSourceAction().perform(args);
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {
             if (cachedClassPackages.isEmpty()) {
