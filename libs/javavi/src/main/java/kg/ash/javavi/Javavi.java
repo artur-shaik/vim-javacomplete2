@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import kg.ash.javavi.actions.ClassInfoAction;
 import kg.ash.javavi.actions.ClassInfoFromSourceAction;
+import kg.ash.javavi.actions.ClassPackagesAction;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
@@ -153,10 +154,7 @@ public class Javavi {
             result = new ClassInfoFromSourceAction().perform(args);
 
         } else if (command == COMMAND__CLASSNAME_PACKAGES) {
-            if (cachedClassPackages.isEmpty()) {
-                new PackagesLoader(sources).collectPackages(cachedClassPackages);
-            }
-            return new OutputClassPackages(Javavi.cachedClassPackages).get(target);
+            result = new ClassPackagesAction().perform(args);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
             if (cachedClassPackages.isEmpty()) {
