@@ -7,18 +7,11 @@ import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.output.OutputClassInfo;
 
-public class GetClassInfoAction implements Action {
-
-    private String sources;
-
-    public GetClassInfoAction() {
-        sources = Javavi.system.get("sources");
-    }
+public class GetClassInfoAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        TargetParser targetParser = new TargetParser(sources);
-        String target = targetParser.parse(args[args.length - 1]);
+        String target = parseTarget(args);
 
         ClassSearcher seacher = new ClassSearcher();
         if (seacher.find(target, sources)) {
