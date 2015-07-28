@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import kg.ash.javavi.actions.GetClassInfoAction;
 import kg.ash.javavi.actions.GetClassInfoFromSourceAction;
 import kg.ash.javavi.actions.GetClassPackagesAction;
+import kg.ash.javavi.actions.FilterSimilarClassesAction;
+import kg.ash.javavi.actions.FilterSimilarAnnotationsAction;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.output.OutputPackageInfo;
 import kg.ash.javavi.output.OutputClassPackages;
@@ -157,16 +159,10 @@ public class Javavi {
             result = new GetClassPackagesAction().perform(args);
             
         } else if (command == COMMAND__SIMILAR_CLASSES) {
-            if (cachedClassPackages.isEmpty()) {
-                new PackagesLoader(sources).collectPackages(cachedClassPackages);
-            }
-            return new OutputSimilarClasses(Javavi.cachedClassPackages).get(target);
+            result = new FilterSimilarClassesAction().perform(args);
 
         } else if (command == COMMAND__SIMILAR_ANNOTATIONS) {
-            if (cachedClassPackages.isEmpty()) {
-                new PackagesLoader(sources).collectPackages(cachedClassPackages);
-            }
-            return new OutputSimilarAnnotations(Javavi.cachedClassPackages).get(target);
+            result = new FilterSimilarAnnotationsAction().perform(args);
 
         } else if (command == COMMAND__PACKAGESLIST) {
             if (cachedClassPackages.isEmpty()) {
