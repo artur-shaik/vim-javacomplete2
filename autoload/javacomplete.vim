@@ -1,8 +1,8 @@
 " Vim completion script
-" Version:	2.2
+" Version:	2.3
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-07-08
+" Last Change:	2015-07-29
 " Copyright:	Copyright (C) 2006-2015 cheng fang, artur shaik. All rights reserved.
 " License:	Vim License	(see vim's :help license)
 

@@ -33,7 +33,8 @@ Features:
 - Server side java reflection class loader and parsing library;
 - Searches class files automatically, using `pom.xml` to append completion classpath;
 - Generics;
-- Lambdas.
+- Lambdas;
+- Annotations completion.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;

@@ -1,4 +1,4 @@
-*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-07-08
+*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-07-29
 
 		    JAVACOMPLETE2 REFERENCE MANUAL	by artur shaik~
 		    					ashaihullin@gmail.com~
@@ -276,6 +276,11 @@ The embedded parser works a bit slower than expected.
 6. History					
 
 6.1 javacomplete				*javacomplete-history*
+
+v2.3
+    2015-07-29  Annotations completion support.
+                Option to swtich use of FQN in completion suggestions.
+                Check python support before start.
 
 v2.2
     2015-07-08  Lambda expressions parsing.

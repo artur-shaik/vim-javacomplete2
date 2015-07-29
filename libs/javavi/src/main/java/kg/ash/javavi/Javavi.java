@@ -25,7 +25,7 @@ import kg.ash.javavi.actions.ActionFactory;
 
 public class Javavi {
 
-    static final String VERSION	= "2.2.0";
+    static final String VERSION	= "2.3.0";
 
     public static String NEWLINE = "";
 
