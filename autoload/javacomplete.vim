@@ -160,7 +160,7 @@ fu! javacomplete#SetLogLevel(level)
 endfu
 
 fu! javacomplete#GetLogLevel()
-  return exists('s:loglevel') ? s:loglevel : 5
+  return exists('s:loglevel') ? s:loglevel : 0
 endfu
 
 fu! javacomplete#GetLogContent()
@@ -2140,29 +2140,34 @@ function! s:encodeURI(path)
   return ret
 endfunction
 
+function! s:GetBase(extra)
+  let base = expand("~/.javacomplete2/". a:extra)
+  if !isdirectory(base)
+    call mkdir(base, "p")
+  endif
+
+  return base
+endfunction
+
 function! s:FindClassPath() abort
   if executable('mvn')
-    let key = s:encodeURI(fnamemodify('.', ':p'))
-    let base = expand('~/.javacomplete2/mvnclasspath/')
-    if !isdirectory(base)
-      call mkdir(base, "p")
-    endif
+    let base = s:GetBase("mvnclasspath/")
+    let key = substitute(g:JavaComplete_PomPath, s:FILE_SEP, '_', 'g')
     let path = base . key
 
-    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
-    if pom != "" && filereadable(path)
-      if getftime(path) >= getftime('pom.xml')
+    if g:JavaComplete_PomPath != "" && filereadable(path)
+      if getftime(path) >= getftime(g:JavaComplete_PomPath)
         return join(readfile(path), '')
       endif
     endif
-    return s:GenerateClassPath(path)
+    return s:GenerateClassPath(path, g:JavaComplete_PomPath)
   else
     return '.'
   endif
 endfunction
 
-function! s:GenerateClassPath(path) abort
-  let lines = split(system('mvn dependency:build-classpath -DincludeScope=test'), "\n")
+function! s:GenerateClassPath(path, pom) abort
+  let lines = split(system('mvn --file ' . a:pom . ' dependency:build-classpath -DincludeScope=test'), "\n")
   for i in range(len(lines))
     if lines[i] =~ 'Dependencies classpath:'
       let cp = lines[i+1]
@@ -3414,8 +3419,11 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
     let g:JavaComplete_LibsPath = ""
   endif
 
-  let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
-  if s:pom != ""
+  if !exists('g:JavaComplete_PomPath')
+    let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+  endif
+
+  if g:JavaComplete_PomPath != ""
     let g:JavaComplete_LibsPath .= s:FindClassPath()
   endif
 endif

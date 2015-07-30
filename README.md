@@ -106,6 +106,8 @@ To enable inserting class imports with F4, add:
 
 `let g:JavaComplete_UseFQN = 1` - use full qualified name in completions description. By default is `0`.
 
+`let g:JavaComplete_PomPath = /path/to/pom.xml` - set path to `pom.xml` explicitly. It will be set automatically, if `pom.xml` is in underlying path.
+
 ## Commands
 
 manually run server:
