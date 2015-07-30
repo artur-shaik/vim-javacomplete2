@@ -160,7 +160,7 @@ fu! javacomplete#SetLogLevel(level)
 endfu
 
 fu! javacomplete#GetLogLevel()
-  return exists('s:loglevel') ? s:loglevel : 5
+  return exists('s:loglevel') ? s:loglevel : 0
 endfu
 
 fu! javacomplete#GetLogContent()
@@ -2140,22 +2140,27 @@ function! s:encodeURI(path)
   return ret
 endfunction
 
+function! s:GetBase(extra)
+  let base = expand("~/.javacomplete2/". a:extra)
+  if !isdirectory(base)
+    call mkdir(base, "p")
+  endif
+
+  return base
+endfunction
+
 function! s:FindClassPath() abort
   if executable('mvn')
-    let base = expand('~/.javacomplete2/mvnclasspath/')
-    if !isdirectory(base)
-      call mkdir(base, "p")
-    endif
-    let pom = findfile('pom.xml', escape(expand('%:p:h'), '*[]?{}, ') . ';')
-    let key = split(system('md5sum ' . pom))[0]
+    let base = s:GetBase("mvnclasspath/")
+    let key = substitute(g:JavaComplete_PomPath, s:FILE_SEP, '_', 'g')
     let path = base . key
 
-    if pom != "" && filereadable(path)
-      if getftime(path) >= getftime('pom.xml')
+    if g:JavaComplete_PomPath != "" && filereadable(path)
+      if getftime(path) >= getftime(g:JavaComplete_PomPath)
         return join(readfile(path), '')
       endif
     endif
-    return s:GenerateClassPath(path, pom)
+    return s:GenerateClassPath(path, g:JavaComplete_PomPath)
   else
     return '.'
   endif
@@ -3414,8 +3419,11 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
     let g:JavaComplete_LibsPath = ""
   endif
 
-  let s:pom = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
-  if s:pom != ""
+  if !exists('g:JavaComplete_PomPath')
+    let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+  endif
+
+  if g:JavaComplete_PomPath != ""
     let g:JavaComplete_LibsPath .= s:FindClassPath()
   endif
 endif
