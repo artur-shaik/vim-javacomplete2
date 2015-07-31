@@ -14,8 +14,9 @@ public class OutputSimilarClasses extends OutputSimilar {
 
     @Override
     protected List<String> getKeys(String target) {
+        if (target.isEmpty()) return new ArrayList<>();
         return classPackages.keySet().stream()
-            .filter(k -> target.length() > 0 && k.startsWith(target))
+            .filter(k -> k.startsWith(target))
             .collect(Collectors.toList());
     }
     
