@@ -304,7 +304,7 @@ fu! java_parser#type2Str(type)
   elseif t.tag == 'TYPEAPPLY'
     let s = ''
     for arg in t.arguments
-      if has_key(arg, 'tag')
+      if type(arg) == type({}) && has_key(arg, 'tag')
         if arg.tag == 'TYPEAPPLY'
           let s .= java_parser#type2Str(arg). ','
         elseif arg.tag == 'TYPEARRAY'
