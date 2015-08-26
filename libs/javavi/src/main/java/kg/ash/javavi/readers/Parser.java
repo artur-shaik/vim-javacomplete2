@@ -209,8 +209,10 @@ public class Parser implements ClassReader {
     }
 
     private static String getDeclarationName(String code) {
+        code = code.replaceAll("//.*$", "");
         code = code.replaceAll("@\\S+(\\s|$)", "");
         code = code.replaceAll("\n", "");
+        code = code.replaceAll("/\\*.*\\*/", "");
         int index = code.indexOf('{');
         if (index >= 0) {
             return code.substring(0, index).trim();
