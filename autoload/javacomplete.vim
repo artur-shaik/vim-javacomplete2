@@ -2963,28 +2963,31 @@ fu! s:Tree2ClassInfo(t)
   endfor
 
   " convert type name in extends to fqn for class defined in source files
-  if !has_key(a:t, 'classpath') && has_key(a:t, 'extends')
-    if has_key(a:t, 'filepath') && a:t.filepath != s:GetCurrentFileKey()
-      let filepath = a:t.filepath
-      let packagename = get(s:files[filepath].unit, 'package', '')
-    else
-      let filepath = expand('%:p')
-      let packagename = s:GetPackageName()
-    endif
-
-    let extends = a:t.extends
-    let i = 0
-    while i < len(extends)
-      let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
-      if type(ci) == type([])
-        let ci = [0]
-      endif
-      if has_key(ci, 'fqn')
-        let extends[i] = ci.fqn
-      endif
-      let i += 1
-    endwhile
+  if has_key(a:t, 'filepath') && a:t.filepath != s:GetCurrentFileKey()
+    let filepath = a:t.filepath
+    let packagename = get(s:files[filepath].unit, 'package', '')
+  else
+    let filepath = expand('%:p')
+    let packagename = s:GetPackageName()
   endif
+
+  if !has_key(a:t, 'extends')
+    let a:t.extends = ['java.lang.Object']
+  endif
+
+  let extends = a:t.extends
+
+  let i = 0
+  while i < len(extends)
+    let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
+    if type(ci) == type([])
+      let ci = [0]
+    endif
+    if has_key(ci, 'fqn')
+      let extends[i] = ci.fqn
+    endif
+    let i += 1
+  endwhile
 
   return t
 endfu
