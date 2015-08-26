@@ -1468,7 +1468,7 @@ fu! s:FoundClassLocally(type)
   endif
 
   let srcpath = javacomplete#GetSourcePath(1)
-  let file = globpath(srcpath, substitute(fqn, '\.', '/', 'g') . '.java')
+  let file = globpath(srcpath, substitute(a:type, '\.', '/', 'g') . '.java')
   if file != ''
     return 1
   endif
@@ -2719,8 +2719,12 @@ function! s:DoGetClassInfo(class, ...)
     return s:ARRAY_TYPE_INFO
   endif
 
+  let filekey	= a:0 > 0 && len(a:1) > 0 ? a:1 : s:GetCurrentFileKey()
+  let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : s:GetPackageName()
+
   " either this or super is not qualified
-  if a:class == 'this' || a:class == 'super'
+  let t = get(s:SearchTypeAt(javacomplete#parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
+  if a:class == 'this' || a:class == 'super' || t.fqn == packagename.'.'.a:class
     if &ft == 'jsp'
       let ci = s:DoGetReflectionClassInfo('javax.servlet.jsp.HttpJspPage')
       if a:class == 'this'
@@ -2733,7 +2737,6 @@ function! s:DoGetClassInfo(class, ...)
 
     call s:Info('A0. ' . a:class)
     " this can be a local class or anonymous class as well as static type
-    let t = get(s:SearchTypeAt(javacomplete#parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
     if !empty(t)
       " What will be returned for super?
       " - the protected or public inherited fields and methods. No ctors.
@@ -2743,8 +2746,6 @@ function! s:DoGetClassInfo(class, ...)
       " - besides the above, all fields and methods of current class. No ctors.
       return s:Sort(s:Tree2ClassInfo(t))
     endif
-
-    return {}
   endif
 
   let typename = a:class 
@@ -2762,9 +2763,6 @@ function! s:DoGetClassInfo(class, ...)
     return {}
   endif
 
-
-  let filekey	= a:0 > 0 && len(a:1) > 0 ? a:1 : s:GetCurrentFileKey()
-  let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : s:GetPackageName()
 
   let typeArgumentsCollected = s:CollectTypeArguments(typeArguments, packagename, filekey)
 
