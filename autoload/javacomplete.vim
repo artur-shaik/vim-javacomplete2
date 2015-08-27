@@ -240,6 +240,12 @@ function! javacomplete#StartServer()
   endif
 endfunction
 
+function! javacomplete#ClearCache()
+  let s:cache = {}
+  let s:files = {}
+  let s:history = {}
+endfunction
+
 function! javacomplete#ShowPort()
   if s:PollServer()
     JavacompletePy vim.command('echom "Javavi port: %d"' % bridgeState.port())
