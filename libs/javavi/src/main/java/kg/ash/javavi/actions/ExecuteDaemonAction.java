@@ -5,35 +5,41 @@ import kg.ash.javavi.Javavi;
 
 public class ExecuteDaemonAction implements Action {
 
+    private Integer daemonPort = null;
+    private Integer timeoutSeconds = -1;
+
     @Override
     public String perform(String[] args) {
         if (Javavi.daemon != null) {
             return "";
         }
 
-        Integer daemonPort = getPort(args);
+        parseArgs(args);
         if (daemonPort == null) {
             return "Error: daemonPort is null";
         }
 
         Javavi.debug("Starting daemon mode");
-        Javavi.daemon = new Daemon(daemonPort);
+        Javavi.daemon = new Daemon(daemonPort, timeoutSeconds);
         Javavi.daemon.start();
 
         return "";
     }
 
-    private Integer getPort(String[] args) {
-        Integer daemonPort = null;
+    private void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
             System.out.println(args[i]);
-            if (args[i].equals("-D")) {
-                daemonPort = Integer.parseInt(args[i+1]);
-                break;
+            switch (args[i]) {
+                case "-D": {
+                    daemonPort = Integer.parseInt(args[i+1]);
+                    break;
+                }
+                case "-t": {
+                    timeoutSeconds = Integer.parseInt(args[i+1]);
+                    break;
+                }
             }
         }
-
-        return daemonPort;
     }
     
 }
