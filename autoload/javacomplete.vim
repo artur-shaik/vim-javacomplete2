@@ -261,10 +261,11 @@ function! javacomplete#ShowPID()
   endif
 endfunction
 
-function! s:GetClassNameWithScope()
+function! s:GetClassNameWithScope(...)
+  let offset = a:0 > 0 ? a:1 : col('.')
   let curline = getline('.')
-  let word_l = col('.') - 1
-  let word_r = col('.') - 2
+  let word_l = offset - 1
+  let word_r = offset - 2
   while curline[word_l - 1] =~ '[.@A-Za-z0-9_]'
     if curline[word_l - 1] == '@'
       break
@@ -328,7 +329,17 @@ endfunction
 function! javacomplete#AddImport()
   call javacomplete#StartServer()
 
-  let classname = expand('<cword>')
+  let i = 0
+  let classname = ''
+  while empty(classname)
+    let offset = col('.') - i
+    if offset <= 0
+      return 
+    endif
+    let classname = s:GetClassNameWithScope(offset)
+    let i += 1
+  endwhile
+
   let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
