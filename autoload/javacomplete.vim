@@ -355,17 +355,21 @@ function! javacomplete#AddImport()
         echo "candidate [". index. "]: ". cn
         let index += 1
       endfor
-      let userinput = input('select one candidate [0]: ', '')
-      if empty(userinput)
+      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
         let userinput = 0
-      elseif userinput =~ '^[0-9]*$'
-        let userinput = str2nr(userinput)
       else
-        let userinput = -1
+        let userinput = input('select one candidate [0]: ', '')
+        if empty(userinput)
+          let userinput = 0
+        elseif userinput =~ '^[0-9]*$'
+          let userinput = str2nr(userinput)
+        else
+          let userinput = -1
+        endif
+        redraw!
       endif
-      redraw!
       
-      if userinput < 0 || userinput > len(result)
+      if userinput < 0 || userinput >= len(result)
         echo "JavaComplete: wrong input"
         return
       endif
@@ -382,6 +386,7 @@ endfunction
 
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#Complete(findstart, base)
+  let g:ClassnameCompleted = 0
   if a:findstart
     " reset enviroment
     let b:dotexpr = ''
@@ -531,6 +536,7 @@ function! javacomplete#Complete(findstart, base)
       let result = eval(response)
     endif
     if !empty(result)
+      let g:ClassnameCompleted = 1
       return result
     endif
   endif
@@ -2584,17 +2590,14 @@ endfu
 fu! s:SetCurrentFileKey()
   let s:curfilekey = empty(expand('%')) ? bufnr('%') : expand('%:p')
 endfu
-
 call s:SetCurrentFileKey()
-if has("autocmd")
-  augroup javacomplete
-    autocmd!
-    autocmd BufEnter *.java call s:SetCurrentFileKey()
-    autocmd FileType java call s:SetCurrentFileKey()
-    autocmd VimLeave * call javacomplete#TerminateServer()
-  augroup END
-endif
 
+function! s:CheckForExistCompletedClassName()
+  if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+    call javacomplete#AddImport()
+    let g:ClassnameCompleted = 0
+  endif
+endfu
 
 " Log utilities								{{{1
 fu! s:WatchVariant(variant)
@@ -3416,6 +3419,12 @@ function! s:UseFQN()
   return 0
 endfunction
 
+augroup javacomplete
+  autocmd!
+  autocmd BufEnter *.java call s:SetCurrentFileKey()
+  autocmd VimLeave * call javacomplete#TerminateServer()
+  autocmd TextChangedI *.java call s:CheckForExistCompletedClassName()
+augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
