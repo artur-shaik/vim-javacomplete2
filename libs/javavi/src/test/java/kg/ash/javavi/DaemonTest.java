@@ -7,7 +7,7 @@ public class DaemonTest {
 
     @Test
     public void testParseLine() {
-        Daemon daemon = new Daemon(0);
+        Daemon daemon = new Daemon(0, -1);
         Assert.assertEquals(new String[]{"-v"}, daemon.parseRequest("-v"));
         Assert.assertEquals(new String[]{"-E", "java.util.List"}, daemon.parseRequest("-E \"java.util.List\""));
         Assert.assertEquals(new String[]{"-E", "java.util.List"}, daemon.parseRequest("-E java.util.List"));
