@@ -18,6 +18,8 @@ public class ActionFactory {
                 return new FilterSimilarAnnotationsAction();
             case "-D":
                 return new ExecuteDaemonAction();
+            case "-unused-imports":
+                return new GetUnusedImportsAction();
         }
 
         return null;

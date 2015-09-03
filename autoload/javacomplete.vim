@@ -384,6 +384,27 @@ function! javacomplete#AddImport()
   endif
 endfunction
 
+function! javacomplete#RemoveUnusedImports()
+  let currentBuf = getline(1,'$')
+  let current = join(currentBuf, '\n')
+
+  let response = s:CommunicateToServer('-unused-imports -content', current, 'RemoveUnusedImports')
+  if response =~ '^['
+    let saveCursor = getcurpos()
+    let unused = eval(response)
+    for unusedImport in unused
+      let imports = s:GetImports('imports')
+      for import in imports
+        if import[0] == unusedImport
+          execute import[1]. 'delete _'
+        endif
+      endfor
+    endfor
+    let saveCursor[1] = saveCursor[1] - len(unused)
+    call setpos('.', saveCursor)
+  endif
+endfunction
+
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#Complete(findstart, base)
   let g:ClassnameCompleted = 0
