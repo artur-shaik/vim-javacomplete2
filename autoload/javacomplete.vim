@@ -279,6 +279,27 @@ function! s:GetClassNameWithScope(...)
   return curline[word_l : word_r]
 endfunction
 
+function! s:SortImports()
+  let imports = s:GetImports('imports')
+  if (len(imports) > 0)
+    let beginLine = imports[0][1]
+    let lastLine = imports[len(imports) - 1][1]
+    let importsList = []
+    for import in imports 
+      call add(importsList, import[0])
+    endfor
+
+    call sort(importsList)
+    let saveCursor = getcurpos()
+    execute beginLine.','.lastLine. 'delete _'
+    for imp in importsList
+      call append(beginLine - 1, 'import '. imp. ';')
+      let beginLine += 1
+    endfor
+    call setpos('.', saveCursor)
+  endif
+endfunction
+
 function! s:AddImport(import)
   let imports_fqn = s:GetImports('imports_fqn')
   for import in imports_fqn
@@ -311,17 +332,8 @@ function! s:AddImport(import)
     call append(insertline, 'import '. a:import. ';')
     call append(insertline, '')
   else
-    let idx = 0
-    while idx < len(imports)
-      let i = imports[idx][0]
-      let list = [i, a:import]
-      call sort(list)
-      if list[0] == a:import || idx == len(imports) - 1
-        call append(imports[idx][1] - 1, 'import '. a:import. ';')
-        return
-      endif
-      let idx += 1
-    endwhile
+    let lastLine = imports[len(imports) - 1][1]
+    call append(lastLine, 'import '. a:import. ';')
   endif
 
 endfunction
@@ -380,6 +392,7 @@ function! javacomplete#AddImport()
     endif
 
     call s:AddImport(import)
+    call s:SortImports()
 
   endif
 endfunction
