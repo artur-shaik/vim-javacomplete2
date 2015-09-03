@@ -291,7 +291,7 @@ function! s:SortImports()
 
     call sort(importsList)
     let saveCursor = getcurpos()
-    execute beginLine.','.lastLine. 'delete _'
+    silent execute beginLine.','.lastLine. 'delete _'
     for imp in importsList
       call append(beginLine - 1, 'import '. imp. ';')
       let beginLine += 1
@@ -409,12 +409,50 @@ function! javacomplete#RemoveUnusedImports()
       let imports = s:GetImports('imports')
       for import in imports
         if import[0] == unusedImport
-          execute import[1]. 'delete _'
+          silent execute import[1]. 'delete _'
         endif
       endfor
     endfor
     let saveCursor[1] = saveCursor[1] - len(unused)
     call setpos('.', saveCursor)
+  endif
+endfunction
+
+function! javacomplete#AddMissingImports()
+  let currentBuf = getline(1,'$')
+  let current = join(currentBuf, '\n')
+
+  let response = s:CommunicateToServer('-missing-imports -content', current, 'RemoveUnusedImports')
+  if response =~ '^['
+    let missing = eval(response)
+    for import in missing
+      if len(import) > 1
+        let index = 0
+        for cn in import
+          echo "candidate [". index. "]: ". cn
+          let index += 1
+        endfor
+        let userinput = input('select one candidate [0]: ', '')
+        if empty(userinput)
+          let userinput = 0
+        elseif userinput =~ '^[0-9]*$'
+          let userinput = str2nr(userinput)
+        else
+          let userinput = -1
+        endif
+        redraw!
+
+        if userinput < 0 || userinput >= len(import)
+          echo "JavaComplete: wrong input"
+          continue
+        endif
+
+        call s:AddImport(import[userinput])
+      else
+        call s:AddImport(import[0])
+      endif
+    endfor
+    call s:SortImports()
   endif
 endfunction
 

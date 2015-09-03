@@ -35,6 +35,10 @@ public class ClassImport {
         return isAsterisk;
     }
 
+    public String getHead() {
+        return name.substring(0, name.lastIndexOf("."));
+    }
+
     public String getTail() {
         if (name.contains(".")) {
             String[] splitted = name.split("\\.");

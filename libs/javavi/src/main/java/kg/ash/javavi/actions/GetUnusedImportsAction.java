@@ -40,7 +40,7 @@ public class GetUnusedImportsAction implements Action {
             }
         }
 
-        return "nope";
+        return "";
     }
     
 }

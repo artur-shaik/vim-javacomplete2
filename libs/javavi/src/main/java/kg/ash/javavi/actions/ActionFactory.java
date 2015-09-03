@@ -20,6 +20,8 @@ public class ActionFactory {
                 return new ExecuteDaemonAction();
             case "-unused-imports":
                 return new GetUnusedImportsAction();
+            case "-missing-imports":
+                return new GetMissingImportsAction();
         }
 
         return null;
