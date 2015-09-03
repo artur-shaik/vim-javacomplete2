@@ -104,7 +104,10 @@ public class Daemon extends Thread {
                 }
             }
 
-            if ((ch != '"' && !slashFlag) || (ch == '"' && slashFlag)) {
+            if ((ch != '"' && !slashFlag) || ((ch == '"' || ch == 'n') && slashFlag)) {
+                if (slashFlag && ch == 'n') {
+                    buff.append('\\');
+                }
                 buff.append(ch);
             }
 
