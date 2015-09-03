@@ -22,6 +22,7 @@ import com.github.javaparser.ast.visitor.*;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
 import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.readers.source.CompilationUnitCreator;
 import kg.ash.javavi.Javavi;
 
 public class Parser implements ClassReader {
@@ -48,12 +49,8 @@ public class Parser implements ClassReader {
             return Javavi.cachedClasses.get(targetClass);
         }
 
-        CompilationUnit cu;
-        try (FileInputStream in = new FileInputStream(sourceFile)) {
-            cu = JavaParser.parse(in);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Javavi.debug(ex);
+        CompilationUnit cu = CompilationUnitCreator.createFromFile(sourceFile);
+        if (cu == null) {
             return null;
         }
 
