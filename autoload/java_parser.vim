@@ -77,7 +77,7 @@ fu! java_parser#InitParser(lines, ...)
   let b:radix = 0		" The radix of a numeric literal token.
   let b:unicodeConversionBp =-1 " The buffer index of the last converted unicode character
 
-  let b:scanStrategy = get(s:options, 'scanStrategy', -1)	" 0 - only class members when parse full file; 
+  let b:scanStrategy = get(s:options, 'scanStrategy', 1)	" 0 - only class members when parse full file; 
   " 1 - keep statement as a whole string; 
   " 2 - all 
   " -1 - enable quick recognition of declarations in common form.
