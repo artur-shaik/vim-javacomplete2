@@ -165,7 +165,7 @@ public class Parser implements ClassReader {
         @Override
         public void visit(ConstructorDeclaration n, Object arg) {
             ClassConstructor constructor = new ClassConstructor();
-            constructor.setDeclaration(Parser.getDeclarationName(n.toStringWithoutComments()));
+            constructor.setDeclaration(n.getDeclarationAsString());
             constructor.setModifiers(n.getModifiers());
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
@@ -180,7 +180,7 @@ public class Parser implements ClassReader {
             ClassMethod method = new ClassMethod();
             method.setName(n.getName());
             method.setModifiers(n.getModifiers());
-            method.setDeclaration(Parser.getDeclarationName(n.toStringWithoutComments()));
+            method.setDeclaration(n.getDeclarationAsString());
 
             String className = n.getType().toString();
             method.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));
