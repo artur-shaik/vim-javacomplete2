@@ -340,7 +340,7 @@ function! javacomplete#AddImport()
     let i += 1
   endwhile
 
-  let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
+  let response = s:CommunicateToServer("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
     if len(result) == 0
@@ -549,9 +549,9 @@ function! javacomplete#Complete(findstart, base)
   " Try to complete incomplete class name
   if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z][A-Za-z0-9_]*$'
     if a:base =~ s:RE_ANNOTATION
-      let response = s:RunReflection("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
+      let response = s:CommunicateToServer("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
     else
-      let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
+      let response = s:CommunicateToServer("-similar-classes", a:base, 'Filter packages by incomplete class name')
     endif
     if response =~ '^['
       let result = eval(response)
@@ -1408,7 +1408,7 @@ fu! s:SearchStaticImports(name, fullmatch)
     endif
   endfor
   if commalist != ''
-    let res = s:RunReflection('-E', commalist, 's:SearchStaticImports in Batch')
+    let res = s:CommunicateToServer('-E', commalist, 's:SearchStaticImports in Batch')
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
@@ -2642,15 +2642,15 @@ fu! s:Sort(ci)
   return ci
 endfu
 
-" Function to run Reflection						{{{2
-fu! s:RunReflection(option, args, log)
+" Function for server communication						{{{2
+fu! s:CommunicateToServer(option, args, log)
   if !s:PollServer()
     call javacomplete#StartServer()
   endif
 
   if s:PollServer()
     let cmd = a:option. ' "'. a:args. '"'
-    call s:Info("RunReflection: ". cmd. " [". a:log. "]")
+    call s:Info("CommunicateToServer: ". cmd. " [". a:log. "]")
     let a:result = ""
 JavacompletePy << EOPC
 vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
@@ -2734,7 +2734,7 @@ fu! s:FetchClassInfo(fqn)
     return s:cache[a:fqn]
   endif
 
-  let res = s:RunReflection('-E', a:fqn, 'FetchClassInfo in Batch')
+  let res = s:CommunicateToServer('-E', a:fqn, 'FetchClassInfo in Batch')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
@@ -2951,7 +2951,7 @@ endfunction
 " See ClassInfoFactory.getClassInfo() in insenvim.
 function! s:DoGetReflectionClassInfo(fqn)
   if !has_key(s:cache, a:fqn)
-    let res = s:RunReflection('-C', a:fqn, 's:DoGetReflectionClassInfo')
+    let res = s:CommunicateToServer('-C', a:fqn, 's:DoGetReflectionClassInfo')
     if res =~ '^{'
       let s:cache[a:fqn] = s:Sort(eval(res))
     elseif res =~ '^['
@@ -3113,7 +3113,7 @@ fu! s:DoGetInfoByReflection(class, option)
     return s:cache[a:class]
   endif
 
-  let res = s:RunReflection(a:option, a:class, 's:DoGetInfoByReflection')
+  let res = s:CommunicateToServer(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])
