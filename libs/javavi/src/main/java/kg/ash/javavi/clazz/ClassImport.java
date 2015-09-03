@@ -35,6 +35,15 @@ public class ClassImport {
         return isAsterisk;
     }
 
+    public String getTail() {
+        if (name.contains(".")) {
+            String[] splitted = name.split("\\.");
+            return splitted[splitted.length - 1];
+        }
+
+        return name;
+    }
+
     public String toString() {
         return String.format("%s, isStatic: %b", name, isStatic);
     }
