@@ -266,13 +266,13 @@ function! s:GetClassNameWithScope(...)
   let curline = getline('.')
   let word_l = offset - 1
   let word_r = offset - 2
-  while curline[word_l - 1] =~ '[.@A-Za-z0-9_]'
+  while curline[word_l - 1] =~ '[@A-Za-z0-9_]'
     if curline[word_l - 1] == '@'
       break
     endif
     let word_l -= 1
   endwhile
-  while curline[word_r + 1] =~ '[.A-Za-z0-9_]'
+  while curline[word_r + 1] =~ '[A-Za-z0-9_]'
     let word_r += 1
   endwhile
 

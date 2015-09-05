@@ -4,10 +4,11 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
 import com.github.javaparser.TokenMgrError;
 import com.github.javaparser.ast.CompilationUnit;
-import java.io.FileReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
+import kg.ash.javavi.Javavi;
 
 public class CompilationUnitCreator {
 
@@ -15,6 +16,7 @@ public class CompilationUnitCreator {
         try {
             return JavaParser.parse(new FileReader(fileName), true);
         } catch (TokenMgrError | ParseException | FileNotFoundException e) {
+            Javavi.debug(e);
             return null;
         }
     }
@@ -23,6 +25,7 @@ public class CompilationUnitCreator {
         try {
             return JavaParser.parse(new StringReader(content), true);
         } catch (TokenMgrError | ParseException e) {
+            Javavi.debug(e);
             return null;
         }
     }
