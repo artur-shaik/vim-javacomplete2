@@ -251,13 +251,13 @@ endfunction
 
 function! javacomplete#ShowPort()
   if s:PollServer()
-    JavacompletePy vim.command('echom "Javavi port: %d"' % bridgeState.port())
+    JavacompletePy vim.command('echo "Javavi port: %d"' % bridgeState.port())
   endif
 endfunction
 
 function! javacomplete#ShowPID()
   if s:PollServer()
-    JavacompletePy vim.command('echom "Javavi pid: %d"' % bridgeState.pid())
+    JavacompletePy vim.command('echo "Javavi pid: %d"' % bridgeState.pid())
   endif
 endfunction
 
