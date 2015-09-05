@@ -399,7 +399,7 @@ endfunction
 
 function! javacomplete#RemoveUnusedImports()
   let currentBuf = getline(1,'$')
-  let current = join(currentBuf, '\n')
+  let current = join(currentBuf, '<_javacomplete-linebreak>')
 
   let response = s:CommunicateToServer('-unused-imports -content', current, 'RemoveUnusedImports')
   if response =~ '^['
@@ -420,7 +420,7 @@ endfunction
 
 function! javacomplete#AddMissingImports()
   let currentBuf = getline(1,'$')
-  let current = join(currentBuf, '\n')
+  let current = join(currentBuf, '<_javacomplete-linebreak>')
 
   let response = s:CommunicateToServer('-missing-imports -content', current, 'RemoveUnusedImports')
   if response =~ '^['
@@ -2700,7 +2700,8 @@ fu! s:CommunicateToServer(option, args, log)
   endif
 
   if s:PollServer()
-    let cmd = a:option. ' "'. a:args. '"'
+    let args = substitute(a:args, '"', '\\"', 'g')
+    let cmd = a:option. ' "'. args. '"'
     call s:Info("CommunicateToServer: ". cmd. " [". a:log. "]")
     let a:result = ""
 JavacompletePy << EOPC

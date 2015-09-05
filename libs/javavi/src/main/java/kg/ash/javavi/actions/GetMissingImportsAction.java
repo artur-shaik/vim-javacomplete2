@@ -9,17 +9,10 @@ import kg.ash.javavi.clazz.ClassImport;
 import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
 
-public class GetMissingImportsAction implements Action {
+public class GetMissingImportsAction extends ImportsAction {
 
     @Override
-    public String perform(String[] args) {
-        String content = getContent(args).replaceAll("\\\\n", "\n");
-        CompilationUnit compilationUnit = CompilationUnitCreator.createFromContent(content);
-        if (compilationUnit == null) return "Couldn't parse file";
-
-        ClassNamesFetcher classnamesFetcher = new ClassNamesFetcher(compilationUnit);
-        Set<String> classnames = classnamesFetcher.getNames();
-
+    public String action() {
         List<String> importTails = new ArrayList<>();
         List<String> asteriskImports = new ArrayList<>();
         if (compilationUnit.getImports() != null) {
@@ -33,6 +26,8 @@ public class GetMissingImportsAction implements Action {
                 }
             }
         }
+
+        asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {
@@ -62,16 +57,6 @@ public class GetMissingImportsAction implements Action {
             }
         }
         return result.append("]").toString();
-    }
-    
-    private String getContent(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-content")) {
-                return args[i + 1];
-            }
-        }
-
-        return "";
     }
     
 }
