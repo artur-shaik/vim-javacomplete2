@@ -94,7 +94,7 @@ Add this to your `.vimrc` file:
 
 To enable inserting class imports with F4, add:
 
-`nnoremap <F4> call javacomplete#AddImport()<cr>`
+`nnoremap <F4> :call javacomplete#AddImport()<cr>`
 
 ### Optional
 
