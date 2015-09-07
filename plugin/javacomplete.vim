@@ -12,7 +12,8 @@ command! JCserverStart call javacomplete#StartServer()
 command! JCserverTerminate call javacomplete#TerminateServer()
 command! JCserverCompile call javacomplete#CompileJavavi()
 
-command! -nargs=1 JCdebugSetLogLevel call javacomplete#SetLogLevel(<args>)
+command! JCdebugEnableLogs call javacomplete#EnableLogs()
+command! JCdebugDisableLogs call javacomplete#DisableLogs()
 command! JCdebugGetLogContent call javacomplete#GetLogContent()
 
 command! JCcacheClear call javacomplete#ClearCache()

@@ -148,19 +148,13 @@ endif
 
 
 let s:log = []
-" level
-" 	5	off/fatal 
-" 	4	error 
-" 	3	warn
-" 	2	info
-" 	1	debug
-" 	0	trace
-fu! javacomplete#SetLogLevel(level)
-  let s:loglevel = a:level
+let s:loglevel = 1
+fu! javacomplete#EnableLogs()
+  let s:loglevel = 0
 endfu
 
-fu! javacomplete#GetLogLevel()
-  return exists('s:loglevel') ? s:loglevel : 5
+fu! javacomplete#DisableLogs()
+  let s:loglevel = 1
 endfu
 
 fu! javacomplete#GetLogContent()
@@ -168,20 +162,8 @@ fu! javacomplete#GetLogContent()
   put =s:log
 endfu
 
-fu! s:Trace(msg)
-  call s:Log(0, a:msg)
-endfu
-
-fu! s:Debug(msg)
-  call s:Log(1, a:msg)
-endfu
-
-fu! s:Info(msg)
-  call s:Log(2, a:msg)
-endfu
-
-fu! s:Log(level, key, ...)
-  if a:level >= javacomplete#GetLogLevel()
+fu! s:Log(key)
+  if 0 >= s:loglevel
     call add(s:log, a:key)
   endif
 endfu
@@ -194,7 +176,7 @@ fu! s:System(cmd, caller)
   call s:WatchVariant(a:cmd)
   let t = reltime()
   let res = system(a:cmd)
-  call s:Debug(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
+  call s:Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
   return res
 endfu
 
@@ -219,7 +201,7 @@ endfunction
 
 function! javacomplete#StartServer()
   if s:PollServer() == 0
-    call s:Info("Restart server")
+    call s:Log("Restart server")
 
     let classpath = s:GetClassPath()
     let sources = ''
@@ -690,7 +672,7 @@ function! javacomplete#Complete(findstart, base)
       unlet s:padding
     endif
 
-    call s:Debug('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
+    call s:Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
     return result
   endif
 
@@ -800,7 +782,7 @@ function! s:CompleteAfterDot(expr)
 
   " 0. String literal
   if items[-1] =~  '"$'
-    call s:Info('P1. "str".|')
+    call s:Log('P1. "str".|')
     return s:GetMemberList("java.lang.String")
   endif
 
@@ -830,7 +812,7 @@ function! s:CompleteAfterDot(expr)
   if i > 1
     " cases: "this.|", "super.|", "ClassName.this.|", "ClassName.super.|", "TypeName.class.|"
     if items[k] ==# 'class' || items[k] ==# 'this' || items[k] ==# 'super'
-      call s:Info('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
+      call s:Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
       let ti = s:DoGetClassInfo(items[k] == 'class' ? 'java.lang.Class' : join(items[:k-1], '.'))
       if !empty(ti)
         let itemkind = items[k] ==# 'this' ? 1 : items[k] ==# 'super' ? 2 : 0
@@ -843,7 +825,7 @@ function! s:CompleteAfterDot(expr)
     else
       let fqn = join(items[:i-1], '.')
       let srcpath = join(s:GetSourceDirs(expand('%:p'), s:GetPackageName()), ',')
-      call s:Info('O2. ' . fqn)
+      call s:Log('O2. ' . fqn)
       call s:FetchClassInfo(fqn)
       if get(get(s:cache, fqn, {}), 'tag', '') == 'CLASSDEF'
         let ti = s:cache[fqn]
@@ -869,13 +851,13 @@ function! s:CompleteAfterDot(expr)
 
       if s:IsKeyword(ident)
         " 1)
-        call s:Info('F1. "' . ident . '.|"')
+        call s:Log('F1. "' . ident . '.|"')
         if ident ==# 'void' || s:IsBuiltinType(ident)
           let ti = s:PRIMITIVE_TYPE_INFO
           let itemkind = 11
 
           " 2)
-          call s:Info('F2. "' . ident . '.|"')
+          call s:Log('F2. "' . ident . '.|"')
         elseif ident ==# 'this' || ident ==# 'super'
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ti = s:DoGetClassInfo(ident)
@@ -884,7 +866,7 @@ function! s:CompleteAfterDot(expr)
       else
         " 3)
         let typename = s:GetDeclaredClassName(ident)
-        call s:Info('F3. "' . ident . '.|"  typename: "' . typename . '"')
+        call s:Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
             let ti = s:ARRAY_TYPE_INFO
@@ -894,7 +876,7 @@ function! s:CompleteAfterDot(expr)
 
         else
           " 4)
-          call s:Info('F4. "TypeName.|"')
+          call s:Log('F4. "TypeName.|"')
           let ti = s:DoGetClassInfo(ident)
           let itemkind = 11
 
@@ -904,7 +886,7 @@ function! s:CompleteAfterDot(expr)
 
           " 5)
           if empty(ti)
-            call s:Info('F5. "package.|"')
+            call s:Log('F5. "package.|"')
             unlet ti
             let ti = s:GetMembers(ident)	" s:DoGetPackegInfo(ident)
             let itemkind = 20
@@ -918,7 +900,7 @@ function! s:CompleteAfterDot(expr)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
     elseif items[0] =~# s:RE_ARRAY_TYPE
-      call s:Info('array type. "' . items[0] . '"')
+      call s:Log('array type. "' . items[0] . '"')
       let qid = substitute(items[0], s:RE_ARRAY_TYPE, '\1', '')
       if s:IsBuiltinType(qid) || (!s:HasKeyword(qid) && !empty(s:DoGetClassInfo(qid)))
         let ti = s:PRIMITIVE_TYPE_INFO
@@ -928,7 +910,7 @@ function! s:CompleteAfterDot(expr)
       " class instance creation expr:	"new String().|", "new NonLoadableClass().|"
       " array creation expr:	"new int[i=1] [val()].|", "new java.lang.String[].|"
     elseif items[0] =~ '^\s*new\s\+'
-      call s:Info('creation expr. "' . items[0] . '"')
+      call s:Log('creation expr. "' . items[0] . '"')
       let subs = split(substitute(items[0], '^\s*new\s\+\(' .s:RE_QUALID. '\)\s*\([([]\)', '\1;\2', ''), ';')
       if subs[1][0] == '['
         let ti = s:ARRAY_TYPE_INFO
@@ -944,7 +926,7 @@ function! s:CompleteAfterDot(expr)
 
       " casting conversion:	"(Object)o.|"
     elseif items[0] =~ s:RE_CASTING
-      call s:Info('Casting conversion. "' . items[0] . '"')
+      call s:Log('Casting conversion. "' . items[0] . '"')
       let subs = split(substitute(items[0], s:RE_CASTING, '\1;\2', ''), ';')
       let ti = s:DoGetClassInfo(subs[0])
 
@@ -956,7 +938,7 @@ function! s:CompleteAfterDot(expr)
         if type(typename) == type([])
           let typename = typename[0]
         endif
-        call s:Info('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
+        call s:Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
           let ti = s:ArrayAccess(typename, items[0])
         endif
@@ -986,7 +968,7 @@ function! s:CompleteAfterDot(expr)
       " package members
       if itemkind/10 == 2 && empty(brackets) && !s:IsKeyword(ident)
         let qn = join(items[:ii], '.')
-        call s:Info("package members: ". qn)
+        call s:Log("package members: ". qn)
         if type(ti) == type([])
           let idx = s:Index(ti, ident, 'word')
           if idx >= 0
@@ -1009,7 +991,7 @@ function! s:CompleteAfterDot(expr)
         " type members
       elseif itemkind/10 == 1 && empty(brackets)
         if ident ==# 'class' || ident ==# 'this' || ident ==# 'super'
-          call s:Info("type members: ". ident)
+          call s:Log("type members: ". ident)
           let ti = s:DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ii += 1
@@ -1020,7 +1002,7 @@ function! s:CompleteAfterDot(expr)
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0 && s:IsStatic(ti.fields[idx].m)
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
-          call s:Info("static fields: ". ident)
+          call s:Log("static fields: ". ident)
           let members = s:SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
             let ti = s:ArrayAccess(members[2][0].t, items[ii])
@@ -1042,7 +1024,7 @@ function! s:CompleteAfterDot(expr)
         " instance members
       elseif itemkind/10 == 0 && !s:IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
-          call s:Info("instance members")
+          call s:Log("instance members")
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
@@ -1108,7 +1090,7 @@ fu! s:ArrayAccess(arraytype, expr)
   if a:expr =~ s:RE_BRACKETS	| return {} | endif
   let typename = a:arraytype
 
-  call s:Info("array access: ". typename)
+  call s:Log("array access: ". typename)
 
   let dims = 0
   if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
@@ -1835,7 +1817,7 @@ endfu
 " Parser.GetType() in insenvim
 function! s:GetDeclaredClassName(var)
   let var = s:Trim(a:var)
-  call s:Trace('GetDeclaredClassName for "' . var . '"')
+  call s:Log('GetDeclaredClassName for "' . var . '"')
   if var =~# '^\(this\|super\)$'
     return var
   endif
@@ -1871,7 +1853,7 @@ function! s:GetDeclaredClassName(var)
     let class = substitute(declaration, '^\(public\s\+\|protected\s\+\|private\s\+\|abstract\s\+\|static\s\+\|final\s\+\|native\s\+\)*', '', '')
     let class = substitute(class, '\s*\([a-zA-Z0-9_.]\+\)\(\[\]\)\?\s\+.*', '\1\2', '')
     let class = substitute(class, '\([a-zA-Z0-9_.]\)<.*', '\1', '')
-    call s:Info('class: "' . class . '" declaration: "' . declaration . '" for ' . a:var)
+    call s:Log('class: "' . class . '" declaration: "' . declaration . '" for ' . a:var)
     let &ignorecase = ic
     if class != '' && class !=# a:var && class !=# 'import' && class !=# 'class'
       return class
@@ -1879,7 +1861,7 @@ function! s:GetDeclaredClassName(var)
   endif
 
   let &ignorecase = ic
-  call s:Trace('GetDeclaredClassName: cannot find')
+  call s:Log('GetDeclaredClassName: cannot find')
   return ''
 endfunction
 
@@ -2012,7 +1994,7 @@ fu! s:SearchNameInAST(tree, name, targetPos, fullmatch)
 
   let result = []
   call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name}, {})
-  " call s:Info(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
+  " call s:Log(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
   return result
 endfu
 
@@ -2294,17 +2276,17 @@ fu! s:GetClassPath()
   endif
 
   if exists('b:classpath') && b:classpath !~ '^\s*$'
-    call s:Info(b:classpath)
+    call s:Log(b:classpath)
     return path . b:classpath
   endif
 
   if exists('s:classpath')
-    call s:Info(s:classpath)
+    call s:Log(s:classpath)
     return path . javacomplete#GetClassPath()
   endif
 
   if exists('g:java_classpath') && g:java_classpath !~ '^\s*$'
-    call s:Info(g:java_classpath)
+    call s:Log(g:java_classpath)
     return path . g:java_classpath
   endif
 
@@ -2709,7 +2691,7 @@ fu! s:CommunicateToServer(option, args, log)
   if s:PollServer()
     let args = substitute(a:args, '"', '\\"', 'g')
     let cmd = a:option. ' "'. args. '"'
-    call s:Info("CommunicateToServer: ". cmd. " [". a:log. "]")
+    call s:Log("CommunicateToServer: ". cmd. " [". a:log. "]")
     let a:result = ""
 JavacompletePy << EOPC
 vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
@@ -2815,7 +2797,7 @@ function! s:DoGetClassInfo(class, ...)
     return s:cache[a:class]
   endif
 
-  call s:Info("DoGetClassInfo: ". a:class)
+  call s:Log("DoGetClassInfo: ". a:class)
 
   " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
   if a:class[-1:] == ']' || a:class[0] == '['
@@ -2838,7 +2820,7 @@ function! s:DoGetClassInfo(class, ...)
       return ci
     endif
 
-    call s:Info('A0. ' . a:class)
+    call s:Log('A0. ' . a:class)
     " this can be a local class or anonymous class as well as static type
     if !empty(t)
       " What will be returned for super?
@@ -2862,7 +2844,7 @@ function! s:DoGetClassInfo(class, ...)
   endif
 
   if typename !~ '^\s*' . s:RE_QUALID . '\s*$' || s:HasKeyword(typename)
-    call s:Info("No qualid: ". typename)
+    call s:Log("No qualid: ". typename)
     return {}
   endif
 
@@ -3033,7 +3015,7 @@ fu! s:GetClassInfoFromSource(class, filename)
   endif
 
   if empty(ci)
-    call s:Info('Use java_parser.vim to generate class information')
+    call s:Log('Use java_parser.vim to generate class information')
     let unit = javacomplete#parse(a:filename)
     let targetPos = a:filename == '%' ? java_parser#MakePos(line('.')-1, col('.')-1) : -1
     for t in s:SearchTypeAt(unit, targetPos, 1)
@@ -3509,7 +3491,7 @@ augroup END
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
-call s:Info("JavaComplete_Home: ". g:JavaComplete_Home)
+call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
@@ -3519,7 +3501,7 @@ if !exists("g:JavaComplete_SourcesPath")
       let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. s:PATH_SEP
     endif
   endfor
-  call s:Info("Default sources: ". g:JavaComplete_SourcesPath)
+  call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
