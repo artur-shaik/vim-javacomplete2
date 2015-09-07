@@ -95,6 +95,7 @@ Add this to your `.vimrc` file:
 To enable inserting class imports with F4, add:
 
 `nnoremap <F4> :JCAddImport<cr>`
+
 `inoremap <F4> <esc>:JCaddImportI<cr>`
 
 ### Optional
@@ -112,18 +113,29 @@ To enable inserting class imports with F4, add:
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
+
 `JCimportsRemoveUnused` - remove all unsused 'imports';
+
 `JCimportAdd` - add 'import' for classname that is under cursor, or before it;
+
 `JCimportAddI` - the same, but enable insert mode after 'import' was added;
 
+
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
+
 `JCserverShowPID` - show server process identificator;
+
 `JCserverStart` - start server manually;
+
 `JCserverTerminate` - stop server manually;
+
 `JCserverCompile` - compile server manually;
 
+
 `JCdebugSetLogLevel` - enable logs;
+
 `JCdebugGetLogContent` - get debug logs;
+
 
 `JCcacheClear` - clear cache manually.
 
