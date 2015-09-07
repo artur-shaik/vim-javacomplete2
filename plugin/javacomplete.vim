@@ -4,6 +4,7 @@
 command! JCimportsAddMissing call javacomplete#AddMissingImports()
 command! JCimportsRemoveUnused call javacomplete#RemoveUnusedImports()
 command! JCimportAdd call javacomplete#AddImport()
+command! JCimportAddI call javacomplete#AddImport(1)
 
 command! JCserverShowPort call javacomplete#ShowPort()
 command! JCserverShowPID call javacomplete#ShowPID()

@@ -338,7 +338,7 @@ function! s:AddImport(import)
 
 endfunction
 
-function! javacomplete#AddImport()
+function! javacomplete#AddImport(...)
   call javacomplete#StartServer()
 
   let i = 0
@@ -355,13 +355,14 @@ function! javacomplete#AddImport()
   let response = s:CommunicateToServer("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
+    let import = ''
     if len(result) == 0
       echo "JavaComplete: classname '". classname. "' not found in any scope."
-      return
-    endif
 
-    let import = 0
-    if len(result) > 1
+    elseif len(result) == 1
+      let import = result[0]
+
+    else
       if exists('g:ClassnameCompleted') && g:ClassnameCompleted
         return
       endif
@@ -383,17 +384,23 @@ function! javacomplete#AddImport()
       
       if userinput < 0 || userinput >= len(result)
         echo "JavaComplete: wrong input"
-        return
+      else
+        let import = result[userinput]
       endif
-
-      let import = result[userinput]
-    else
-      let import = result[0]
     endif
 
-    call s:AddImport(import)
-    call s:SortImports()
+    if !empty(import)
+      call s:AddImport(import)
+      call s:SortImports()
+    endif
 
+  endif
+
+  if a:0 > 0 && a:1
+    let cur = getcurpos()
+    let cur[2] = cur[2] + 1
+    execute 'startinsert'
+    call setpos('.', cur)
   endif
 endfunction
 
