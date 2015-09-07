@@ -17,3 +17,6 @@ command! JCdebugDisableLogs call javacomplete#DisableLogs()
 command! JCdebugGetLogContent call javacomplete#GetLogContent()
 
 command! JCcacheClear call javacomplete#ClearCache()
+
+
+autocmd Filetype java JCserverStart
