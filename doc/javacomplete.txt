@@ -1,4 +1,4 @@
-*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-07-29
+*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-09-07
 
 		    JAVACOMPLETE2 REFERENCE MANUAL	by artur shaik~
 		    					ashaihullin@gmail.com~
@@ -78,7 +78,9 @@ You can add this command to your .vimrc or _vimrc.
 
 3. Map key you prefer for insert class import:
 
-        :nnoremap <F4> call javacomplete#AddImport()<cr>
+        :nnoremap <F4> :JCAddImport<cr>
+        :inoremap <F4> <esc>:JCaddImportI<cr>
+
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
@@ -215,12 +217,21 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
 2.4 Commands					*javacomplete-commands*
 
-    javacomplete#StartServer()      manually run server.
-    javacomplete#TerminateServer()  manually stop server.
-    javacomplete#AddImport()        insert class import. 
-    javacomplete#ShowPort()         show port used for javavi server.
-    javacomplete#ShowPID()          show javavi server process id.
-    javacomplete#CompileJavavi()    manually run server compilation.
+    JCimportsAddMissing - add all missing 'imports';
+    JCimportsRemoveUnused - remove all unsused 'imports';
+    JCimportAdd - add 'import' for classname that is under cursor, or before it;
+    JCimportAddI - the same, but enable insert mode after 'import' was added;
+    
+    JCserverShowPort - show port, through which vim plugin communicates with server;
+    JCserverShowPID - show server process identificator;
+    JCserverStart - start server manually;
+    JCserverTerminate - stop server manually;
+    JCserverCompile - compile server manually;
+    
+    JCdebugSetLogLevel - enable logs;
+    JCdebugGetLogContent - get debug logs;
+    
+    JCcacheClear - clear cache manually.
 
 ==============================================================================
 3. Java parser in Vim    			*javacomplete-parser*
@@ -280,6 +291,10 @@ The embedded parser works a bit slower than expected.
 6. History					
 
 6.1 javacomplete				*javacomplete-history*
+
+v2.3.1
+    2015-09-07  Better experience with imports.
+                Commands added.
 
 v2.3
     2015-07-29  Annotations completion support.

@@ -1,8 +1,8 @@
 " Vim completion script
-" Version:	2.3
+" Version:	2.3.1
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-07-29
+" Last Change:	2015-09-08
 " Copyright:	Copyright (C) 2006-2015 cheng fang, artur shaik. All rights reserved.
 " License:	Vim License	(see vim's :help license)
 
@@ -251,13 +251,13 @@ endfunction
 
 function! javacomplete#ShowPort()
   if s:PollServer()
-    JavacompletePy vim.command('echom "Javavi port: %d"' % bridgeState.port())
+    JavacompletePy vim.command('echo "Javavi port: %d"' % bridgeState.port())
   endif
 endfunction
 
 function! javacomplete#ShowPID()
   if s:PollServer()
-    JavacompletePy vim.command('echom "Javavi pid: %d"' % bridgeState.pid())
+    JavacompletePy vim.command('echo "Javavi pid: %d"' % bridgeState.pid())
   endif
 endfunction
 
@@ -266,17 +266,38 @@ function! s:GetClassNameWithScope(...)
   let curline = getline('.')
   let word_l = offset - 1
   let word_r = offset - 2
-  while curline[word_l - 1] =~ '[.@A-Za-z0-9_]'
+  while curline[word_l - 1] =~ '[@A-Za-z0-9_]'
     if curline[word_l - 1] == '@'
       break
     endif
     let word_l -= 1
   endwhile
-  while curline[word_r + 1] =~ '[.A-Za-z0-9_]'
+  while curline[word_r + 1] =~ '[A-Za-z0-9_]'
     let word_r += 1
   endwhile
 
   return curline[word_l : word_r]
+endfunction
+
+function! s:SortImports()
+  let imports = s:GetImports('imports')
+  if (len(imports) > 0)
+    let beginLine = imports[0][1]
+    let lastLine = imports[len(imports) - 1][1]
+    let importsList = []
+    for import in imports 
+      call add(importsList, import[0])
+    endfor
+
+    call sort(importsList)
+    let saveCursor = getcurpos()
+    silent execute beginLine.','.lastLine. 'delete _'
+    for imp in importsList
+      call append(beginLine - 1, 'import '. imp. ';')
+      let beginLine += 1
+    endfor
+    call setpos('.', saveCursor)
+  endif
 endfunction
 
 function! s:AddImport(import)
@@ -311,22 +332,13 @@ function! s:AddImport(import)
     call append(insertline, 'import '. a:import. ';')
     call append(insertline, '')
   else
-    let idx = 0
-    while idx < len(imports)
-      let i = imports[idx][0]
-      let list = [i, a:import]
-      call sort(list)
-      if list[0] == a:import || idx == len(imports) - 1
-        call append(imports[idx][1] - 1, 'import '. a:import. ';')
-        return
-      endif
-      let idx += 1
-    endwhile
+    let lastLine = imports[len(imports) - 1][1]
+    call append(lastLine, 'import '. a:import. ';')
   endif
 
 endfunction
 
-function! javacomplete#AddImport()
+function! javacomplete#AddImport(...)
   call javacomplete#StartServer()
 
   let i = 0
@@ -340,24 +352,93 @@ function! javacomplete#AddImport()
     let i += 1
   endwhile
 
-  let response = s:RunReflection("-class-packages", classname, 'Filter packages to add import')
+  let response = s:CommunicateToServer("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
+    let import = ''
     if len(result) == 0
       echo "JavaComplete: classname '". classname. "' not found in any scope."
-      return
-    endif
 
-    let import = 0
-    if len(result) > 1
+    elseif len(result) == 1
+      let import = result[0]
+
+    else
+      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+        return
+      endif
+
       let index = 0
       for cn in result
         echo "candidate [". index. "]: ". cn
         let index += 1
       endfor
-      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+      let userinput = input('select one candidate [0]: ', '')
+      if empty(userinput)
         let userinput = 0
+      elseif userinput =~ '^[0-9]*$'
+        let userinput = str2nr(userinput)
       else
+        let userinput = -1
+      endif
+      redraw!
+      
+      if userinput < 0 || userinput >= len(result)
+        echo "JavaComplete: wrong input"
+      else
+        let import = result[userinput]
+      endif
+    endif
+
+    if !empty(import)
+      call s:AddImport(import)
+      call s:SortImports()
+    endif
+
+  endif
+
+  if a:0 > 0 && a:1
+    let cur = getcurpos()
+    let cur[2] = cur[2] + 1
+    execute 'startinsert'
+    call setpos('.', cur)
+  endif
+endfunction
+
+function! javacomplete#RemoveUnusedImports()
+  let currentBuf = getline(1,'$')
+  let current = join(currentBuf, '<_javacomplete-linebreak>')
+
+  let response = s:CommunicateToServer('-unused-imports -content', current, 'RemoveUnusedImports')
+  if response =~ '^['
+    let saveCursor = getcurpos()
+    let unused = eval(response)
+    for unusedImport in unused
+      let imports = s:GetImports('imports')
+      for import in imports
+        if import[0] == unusedImport
+          silent execute import[1]. 'delete _'
+        endif
+      endfor
+    endfor
+    let saveCursor[1] = saveCursor[1] - len(unused)
+    call setpos('.', saveCursor)
+  endif
+endfunction
+
+function! javacomplete#AddMissingImports()
+  let currentBuf = getline(1,'$')
+  let current = join(currentBuf, '<_javacomplete-linebreak>')
+
+  let response = s:CommunicateToServer('-missing-imports -content', current, 'RemoveUnusedImports')
+  if response =~ '^['
+    let missing = eval(response)
+    for import in missing
+      if len(import) > 1
+        let index = 0
+        for cn in import
+          echo "candidate [". index. "]: ". cn
+          let index += 1
+        endfor
         let userinput = input('select one candidate [0]: ', '')
         if empty(userinput)
           let userinput = 0
@@ -367,20 +448,18 @@ function! javacomplete#AddImport()
           let userinput = -1
         endif
         redraw!
+
+        if userinput < 0 || userinput >= len(import)
+          echo "JavaComplete: wrong input"
+          continue
+        endif
+
+        call s:AddImport(import[userinput])
+      else
+        call s:AddImport(import[0])
       endif
-      
-      if userinput < 0 || userinput >= len(result)
-        echo "JavaComplete: wrong input"
-        return
-      endif
-
-      let import = result[userinput]
-    else
-      let import = result[0]
-    endif
-
-    call s:AddImport(import)
-
+    endfor
+    call s:SortImports()
   endif
 endfunction
 
@@ -528,9 +607,9 @@ function! javacomplete#Complete(findstart, base)
   " Try to complete incomplete class name
   if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z][A-Za-z0-9_]*$'
     if a:base =~ s:RE_ANNOTATION
-      let response = s:RunReflection("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
+      let response = s:CommunicateToServer("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
     else
-      let response = s:RunReflection("-similar-classes", a:base, 'Filter packages by incomplete class name')
+      let response = s:CommunicateToServer("-similar-classes", a:base, 'Filter packages by incomplete class name')
     endif
     if response =~ '^['
       let result = eval(response)
@@ -1387,7 +1466,7 @@ fu! s:SearchStaticImports(name, fullmatch)
     endif
   endfor
   if commalist != ''
-    let res = s:RunReflection('-E', commalist, 's:SearchStaticImports in Batch')
+    let res = s:CommunicateToServer('-E', commalist, 's:SearchStaticImports in Batch')
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
@@ -2621,15 +2700,16 @@ fu! s:Sort(ci)
   return ci
 endfu
 
-" Function to run Reflection						{{{2
-fu! s:RunReflection(option, args, log)
+" Function for server communication						{{{2
+fu! s:CommunicateToServer(option, args, log)
   if !s:PollServer()
     call javacomplete#StartServer()
   endif
 
   if s:PollServer()
-    let cmd = a:option. ' "'. a:args. '"'
-    call s:Info("RunReflection: ". cmd. " [". a:log. "]")
+    let args = substitute(a:args, '"', '\\"', 'g')
+    let cmd = a:option. ' "'. args. '"'
+    call s:Info("CommunicateToServer: ". cmd. " [". a:log. "]")
     let a:result = ""
 JavacompletePy << EOPC
 vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
@@ -2713,7 +2793,7 @@ fu! s:FetchClassInfo(fqn)
     return s:cache[a:fqn]
   endif
 
-  let res = s:RunReflection('-E', a:fqn, 'FetchClassInfo in Batch')
+  let res = s:CommunicateToServer('-E', a:fqn, 'FetchClassInfo in Batch')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
@@ -2930,7 +3010,7 @@ endfunction
 " See ClassInfoFactory.getClassInfo() in insenvim.
 function! s:DoGetReflectionClassInfo(fqn)
   if !has_key(s:cache, a:fqn)
-    let res = s:RunReflection('-C', a:fqn, 's:DoGetReflectionClassInfo')
+    let res = s:CommunicateToServer('-C', a:fqn, 's:DoGetReflectionClassInfo')
     if res =~ '^{'
       let s:cache[a:fqn] = s:Sort(eval(res))
     elseif res =~ '^['
@@ -3092,7 +3172,7 @@ fu! s:DoGetInfoByReflection(class, option)
     return s:cache[a:class]
   endif
 
-  let res = s:RunReflection(a:option, a:class, 's:DoGetInfoByReflection')
+  let res = s:CommunicateToServer(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])

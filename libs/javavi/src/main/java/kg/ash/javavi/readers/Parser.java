@@ -22,6 +22,7 @@ import com.github.javaparser.ast.visitor.*;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
 import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.readers.source.CompilationUnitCreator;
 import kg.ash.javavi.Javavi;
 
 public class Parser implements ClassReader {
@@ -48,12 +49,8 @@ public class Parser implements ClassReader {
             return Javavi.cachedClasses.get(targetClass);
         }
 
-        CompilationUnit cu;
-        try (FileInputStream in = new FileInputStream(sourceFile)) {
-            cu = JavaParser.parse(in);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Javavi.debug(ex);
+        CompilationUnit cu = CompilationUnitCreator.createFromFile(sourceFile);
+        if (cu == null) {
             return null;
         }
 
@@ -165,7 +162,7 @@ public class Parser implements ClassReader {
         @Override
         public void visit(ConstructorDeclaration n, Object arg) {
             ClassConstructor constructor = new ClassConstructor();
-            constructor.setDeclaration(Parser.getDeclarationName(n.toStringWithoutComments()));
+            constructor.setDeclaration(n.getDeclarationAsString());
             constructor.setModifiers(n.getModifiers());
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
@@ -180,7 +177,7 @@ public class Parser implements ClassReader {
             ClassMethod method = new ClassMethod();
             method.setName(n.getName());
             method.setModifiers(n.getModifiers());
-            method.setDeclaration(Parser.getDeclarationName(n.toStringWithoutComments()));
+            method.setDeclaration(n.getDeclarationAsString());
 
             String className = n.getType().toString();
             method.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));

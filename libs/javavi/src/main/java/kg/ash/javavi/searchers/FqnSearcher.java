@@ -22,7 +22,7 @@ public class FqnSearcher {
         List<String> fqns = new ArrayList<>();
         for (ClassImport ci : clazz.getImports()) {
             if (!ci.isAsterisk()){
-                if (isDirect(ci.getName(), name)) {
+                if (ci.getTail().equals(name)) {
                     fqns.add(ci.getName());
                     break;
                 }
@@ -69,18 +69,6 @@ public class FqnSearcher {
         return arguments.toString();
     }
 
-    private boolean isDirect(String importString, String name) {
-        String importName;
-        if (importString.contains(".")) {
-            String[] splitted = importString.split("\\.");
-            importName = splitted[splitted.length - 1];
-        } else {
-            importName = importString;
-        }
-
-        return name.equals(importName);
-    }
-    
     private String replaceAsterisk(String asteriskImport) {
         String[] splitted = asteriskImport.split("\\.");
         String importName = "";

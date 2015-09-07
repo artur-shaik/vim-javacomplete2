@@ -83,6 +83,9 @@ public class Daemon extends Thread {
         for (char ch : request.toCharArray()) {
             if (quoteFlag) {
                 if (ch == '\\') {
+                    if (slashFlag) {
+                        buff.append("\\");
+                    }
                     slashFlag = true;
                     continue;
                 }
@@ -104,7 +107,10 @@ public class Daemon extends Thread {
                 }
             }
 
-            if ((ch != '"' && !slashFlag) || (ch == '"' && slashFlag)) {
+            if ((ch != '"' && !slashFlag) || ((ch == '"' || ch == 'n') && slashFlag)) {
+                if (slashFlag && ch != '"') {
+                    buff.append('\\');
+                }
                 buff.append(ch);
             }
 

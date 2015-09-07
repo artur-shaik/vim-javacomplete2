@@ -79,13 +79,13 @@ describe 'javacomplete-test'
         Expect getline(3) == 'import java.util.List;'
 
         call Call('s:AddImport', 'java.util.ArrayList')
-        Expect getline(3) == 'import java.util.ArrayList;'
+        Expect getline(3) == 'import java.util.List;'
 
         call Call('s:AddImport', 'foo.bar.Baz')
-        Expect getline(3) == 'import foo.bar.Baz;'
+        Expect getline(5) == 'import foo.bar.Baz;'
 
         call Call('s:AddImport', 'zoo.bar.Baz')
-        Expect getline(3) == 'import foo.bar.Baz;'
+        Expect getline(5) == 'import foo.bar.Baz;'
 
         new
 
@@ -93,13 +93,13 @@ describe 'javacomplete-test'
         Expect getline(2) == 'import java.util.List;'
 
         call Call('s:AddImport', 'java.util.ArrayList')
-        Expect getline(2) == 'import java.util.ArrayList;'
+        Expect getline(3) == 'import java.util.ArrayList;'
 
         call Call('s:AddImport', 'foo.bar.Baz')
-        Expect getline(2) == 'import foo.bar.Baz;'
+        Expect getline(4) == 'import foo.bar.Baz;'
 
         call Call('s:AddImport', 'zoo.bar.Baz')
-        Expect getline(2) == 'import foo.bar.Baz;'
+        Expect getline(4) == 'import foo.bar.Baz;'
 
     end
 
