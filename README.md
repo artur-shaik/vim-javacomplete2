@@ -94,7 +94,8 @@ Add this to your `.vimrc` file:
 
 To enable inserting class imports with F4, add:
 
-`nnoremap <F4> call javacomplete#AddImport()<cr>`
+`nnoremap <F4> :JCAddImport<cr>`
+`inoremap <F4> <esc>:JCaddImportI<cr>`
 
 ### Optional
 
@@ -110,29 +111,21 @@ To enable inserting class imports with F4, add:
 
 ## Commands
 
-manually run server:
+`JCimportsAddMissing` - add all missing 'imports';
+`JCimportsRemoveUnused` - remove all unsused 'imports';
+`JCimportAdd` - add 'import' for classname that is under cursor, or before it;
+`JCimportAddI` - the same, but enable insert mode after 'import' was added;
 
-    javacomplete#StartServer()
+`JCserverShowPort` - show port, through which vim plugin communicates with server;
+`JCserverShowPID` - show server process identificator;
+`JCserverStart` - start server manually;
+`JCserverTerminate` - stop server manually;
+`JCserverCompile` - compile server manually;
 
-manually stop server:
+`JCdebugSetLogLevel` - enable logs;
+`JCdebugGetLogContent` - get debug logs;
 
-    javacomplete#TerminateServer()
-
-insert class import:
-
-    javacomplete#AddImport()
-
-show port used for javavi server:
-
-    javacomplete#ShowPort()
-
-show javavi server process id:
-
-    javacomplete#ShowPID()
-
-manually run server compilation:
-
-    javacomplete#CompileJavavi()
+`JCcacheClear` - clear cache manually.
 
 ## Limitations:
 
