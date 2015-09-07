@@ -362,24 +362,24 @@ function! javacomplete#AddImport()
 
     let import = 0
     if len(result) > 1
+      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+        return
+      endif
+
       let index = 0
       for cn in result
         echo "candidate [". index. "]: ". cn
         let index += 1
       endfor
-      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+      let userinput = input('select one candidate [0]: ', '')
+      if empty(userinput)
         let userinput = 0
+      elseif userinput =~ '^[0-9]*$'
+        let userinput = str2nr(userinput)
       else
-        let userinput = input('select one candidate [0]: ', '')
-        if empty(userinput)
-          let userinput = 0
-        elseif userinput =~ '^[0-9]*$'
-          let userinput = str2nr(userinput)
-        else
-          let userinput = -1
-        endif
-        redraw!
+        let userinput = -1
       endif
+      redraw!
       
       if userinput < 0 || userinput >= len(result)
         echo "JavaComplete: wrong input"
