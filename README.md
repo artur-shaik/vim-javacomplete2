@@ -94,9 +94,9 @@ Add this to your `.vimrc` file:
 
 To enable inserting class imports with F4, add:
 
-`nnoremap <F4> :JCAddImport<cr>`
+`nnoremap <F4> :JCimportAdd<cr>`
 
-`inoremap <F4> <esc>:JCaddImportI<cr>`
+`inoremap <F4> <esc>:JCimportAddI<cr>`
 
 ### Optional
 
