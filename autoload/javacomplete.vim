@@ -2809,7 +2809,7 @@ function! s:DoGetClassInfo(class, ...)
 
   " either this or super is not qualified
   let t = get(s:SearchTypeAt(javacomplete#parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
-  if a:class == 'this' || a:class == 'super' || t.fqn == packagename.'.'.a:class
+  if a:class == 'this' || a:class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename.'.'.a:class)
     if &ft == 'jsp'
       let ci = s:DoGetReflectionClassInfo('javax.servlet.jsp.HttpJspPage')
       if a:class == 'this'
