@@ -6,19 +6,6 @@
 " Copyright:	Copyright (C) 2006-2015 cheng fang, artur shaik. All rights reserved.
 " License:	Vim License	(see vim's :help license)
 
-" It doesn't make sense to do any work if vim doesn't support any Python since
-" we relly on it to properly work.
-if has("python")
-  command! -nargs=1 JavacompletePy py <args>
-  command! -nargs=1 JavacompletePyfile pyfile <args>
-elseif has("python3")
-  command! -nargs=1 JavacompletePy py3 <args>
-  command! -nargs=1 JavacompletePyfile py3file <args>
-else
-  echoerr "Javacomplete needs Python support to run!"
-  finish
-endif
-
 " constants							{{{1
 " input context type
 let s:CONTEXT_AFTER_DOT		        = 1
@@ -79,14 +66,6 @@ let s:KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 'syn
 let s:KEYWORDS_TYPE	= ['class', 'interface', 'enum']
 let s:KEYWORDS		= s:PRIMITIVE_TYPES + s:KEYWORDS_MODS + s:KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
-let s:PATH_SEP	= ':'
-let s:FILE_SEP	= '/'
-let s:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
-if s:IS_WINDOWS
-  let s:PATH_SEP	= ';'
-  let s:FILE_SEP	= '\'
-endif
-
 let g:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
 let g:RE_IDENTIFIER	= '[a-zA-Z_$][a-zA-Z0-9_$]*'
 let g:RE_ANNOTATION	= '@[a-zA-Z_][a-zA-Z0-9_$]*'
@@ -127,46 +106,7 @@ let b:files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compi
 let s:history = {}	" 
 
 
-if exists('*uniq')
-  function! s:_uniq(list) abort
-    return uniq(a:list)
-  endfunction
-else
-  function! s:_uniq(list) abort
-    let i = len(a:list) - 1
-    while 0 < i
-      if a:list[i] ==# a:list[i - 1]
-        call remove(a:list, i)
-        let i -= 2
-      else
-        let i -= 1
-      endif
-    endwhile
-    return a:list
-  endfunction
-endif
 
-
-let s:log = []
-let s:loglevel = 1
-fu! javacomplete#EnableLogs()
-  let s:loglevel = 0
-endfu
-
-fu! javacomplete#DisableLogs()
-  let s:loglevel = 1
-endfu
-
-fu! javacomplete#GetLogContent()
-  new
-  put =s:log
-endfu
-
-fu! s:Log(key)
-  if 0 >= s:loglevel
-    call add(s:log, a:key)
-  endif
-endfu
 
 fu! SScope()
   return s:
@@ -176,71 +116,14 @@ fu! s:System(cmd, caller)
   call s:WatchVariant(a:cmd)
   let t = reltime()
   let res = system(a:cmd)
-  call s:Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
+  call javacomplete#logger#Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
   return res
 endfu
-
-function! s:PollServer()
-  let a:value = 0
-JavacompletePy << EOPC
-try:
-  vim.command("let a:value = '%d'" % bridgeState.poll())
-except:
-  # we'll get here if the bridgeState variable was not defined or if it's None.
-  # In this case we stop the processing and return the default 0 value.
-  pass
-EOPC
-  return a:value
-endfunction
-
-function! javacomplete#TerminateServer()
-  if s:PollServer() != 0
-    JavacompletePy bridgeState.terminateServer()
-  endif
-endfunction
-
-function! javacomplete#StartServer()
-  if s:PollServer() == 0
-    call s:Log("Restart server")
-
-    let classpath = s:GetClassPath()
-    let sources = ''
-    if exists('g:JavaComplete_SourcesPath')
-      let sources = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '" '
-    endif
-
-    let args = ' kg.ash.javavi.Javavi '. sources
-    if exists('g:JavaComplete_ServerAutoShutdownTime')
-      let args .= ' -t '. g:JavaComplete_ServerAutoShutdownTime
-    endif
-    let args .= ' -D '
-
-    let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
-    execute "JavacompletePyfile ". file
-
-    JavacompletePy import vim
-    JavacompletePy bridgeState = JavaviBridge()
-    JavacompletePy bridgeState.setupServer(vim.eval('javacomplete#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
-
-  endif
-endfunction
 
 function! javacomplete#ClearCache()
   let s:cache = {}
   let b:files = {}
   let s:history = {}
-endfunction
-
-function! javacomplete#ShowPort()
-  if s:PollServer()
-    JavacompletePy vim.command('echo "Javavi port: %d"' % bridgeState.port())
-  endif
-endfunction
-
-function! javacomplete#ShowPID()
-  if s:PollServer()
-    JavacompletePy vim.command('echo "Javavi pid: %d"' % bridgeState.pid())
-  endif
 endfunction
 
 function! javacomplete#GetClassNameWithScope(...)
@@ -398,16 +281,16 @@ function! javacomplete#Complete(findstart, base)
     return -1
   endif
 
-  call javacomplete#StartServer()
+  call javacomplete#server#Start()
 
   let result = []
 
   " Try to complete incomplete class name
   if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z][A-Za-z0-9_]*$'
     if a:base =~ g:RE_ANNOTATION
-      let response = s:CommunicateToServer("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
+      let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
     else
-      let response = s:CommunicateToServer("-similar-classes", a:base, 'Filter packages by incomplete class name')
+      let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
     endif
     if response =~ '^['
       let result = eval(response)
@@ -488,7 +371,7 @@ function! javacomplete#Complete(findstart, base)
       unlet s:padding
     endif
 
-    call s:Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
+    call javacomplete#logger#Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
     return result
   endif
 
@@ -598,7 +481,7 @@ function! s:CompleteAfterDot(expr)
 
   " 0. String literal
   if items[-1] =~  '"$'
-    call s:Log('P1. "str".|')
+    call javacomplete#logger#Log('P1. "str".|')
     return s:GetMemberList("java.lang.String")
   endif
 
@@ -628,7 +511,7 @@ function! s:CompleteAfterDot(expr)
   if i > 1
     " cases: "this.|", "super.|", "ClassName.this.|", "ClassName.super.|", "TypeName.class.|"
     if items[k] ==# 'class' || items[k] ==# 'this' || items[k] ==# 'super'
-      call s:Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
+      call javacomplete#logger#Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
       let ti = s:DoGetClassInfo(items[k] == 'class' ? 'java.lang.Class' : join(items[:k-1], '.'))
       if !empty(ti)
         let itemkind = items[k] ==# 'this' ? 1 : items[k] ==# 'super' ? 2 : 0
@@ -641,7 +524,7 @@ function! s:CompleteAfterDot(expr)
     else
       let fqn = join(items[:i-1], '.')
       let srcpath = join(s:GetSourceDirs(expand('%:p'), s:GetPackageName()), ',')
-      call s:Log('O2. ' . fqn)
+      call javacomplete#logger#Log('O2. ' . fqn)
       call s:FetchClassInfo(fqn)
       if get(get(s:cache, fqn, {}), 'tag', '') == 'CLASSDEF'
         let ti = s:cache[fqn]
@@ -667,13 +550,13 @@ function! s:CompleteAfterDot(expr)
 
       if s:IsKeyword(ident)
         " 1)
-        call s:Log('F1. "' . ident . '.|"')
+        call javacomplete#logger#Log('F1. "' . ident . '.|"')
         if ident ==# 'void' || s:IsBuiltinType(ident)
           let ti = s:PRIMITIVE_TYPE_INFO
           let itemkind = 11
 
           " 2)
-          call s:Log('F2. "' . ident . '.|"')
+          call javacomplete#logger#Log('F2. "' . ident . '.|"')
         elseif ident ==# 'this' || ident ==# 'super'
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ti = s:DoGetClassInfo(ident)
@@ -682,7 +565,7 @@ function! s:CompleteAfterDot(expr)
       else
         " 3)
         let typename = s:GetDeclaredClassName(ident)
-        call s:Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
+        call javacomplete#logger#Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
             let ti = s:ARRAY_TYPE_INFO
@@ -692,7 +575,7 @@ function! s:CompleteAfterDot(expr)
 
         else
           " 4)
-          call s:Log('F4. "TypeName.|"')
+          call javacomplete#logger#Log('F4. "TypeName.|"')
           let ti = s:DoGetClassInfo(ident)
           let itemkind = 11
 
@@ -702,7 +585,7 @@ function! s:CompleteAfterDot(expr)
 
           " 5)
           if empty(ti)
-            call s:Log('F5. "package.|"')
+            call javacomplete#logger#Log('F5. "package.|"')
             unlet ti
             let ti = s:GetMembers(ident)	" s:DoGetPackegInfo(ident)
             let itemkind = 20
@@ -716,7 +599,7 @@ function! s:CompleteAfterDot(expr)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
     elseif items[0] =~# g:RE_ARRAY_TYPE
-      call s:Log('array type. "' . items[0] . '"')
+      call javacomplete#logger#Log('array type. "' . items[0] . '"')
       let qid = substitute(items[0], g:RE_ARRAY_TYPE, '\1', '')
       if s:IsBuiltinType(qid) || (!s:HasKeyword(qid) && !empty(s:DoGetClassInfo(qid)))
         let ti = s:PRIMITIVE_TYPE_INFO
@@ -726,7 +609,7 @@ function! s:CompleteAfterDot(expr)
       " class instance creation expr:	"new String().|", "new NonLoadableClass().|"
       " array creation expr:	"new int[i=1] [val()].|", "new java.lang.String[].|"
     elseif items[0] =~ '^\s*new\s\+'
-      call s:Log('creation expr. "' . items[0] . '"')
+      call javacomplete#logger#Log('creation expr. "' . items[0] . '"')
       let subs = split(substitute(items[0], '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([([]\)', '\1;\2', ''), ';')
       if subs[1][0] == '['
         let ti = s:ARRAY_TYPE_INFO
@@ -742,7 +625,7 @@ function! s:CompleteAfterDot(expr)
 
       " casting conversion:	"(Object)o.|"
     elseif items[0] =~ g:RE_CASTING
-      call s:Log('Casting conversion. "' . items[0] . '"')
+      call javacomplete#logger#Log('Casting conversion. "' . items[0] . '"')
       let subs = split(substitute(items[0], g:RE_CASTING, '\1;\2', ''), ';')
       let ti = s:DoGetClassInfo(subs[0])
 
@@ -754,7 +637,7 @@ function! s:CompleteAfterDot(expr)
         if type(typename) == type([])
           let typename = typename[0]
         endif
-        call s:Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
+        call javacomplete#logger#Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
           let ti = s:ArrayAccess(typename, items[0])
         endif
@@ -784,7 +667,7 @@ function! s:CompleteAfterDot(expr)
       " package members
       if itemkind/10 == 2 && empty(brackets) && !s:IsKeyword(ident)
         let qn = join(items[:ii], '.')
-        call s:Log("package members: ". qn)
+        call javacomplete#logger#Log("package members: ". qn)
         if type(ti) == type([])
           let idx = s:Index(ti, ident, 'word')
           if idx >= 0
@@ -807,7 +690,7 @@ function! s:CompleteAfterDot(expr)
         " type members
       elseif itemkind/10 == 1 && empty(brackets)
         if ident ==# 'class' || ident ==# 'this' || ident ==# 'super'
-          call s:Log("type members: ". ident)
+          call javacomplete#logger#Log("type members: ". ident)
           let ti = s:DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ii += 1
@@ -818,7 +701,7 @@ function! s:CompleteAfterDot(expr)
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0 && s:IsStatic(ti.fields[idx].m)
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
-          call s:Log("static fields: ". ident)
+          call javacomplete#logger#Log("static fields: ". ident)
           let members = javacomplete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
             let ti = s:ArrayAccess(members[2][0].t, items[ii])
@@ -840,7 +723,7 @@ function! s:CompleteAfterDot(expr)
         " instance members
       elseif itemkind/10 == 0 && !s:IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
-          call s:Log("instance members")
+          call javacomplete#logger#Log("instance members")
           "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
           "if idx >= 0
           "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
@@ -906,7 +789,7 @@ fu! s:ArrayAccess(arraytype, expr)
   if a:expr =~ g:RE_BRACKETS	| return {} | endif
   let typename = a:arraytype
 
-  call s:Log("array access: ". typename)
+  call javacomplete#logger#Log("array access: ". typename)
 
   let dims = 0
   if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
@@ -1503,7 +1386,7 @@ endfu
 " Parser.GetType() in insenvim
 function! s:GetDeclaredClassName(var)
   let var = s:Trim(a:var)
-  call s:Log('GetDeclaredClassName for "' . var . '"')
+  call javacomplete#logger#Log('GetDeclaredClassName for "' . var . '"')
   if var =~# '^\(this\|super\)$'
     return var
   endif
@@ -1539,7 +1422,7 @@ function! s:GetDeclaredClassName(var)
     let class = substitute(declaration, '^\(public\s\+\|protected\s\+\|private\s\+\|abstract\s\+\|static\s\+\|final\s\+\|native\s\+\)*', '', '')
     let class = substitute(class, '\s*\([a-zA-Z0-9_.]\+\)\(\[\]\)\?\s\+.*', '\1\2', '')
     let class = substitute(class, '\([a-zA-Z0-9_.]\)<.*', '\1', '')
-    call s:Log('class: "' . class . '" declaration: "' . declaration . '" for ' . a:var)
+    call javacomplete#logger#Log('class: "' . class . '" declaration: "' . declaration . '" for ' . a:var)
     let &ignorecase = ic
     if class != '' && class !=# a:var && class !=# 'import' && class !=# 'class'
       return class
@@ -1547,7 +1430,7 @@ function! s:GetDeclaredClassName(var)
   endif
 
   let &ignorecase = ic
-  call s:Log('GetDeclaredClassName: cannot find')
+  call javacomplete#logger#Log('GetDeclaredClassName: cannot find')
   return ''
 endfunction
 
@@ -1680,7 +1563,7 @@ fu! s:SearchNameInAST(tree, name, targetPos, fullmatch)
 
   let result = []
   call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name}, {})
-  " call s:Log(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
+  " call javacomplete#logger#Log(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
   return result
 endfu
 
@@ -1793,32 +1676,6 @@ fu! javacomplete#SetSearchdeclMethod(method)
   let s:searchdecl = a:method
 endfu
 
-" JDK1.1								{{{2
-fu! javacomplete#UseJDK11()
-  let s:isjdk11 = 1
-endfu
-
-" java compiler								{{{2
-fu! javacomplete#GetCompiler()
-  return exists('s:compiler') && s:compiler !~  '^\s*$' ? s:compiler : 'javac'
-endfu
-
-fu! javacomplete#SetCompiler(compiler)
-  let s:compiler = a:compiler
-endfu
-
-" jvm launcher								{{{2
-fu! javacomplete#GetJVMLauncher()
-  return exists('s:interpreter') && s:interpreter !~  '^\s*$' ? s:interpreter : 'java'
-endfu
-
-fu! javacomplete#SetJVMLauncher(interpreter)
-  if javacomplete#GetJVMLauncher() != a:interpreter
-    let s:cache = {}
-  endif
-  let s:interpreter = a:interpreter
-endfu
-
 " sourcepath								{{{2
 fu! javacomplete#AddSourcePath(s)
   if !isdirectory(a:s)
@@ -1842,7 +1699,7 @@ fu! javacomplete#DelSourcePath(s)
 endfu
 
 fu! javacomplete#SetSourcePath(s)
-  let paths = type(a:s) == type([]) ? a:s : split(a:s, s:PATH_SEP)
+  let paths = type(a:s) == type([]) ? a:s : split(a:s, b:PATH_SEP)
   let s:sourcepath = []
   for path in paths
     if isdirectory(path)
@@ -1855,7 +1712,7 @@ endfu
 " NOTE: Avoid path duplicate, otherwise globpath() will return duplicate result.
 fu! javacomplete#GetSourcePath(...)
   echo s:GetSourceDirs(a:0 > 0 && a:1 ? expand('%:p') : '')
-  return join(s:GetSourceDirs(a:0 > 0 && a:1 ? expand('%:p') : ''), s:PATH_SEP)
+  return join(s:GetSourceDirs(a:0 > 0 && a:1 ? expand('%:p') : ''), b:PATH_SEP)
 endfu
 
 fu! s:GetSourceDirs(filepath, ...)
@@ -1879,10 +1736,6 @@ fu! s:GetSourceDirs(filepath, ...)
     endif
   endif
   return dirs
-endfu
-
-fu! javacomplete#GetClassPath()
-  return exists('s:classpath') ? join(s:classpath, s:PATH_SEP) : ''
 endfu
 
 function! s:nr2hex(nr)
@@ -1925,7 +1778,7 @@ endfunction
 function! s:FindClassPath() abort
   if executable('mvn')
     let base = s:GetBase("mvnclasspath/")
-    let key = substitute(g:JavaComplete_PomPath, s:FILE_SEP, '_', 'g')
+    let key = substitute(g:JavaComplete_PomPath, b:FILE_SEP, '_', 'g')
     let path = base . key
 
     if g:JavaComplete_PomPath != "" && filereadable(path)
@@ -1951,84 +1804,13 @@ function! s:GenerateClassPath(path, pom) abort
   return '.'
 endfunction
 
-" s:GetClassPath()							{{{2
-fu! s:GetClassPath()
-  let jars = s:GetExtraPath()
-  let path = s:GetJavaviClassPath() . s:PATH_SEP. s:GetJavaParserClassPath(). s:PATH_SEP
-  let path = path . join(jars, s:PATH_SEP) . s:PATH_SEP
-
-  if &ft == 'jsp'
-    let path .= s:GetClassPathOfJsp()
-  endif
-
-  if exists('b:classpath') && b:classpath !~ '^\s*$'
-    call s:Log(b:classpath)
-    return path . b:classpath
-  endif
-
-  if exists('s:classpath')
-    call s:Log(s:classpath)
-    return path . javacomplete#GetClassPath()
-  endif
-
-  if exists('g:java_classpath') && g:java_classpath !~ '^\s*$'
-    call s:Log(g:java_classpath)
-    return path . g:java_classpath
-  endif
-
-  if empty($CLASSPATH)
-    if s:JAVA_HOME == ''
-      let java = javacomplete#GetJVMLauncher()
-      let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
-      for line in javaSettings
-        if line =~ 'java\.home'
-          let s:JAVA_HOME = split(line, ' = ')[1]
-        endif
-      endfor
-    endif
-    return path. s:JAVA_HOME. '/lib'
-  endif
-
-  return path . $CLASSPATH
-endfu
-
-function! javacomplete#CompileJavavi()
-  call javacomplete#TerminateServer()
-
-  let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
-  if isdirectory(javaviDir. "target/classes") 
-    if s:IS_WINDOWS
-      silent exe '!rmdir \s "'. javaviDir. "target/classes"
-    else
-      silent exe '!rm -r '. javaviDir. "target/classes"
-    endif
-  endif
-
-  if executable('mvn')
-    exe '!'. 'mvn -f "'. javaviDir. '/pom.xml" compile'
-  else
-    call mkdir(javaviDir. "target/classes", "p")
-    exe '!'. javacomplete#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar'. s:PATH_SEP .' -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
-  endif
-endfunction
-
-" Check if Javavi classes exists and return classpath directory.
-" If not found, build Javavi library classes with maven or javac.
-fu! s:GetJavaviClassPath()
-  let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
-  if !isdirectory(javaviDir. "target/classes")
-    call javacomplete#CompileJavavi()
-  endif
-
-  if !empty(s:GlobPathList(javaviDir. 'target/classes', '**/*.class', 1))
-    return javaviDir. "target/classes"
-  else
-    echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK7+ installed?"
-  endif
-endfu
 
 " workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
 " should be removed in future versions
+function! javacomplete#GlobPathList(path, pattern, suf)
+  return s:GlobPathList(a:path, a:pattern, a:suf)
+endfunction
+
 function! s:GlobPathList(path, pattern, suf)
   if has("patch-7.4.279")
     return globpath(a:path, a:pattern, a:suf, 1)
@@ -2037,38 +1819,10 @@ function! s:GlobPathList(path, pattern, suf)
   endif
 endfunction
 
-fu! s:GetClassPathOfJsp()
-  if exists('b:classpath_jsp')
-    return b:classpath_jsp
-  endif
-
-  let b:classpath_jsp = ''
-  let path = expand('%:p:h')
-  while 1
-    if isdirectory(path . '/WEB-INF' )
-      if isdirectory(path . '/WEB-INF/classes')
-        let b:classpath_jsp .= s:PATH_SEP . path . '/WEB-INF/classes'
-      endif
-      if isdirectory(path . '/WEB-INF/lib')
-        let b:classpath_jsp .= s:PATH_SEP . path . '/WEB-INF/lib/*.jar'
-        endif
-      endif
-      return b:classpath_jsp
-    endif
-
-    let prev = path
-    let path = fnamemodify(path, ":p:h:h")
-    if path == prev
-      break
-    endif
-  endwhile
-  return ''
-endfu
-
 " return only classpath which are directories
 fu! s:GetClassDirs()
   let dirs = []
-  for path in split(s:GetClassPath(), s:PATH_SEP)
+  for path in split(javacomplete#server#GetClassPath(), b:PATH_SEP)
     if isdirectory(path)
       call add(dirs, fnamemodify(path, ':p:h'))
     endif
@@ -2354,95 +2108,6 @@ fu! s:Sort(ci)
   return ci
 endfu
 
-" Function for server communication						{{{2
-function! javacomplete#CommunicateToServer(option, args, log)
-  return s:CommunicateToServer(a:option, a:args, a:log)
-endfu
-function! s:CommunicateToServer(option, args, log)
-  if !s:PollServer()
-    call javacomplete#StartServer()
-  endif
-
-  if s:PollServer()
-    let args = substitute(a:args, '"', '\\"', 'g')
-    let cmd = a:option. ' "'. args. '"'
-    call s:Log("CommunicateToServer: ". cmd. " [". a:log. "]")
-    let a:result = ""
-JavacompletePy << EOPC
-vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
-EOPC
-    return a:result
-  endif
-
-  return ""
-endfu
-
-function! s:ExpandAllPaths(path)
-    let result = ''
-    let list = s:_uniq(sort(split(a:path, s:PATH_SEP)))
-    for l in list
-      let result = result. substitute(expand(l), '\\', '/', 'g') . s:PATH_SEP
-    endfor
-    return result
-endfunction
-
-function! s:GetJavaParserClassPath()
-  let path = g:JavaComplete_JavaParserJar . s:PATH_SEP
-  if exists('b:classpath') && b:classpath !~ '^\s*$'
-    return path . b:classpath
-  endif
-
-  if exists('s:classpath')
-    return path . javacomplete#GetClassPath()
-  endif
-
-  if exists('g:java_classpath') && g:java_classpath !~ '^\s*$'
-    return path . g:java_classpath
-  endif
-
-  return path
-endfunction
-
-function! s:GetExtraPath()
-  let jars = []
-  let extrapath = ''
-  if exists('g:JavaComplete_LibsPath')
-    let paths = split(g:JavaComplete_LibsPath, s:PATH_SEP)
-    for path in paths
-      call extend(jars, s:ExpandPathToJars(path))
-    endfor
-  endif
-
-  return jars
-endfunction
-
-function! s:ExpandPathToJars(path)
-  if s:IsJarOrZip(a:path)
-    return [a:path]
-  endif
-
-  let jars = []
-  let files = s:GlobPathList(a:path, "*", 1)
-  for file in files
-    if s:IsJarOrZip(file)
-      call add(jars, s:PATH_SEP . file)
-    elseif isdirectory(file)
-      call extend(jars, s:ExpandPathToJars(file))
-    endif
-  endfor
-
-  return jars
-endfunction
-
-function! s:IsJarOrZip(path)
-    let filetype = strpart(a:path, len(a:path) - 4)
-    if filetype ==? ".jar" || filetype ==? ".zip"
-      return 1
-    endif
-
-    return 0
-endfunction
-
 " class information							{{{2
 
 fu! s:FetchClassInfo(fqn)
@@ -2450,7 +2115,7 @@ fu! s:FetchClassInfo(fqn)
     return s:cache[a:fqn]
   endif
 
-  let res = s:CommunicateToServer('-E', a:fqn, 'FetchClassInfo in Batch')
+  let res = javacomplete#server#Communicate('-E', a:fqn, 'FetchClassInfo in Batch')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
@@ -2472,7 +2137,7 @@ function! s:DoGetClassInfo(class, ...)
     return s:cache[a:class]
   endif
 
-  call s:Log("DoGetClassInfo: ". a:class)
+  call javacomplete#logger#Log("DoGetClassInfo: ". a:class)
 
   " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
   if a:class[-1:] == ']' || a:class[0] == '['
@@ -2495,7 +2160,7 @@ function! s:DoGetClassInfo(class, ...)
       return ci
     endif
 
-    call s:Log('A0. ' . a:class)
+    call javacomplete#logger#Log('A0. ' . a:class)
     " this can be a local class or anonymous class as well as static type
     if !empty(t)
       " What will be returned for super?
@@ -2519,7 +2184,7 @@ function! s:DoGetClassInfo(class, ...)
   endif
 
   if typename !~ '^\s*' . g:RE_QUALID . '\s*$' || s:HasKeyword(typename)
-    call s:Log("No qualid: ". typename)
+    call javacomplete#logger#Log("No qualid: ". typename)
     return {}
   endif
 
@@ -2667,7 +2332,7 @@ endfunction
 " See ClassInfoFactory.getClassInfo() in insenvim.
 function! s:DoGetReflectionClassInfo(fqn)
   if !has_key(s:cache, a:fqn)
-    let res = s:CommunicateToServer('-C', a:fqn, 's:DoGetReflectionClassInfo')
+    let res = javacomplete#server#Communicate('-C', a:fqn, 's:DoGetReflectionClassInfo')
     if res =~ '^{'
       let s:cache[a:fqn] = s:Sort(eval(res))
     elseif res =~ '^['
@@ -2690,7 +2355,7 @@ fu! s:GetClassInfoFromSource(class, filename)
   endif
 
   if empty(ci)
-    call s:Log('Use java_parser.vim to generate class information')
+    call javacomplete#logger#Log('Use java_parser.vim to generate class information')
     let unit = javacomplete#parse(a:filename)
     let targetPos = a:filename == '%' ? java_parser#MakePos(line('.')-1, col('.')-1) : -1
     for t in s:SearchTypeAt(unit, targetPos, 1)
@@ -2829,7 +2494,7 @@ fu! s:DoGetInfoByReflection(class, option)
     return s:cache[a:class]
   endif
 
-  let res = s:CommunicateToServer(a:option, a:class, 's:DoGetInfoByReflection')
+  let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])
@@ -3166,22 +2831,22 @@ augroup END
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
-call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
+call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
   let sources = s:GlobPathList(getcwd(), '**/src', 0)
   for src in sources
     if match(src, '.*build.*') < 0
-      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. s:PATH_SEP
+      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. b:PATH_SEP
     endif
   endfor
-  call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
+  call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
   if exists('g:JavaComplete_LibsPath')
-    let g:JavaComplete_LibsPath .= s:PATH_SEP
+    let g:JavaComplete_LibsPath .= b:PATH_SEP
   else
     let g:JavaComplete_LibsPath = ""
   endif
@@ -3194,6 +2859,10 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
     let g:JavaComplete_LibsPath .= s:FindClassPath()
   endif
 endif
+
+function! javacomplete#Start()
+  call javacomplete#server#Start()
+endfunction
 
 " }}}
 "}}}

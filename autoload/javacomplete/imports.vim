@@ -127,7 +127,7 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
     endif
   endfor
   if commalist != ''
-    let res = javacomplete#CommunicateToServer('-E', commalist, 's:SearchStaticImports in Batch')
+    let res = javacomplete#server#Communicate('-E', commalist, 's:SearchStaticImports in Batch')
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
@@ -210,7 +210,7 @@ function! s:AddImport(import)
 endfunction
 
 function! javacomplete#imports#AddImport(...)
-  call javacomplete#StartServer()
+  call javacomplete#server#Start()
 
   let i = 0
   let classname = ''
@@ -223,7 +223,7 @@ function! javacomplete#imports#AddImport(...)
     let i += 1
   endwhile
 
-  let response = javacomplete#CommunicateToServer("-class-packages", classname, 'Filter packages to add import')
+  let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
     let import = ''
@@ -279,7 +279,7 @@ function! javacomplete#imports#RemoveUnusedImports()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
-  let response = javacomplete#CommunicateToServer('-unused-imports -content', current, 'RemoveUnusedImports')
+  let response = javacomplete#server#Communicate('-unused-imports -content', current, 'RemoveUnusedImports')
   if response =~ '^['
     let saveCursor = getcurpos()
     let unused = eval(response)
@@ -300,7 +300,7 @@ function! javacomplete#imports#AddMissingImports()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
-  let response = javacomplete#CommunicateToServer('-missing-imports -content', current, 'RemoveUnusedImports')
+  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'RemoveUnusedImports')
   if response =~ '^['
     let missing = eval(response)
     for import in missing
