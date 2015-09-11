@@ -106,42 +106,14 @@ let b:files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compi
 let s:history = {}	" 
 
 
-
-
 fu! SScope()
   return s:
-endfu
-
-fu! s:System(cmd, caller)
-  call s:WatchVariant(a:cmd)
-  let t = reltime()
-  let res = system(a:cmd)
-  call javacomplete#logger#Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
-  return res
 endfu
 
 function! javacomplete#ClearCache()
   let s:cache = {}
   let b:files = {}
   let s:history = {}
-endfunction
-
-function! javacomplete#GetClassNameWithScope(...)
-  let offset = a:0 > 0 ? a:1 : col('.')
-  let curline = getline('.')
-  let word_l = offset - 1
-  let word_r = offset - 2
-  while curline[word_l - 1] =~ '[@A-Za-z0-9_]'
-    if curline[word_l - 1] == '@'
-      break
-    endif
-    let word_l -= 1
-  endwhile
-  while curline[word_r + 1] =~ '[A-Za-z0-9_]'
-    let word_r += 1
-  endwhile
-
-  return curline[word_l : word_r]
 endfunction
 
 " This function is used for the 'omnifunc' option.		{{{1
@@ -153,12 +125,12 @@ function! javacomplete#Complete(findstart, base)
     let b:incomplete = ''
     let b:context_type = s:CONTEXT_OTHER
 
-    let statement = s:GetStatement()
+    let statement = javacomplete#scanner#GetStatement()
 
     let s:et_whole = reltime()
     let start = col('.') - 1
 
-    if javacomplete#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
+    if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
       let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       let curline = getline(".")
@@ -213,7 +185,7 @@ function! javacomplete#Complete(findstart, base)
           let b:context_type = s:CONTEXT_NEED_TYPE
         endif
 
-        let b:dotexpr = s:ExtractCleanExpr(statement)
+        let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
       endif
 
       " all cases: " java.ut|" or " java.util.|" or "ja|"
@@ -266,7 +238,7 @@ function! javacomplete#Complete(findstart, base)
 
           " case: "expr.method(|)"
         elseif statement[pos-1] == '.' && !s:IsKeyword(strpart(statement, pos))
-          let b:dotexpr = s:ExtractCleanExpr(strpart(statement, 0, pos))
+          let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(strpart(statement, 0, pos))
           let b:incomplete = strpart(statement, pos)
           return start - strlen(b:incomplete)
         endif
@@ -274,7 +246,7 @@ function! javacomplete#Complete(findstart, base)
 
     elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
       let b:context_type = s:CONTEXT_METHOD_REFERENCE
-      let b:dotexpr = s:ExtractCleanExpr(statement)
+      let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
       return start - strlen(b:incomplete)
     endif
 
@@ -426,7 +398,7 @@ fu! s:CompleteAfterWord(incomplete)
       let lnum = search('\<\C\(class\|interface\|enum\)[ \t\n\r]\+' . a:incomplete . '[a-zA-Z0-9_$]*[< \t\n\r]', 'W')
       if lnum == 0
         break
-      elseif s:InCommentOrLiteral(line('.'), col('.'))
+      elseif javacomplete#util#InCommentOrLiteral(line('.'), col('.'))
         continue
       else
         normal w
@@ -443,7 +415,7 @@ fu! s:CompleteAfterWord(incomplete)
     exe 'vimgrep /\s*' . g:RE_TYPE_DECL . '/jg ' . filepatterns
     for item in getqflist()
       if item.text !~ '^\s*\*\s\+'
-        let text = matchstr(s:Prune(item.text, -1), '\s*' . g:RE_TYPE_DECL)
+        let text = matchstr(javacomplete#util#Prune(item.text, -1), '\s*' . g:RE_TYPE_DECL)
         if text != ''
           let subs = split(substitute(text, '\s*' . g:RE_TYPE_DECL, '\1;\2;\3', ''), ';', 1)
           if subs[2] =~# '^' . a:incomplete && (subs[0] =~ '\C\<public\>' || fnamemodify(bufname(item.bufnr), ':p:h') == expand('%:p:h'))
@@ -473,7 +445,7 @@ endfu
 " Precondition:	expr must end with '.'
 " return members of the value of expression
 function! s:CompleteAfterDot(expr)
-  let items = s:ParseExpr(a:expr)		" TODO: return a dict containing more than items
+  let items = javacomplete#scanner#ParseExpr(a:expr)		" TODO: return a dict containing more than items
   if empty(items)
     return []
   endif
@@ -669,7 +641,7 @@ function! s:CompleteAfterDot(expr)
         let qn = join(items[:ii], '.')
         call javacomplete#logger#Log("package members: ". qn)
         if type(ti) == type([])
-          let idx = s:Index(ti, ident, 'word')
+          let idx = javacomplete#util#Index(ti, ident, 'word')
           if idx >= 0
             if ti[idx].kind == 'P'
               unlet ti
@@ -698,9 +670,6 @@ function! s:CompleteAfterDot(expr)
 
         elseif !s:IsKeyword(ident) && type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           " accessible static field
-          "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
-          "if idx >= 0 && s:IsStatic(ti.fields[idx].m)
-          "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
           call javacomplete#logger#Log("static fields: ". ident)
           let members = javacomplete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
@@ -724,9 +693,6 @@ function! s:CompleteAfterDot(expr)
       elseif itemkind/10 == 0 && !s:IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           call javacomplete#logger#Log("instance members")
-          "let idx = s:Index(get(ti, 'fields', []), ident, 'n')
-          "if idx >= 0
-          "  let ti = s:ArrayAccess(ti.fields[idx].t, items[ii])
           let members = javacomplete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           let itemkind = 0
           if !empty(members[2])
@@ -793,7 +759,7 @@ fu! s:ArrayAccess(arraytype, expr)
 
   let dims = 0
   if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
-    let dims = s:CountDims(a:expr) - s:CountDims(typename)
+    let dims = javacomplete#util#CountDims(a:expr) - javacomplete#util#CountDims(typename)
     if dims == 0
       let typename = typename[0 : stridx(typename, '[') - 1]
     elseif dims < 0
@@ -809,394 +775,6 @@ fu! s:ArrayAccess(arraytype, expr)
   endif
   return {}
 endfu
-
-
-" Quick information						{{{1
-function! MyBalloonExpr()
-  if (searchdecl(v:beval_text, 1, 0) == 0)
-    return s:GetVariableDeclaration()
-  endif
-  return ''
-  "  return 'Cursor is at line ' . v:beval_lnum .
-  "	\', column ' . v:beval_col .
-  "	\ ' of file ' .  bufname(v:beval_bufnr) .
-  "	\ ' on word "' . v:beval_text . '"'
-endfunction
-"set bexpr=MyBalloonExpr()
-"set ballooneval
-
-" parameters information					{{{1
-fu! javacomplete#CompleteParamsInfo(findstart, base)
-  if a:findstart
-    return col('.') - 1
-  endif
-
-
-  let mi = s:GetMethodInvocationExpr(s:GetStatement())
-  if empty(mi.method)
-    return []
-  endif
-
-  " TODO: how to determine overloaded functions
-  "let mi.params = s:EvalParams(mi.params)
-  if empty(mi.expr)
-    let methods = s:SearchForName(mi.method, 0, 1)[1]
-    let result = eval('[' . s:DoGetMethodList(methods) . ']')
-  elseif mi.method == '+'
-    let result = s:GetConstructorList(mi.expr)
-  else
-    let result = s:CompleteAfterDot(mi.expr)
-  endif
-
-  if !empty(result)
-    if !empty(mi.method) && mi.method != '+'
-      let result = filter(result, "type(v:val) == type('') ? v:val ==# '" . mi.method . "' : v:val['word'] ==# '" . mi.method . "('")
-    endif
-    return result
-  endif
-endfu
-
-" scanning and parsing							{{{1
-
-" Search back from the cursor position till meeting '{' or ';'.
-" '{' means statement start, ';' means end of a previous statement.
-" Return: statement before cursor
-" Note: It's the base for parsing. And It's OK for most cases.
-function! s:GetStatement()
-  if getline('.') =~ '^\s*\(import\|package\)\s\+'
-    return strpart(getline('.'), match(getline('.'), '\(import\|package\)'), col('.')-1)
-  endif
-
-  let lnum_old = line('.')
-  let col_old = col('.')
-
-  while 1
-    if search('[{};]\|<%\|<%!', 'bW') == 0
-      let lnum = 1
-      let col  = 1
-    else
-      if s:InCommentOrLiteral(line('.'), col('.'))
-        continue
-      endif
-
-      normal w
-      let lnum = line('.')
-      let col = col('.')
-    endif
-    break
-  endwhile
-
-  silent call cursor(lnum_old, col_old)
-  return s:MergeLines(lnum, col, lnum_old, col_old)
-endfunction
-
-fu! s:MergeLines(lnum, col, lnum_old, col_old)
-  let lnum = a:lnum
-  let col = a:col
-
-  let str = ''
-  if lnum < a:lnum_old
-    let str = s:Prune(strpart(getline(lnum), a:col-1))
-    let lnum += 1
-    while lnum < a:lnum_old
-      let str  .= s:Prune(getline(lnum))
-      let lnum += 1
-    endwhile
-    let col = 1
-  endif
-  let lastline = strpart(getline(a:lnum_old), col-1, a:col_old-col)
-  let str .= s:Prune(lastline, col)
-  let str = s:RemoveBlockComments(str)
-  " generic in JAVA 5+
-  while match(str, g:RE_TYPE_ARGUMENTS) != -1
-    let str = substitute(str, '\(' . g:RE_TYPE_ARGUMENTS . '\)', '\=repeat("", len(submatch(1)))', 'g')
-  endwhile
-  let str = substitute(str, '\s\s\+', ' ', 'g')
-  let str = substitute(str, '\([.()]\)[ \t]\+', '\1', 'g')
-  let str = substitute(str, '[ \t]\+\([.()]\)', '\1', 'g')
-  return s:Trim(str) . matchstr(lastline, '\s*$')
-endfu
-
-" Extract a clean expr, removing some non-necessary characters. 
-fu! s:ExtractCleanExpr(expr)
-  let cmd = substitute(a:expr, '[ \t\r\n]\+\([.()[\]]\)', '\1', 'g')
-  let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
-
-  let pos = strlen(cmd)-1 
-  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>"]'
-    if cmd[pos] == ')'
-      let pos = s:SearchPairBackward(cmd, pos, '(', ')')
-    elseif cmd[pos] == ']'
-      let pos = s:SearchPairBackward(cmd, pos, '[', ']')
-    endif
-    let pos -= 1
-  endwhile
-
-  " try looking back for "new"
-  let idx = match(strpart(cmd, 0, pos+1), '\<new[ \t\r\n]*$')
-
-  return strpart(cmd, idx != -1 ? idx : pos+1)
-endfu
-
-fu! s:ParseExpr(expr)
-  let items = []
-  let s = 0
-  " recognize ClassInstanceCreationExpr as a whole
-  let e = matchend(a:expr, '^\s*new\s\+' . g:RE_QUALID . '\s*[([]')-1
-  if e < 0
-    let e = match(a:expr, '[.([:]')
-  endif
-  let isparen = 0
-  while e >= 0
-    if a:expr[e] == '.' || a:expr[e] == ':'
-      let subexpr = strpart(a:expr, s, e-s)
-      call extend(items, isparen ? s:ProcessParentheses(subexpr) : [subexpr])
-      let isparen = 0
-      if a:expr[e] == ':' && a:expr[e+1] == ':'
-        let s = e + 2
-      else
-        let s = e + 1
-      endif
-    elseif a:expr[e] == '('
-      let e = s:GetMatchedIndexEx(a:expr, e, '(', ')')
-      let isparen = 1
-      if e < 0
-        break
-      else
-        let e = matchend(a:expr, '^\s*[.[]', e+1)-1
-        continue
-      endif
-    elseif a:expr[e] == '['
-      let e = s:GetMatchedIndexEx(a:expr, e, '[', ']')
-      if e < 0
-        break
-      else
-        let e = matchend(a:expr, '^\s*[.[]', e+1)-1
-        continue
-      endif
-    endif
-    let e = match(a:expr, '[.([:]', s)
-  endwhile
-  let tail = strpart(a:expr, s)
-  if tail !~ '^\s*$'
-    call extend(items, isparen ? s:ProcessParentheses(tail) : [tail])
-  endif
-
-  return items
-endfu
-
-" Given optional argument, call s:ParseExpr() to parser the nonparentheses expr
-fu! s:ProcessParentheses(expr, ...)
-  let s = matchend(a:expr, '^\s*(')
-  if s != -1
-    let e = s:GetMatchedIndexEx(a:expr, s-1, '(', ')')
-    if e >= 0
-      let tail = strpart(a:expr, e+1)
-      if tail[-1:] == '.'
-        return [tail[0:-2]]
-      endif
-      if tail =~ '^\s*[\=$'
-        return s:ProcessParentheses(strpart(a:expr, s, e-s), 1)
-      elseif tail =~ '^\s*\w'
-        return [strpart(a:expr, 0, e+1) . 'obj.']
-      endif
-    endif
-
-    " multi-dot-expr except for new expr
-  elseif a:0 > 0 && stridx(a:expr, '.') != match(a:expr, '\.\s*$') && a:expr !~ '^\s*new\s\+'
-    return s:ParseExpr(a:expr)
-  endif
-  return [a:expr]
-endfu
-
-" return {'expr': , 'method': , 'params': }
-fu! s:GetMethodInvocationExpr(expr)
-  let idx = strlen(a:expr)-1 
-  while idx >= 0
-    if a:expr[idx] == '('
-      break
-    elseif a:expr[idx] == ')'
-      let idx = s:SearchPairBackward(a:expr, idx, '(', ')')
-    elseif a:expr[idx] == ']'
-      let idx = s:SearchPairBackward(a:expr, idx, '[', ']')
-    endif
-    let idx -= 1
-  endwhile
-
-  let mi = {'expr': strpart(a:expr, 0, idx+1), 'method': '', 'params': strpart(a:expr, idx+1)}
-  let idx = match(mi.expr, '\<new\s\+' . g:RE_QUALID . '\s*(\s*$')
-  if idx >= 0
-    let mi.method = '+'
-    let mi.expr = substitute(matchstr(strpart(mi.expr, idx+4), g:RE_QUALID), '\s', '', 'g')
-  else
-    let idx = match(mi.expr, '\<' . g:RE_IDENTIFIER . '\s*(\s*$')
-    if idx >= 0
-      let subs = s:SplitAt(mi.expr, idx-1)
-      let mi.method = substitute(subs[1], '\s*(\s*$', '', '')
-      let mi.expr = s:ExtractCleanExpr(subs[0])
-    endif
-  endif
-  return mi
-endfu
-
-
-
-" search decl							{{{1
-" Return: The declaration of identifier under the cursor
-" Note: The type of a variable must be imported or a fqn.
-function! s:GetVariableDeclaration()
-  let lnum_old = line('.')
-  let col_old = col('.')
-
-  silent call search('[^a-zA-Z0-9$_.,?<>[\] \t\r\n]', 'bW')	" call search('[{};(,]', 'b')
-  normal w
-  let lnum = line('.')
-  let col = col('.')
-  if (lnum == lnum_old && col == col_old)
-    return ''
-  endif
-
-  silent call cursor(lnum_old, col_old)
-  return s:MergeLines(lnum, col, lnum_old, col_old)
-endfunction
-
-function! s:FoundClassDeclaration(type)
-  let lnum_old = line('.')
-  let col_old = col('.')
-  call cursor(1, 1)
-  while 1
-    let lnum = search('\<\C\(class\|interface\|enum\)[ \t\n\r]\+' . a:type . '[< \t\n\r]', 'W')
-    if lnum == 0 || !s:InCommentOrLiteral(line('.'), col('.'))
-      break
-    endif
-  endwhile
-
-  " search mainly for the cases: " class /* block comment */ Ident"
-  "				 " class // comment \n Ident "
-  if lnum == 0
-    let found = 0
-    while !found
-      let lnum = search('\<\C\(class\|interface\|enum\)[ \t\n\r]\+', 'W')
-      if lnum == 0
-        break
-      elseif s:InCommentOrLiteral(line('.'), col('.'))
-        continue
-      else
-        normal w
-        " skip empty line
-        while getline(line('.'))[col('.')-1] == ''
-          normal w
-        endwhile
-        let lnum = line('.')
-        let col = col('.')
-        while 1
-          if match(getline(lnum)[col-1:], '^[ \t\n\r]*' . a:type . '[< \t\n\r]') >= 0
-            let found = 1
-            " meets comment
-          elseif match(getline(lnum)[col-1:], '^[ \t\n\r]*\(//\|/\*\)') >= 0
-            if getline(lnum)[col-1:col] == '//'
-              normal $eb
-            else
-              let lnum = search('\*\/', 'W')
-              if lnum == 0
-                break
-              endif
-              normal web
-            endif
-            let lnum = line('.')
-            let col = col('.')
-            continue
-          endif
-          break
-        endwhile
-      endif
-    endwhile
-  endif
-
-  silent call cursor(lnum_old, col_old)
-  return lnum
-endfu
-
-fu! s:FoundClassLocally(type)
-  " current path
-  if globpath(expand('%:p:h'), a:type . '.java') != ''
-    return 1
-  endif
-
-  let srcpath = javacomplete#GetSourcePath(1)
-  let file = globpath(srcpath, substitute(a:type, '\.', '/', 'g') . '.java')
-  if file != ''
-    return 1
-  endif
-
-  return 0
-endfu
-
-" regexp samples:
-" echo search('\(\(public\|protected|private\)[ \t\n\r]\+\)\?\(\(static\)[ \t\n\r]\+\)\?\(\<class\>\|\<interface\>\)[ \t\n\r]\+HelloWorld[^a-zA-Z0-9_$]', 'W')
-" echo substitute(getline('.'), '.*\(\(public\|protected\|private\)[ \t\n\r]\+\)\?\(\(static\)[ \t\n\r]\+\)\?\(\<class\>\|\<interface\>\)\s\+\([a-zA-Z0-9_]\+\)\s\+\(\(implements\|extends\)\s\+\([^{]\+\)\)\?\s*{.*', '["\1", "\2", "\3", "\4", "\5", "\6", "\8", "\9"]', '')
-" code sample: 
-function! s:GetClassDeclarationOf(type)
-  call cursor(1, 1)
-  let decl = []
-
-  let lnum = search('\(\<class\>\|\<interface\>\)[ \t\n\r]\+' . a:type . '[^a-zA-Z0-9_$]', 'W')
-  if (lnum != 0)
-    " TODO: search back for optional 'public | private' and 'static'
-    " join lines till to '{'
-    let lnum_end = search('{')
-    if (lnum_end != 0)
-      let str = ''
-      while (lnum <= lnum_end)
-        let str = str . getline(lnum)
-        let lnum = lnum + 1
-      endwhile
-
-      exe "let decl = " . substitute(str, '.*\(\<class\>\|\<interface\>\)\s\+\([a-zA-Z0-9_]\+\)\s\+\(\(implements\|extends\)\s\+\([^{]\+\)\)\?\s*{.*', '["\1", "\2", "\4", "\5"]', '')
-    endif
-  endif
-
-  return decl
-endfunction
-
-" return list
-"    0	class | interface
-"    1	name
-"   [2	implements | extends ]
-"   [3	parent list ]
-function! s:GetThisClassDeclaration()
-  let lnum_old = line('.')
-  let col_old = col('.')
-
-  while (1)
-    call search('\(\<class\C\>\|\<interface\C\>\|\<enum\C\>\)[ \t\r\n]\+', 'bW')
-    if !s:InComment(line("."), col(".")-1)
-      if getline('.')[col('.')-2] !~ '\S'
-        break
-      endif
-    end
-  endwhile
-
-  " join lines till to '{'
-  let str = ''
-  let lnum = line('.')
-  call search('{')
-  let lnum_end = line('.')
-  while (lnum <= lnum_end)
-    let str = str . getline(lnum)
-    let lnum = lnum + 1
-  endwhile
-
-
-  let declaration = substitute(str, '.*\(\<class\>\|\<interface\>\)\s\+\([a-zA-Z0-9_]\+\)\(\s\+\(implements\|extends\)\s\+\([^{]\+\)\)\?\s*{.*', '["\1", "\2", "\4", "\5"]', '')
-  call cursor(lnum_old, col_old)
-  if declaration !~ '^['
-    echoerr 'Some error occurs when recognizing this class:' . declaration
-    return ['', '']
-  endif
-  exe "let list = " . declaration
-  return list
-endfunction
 
 " searches for name of a var or a field and determines the meaning  {{{1
 
@@ -1379,13 +957,13 @@ fu! s:DetermineLambdaArguments(unit, ti, name)
 endfu
 
 " TODO: how to determine overloaded functions
-fu! s:DetermineMethod(methods, parameters)
+function! s:DetermineMethod(methods, parameters)
   return get(a:methods, 0, {})
 endfu
 
 " Parser.GetType() in insenvim
 function! s:GetDeclaredClassName(var)
-  let var = s:Trim(a:var)
+  let var = javacomplete#util#Trim(a:var)
   call javacomplete#logger#Log('GetDeclaredClassName for "' . var . '"')
   if var =~# '^\(this\|super\)$'
     return var
@@ -1417,7 +995,7 @@ function! s:GetDeclaredClassName(var)
     " for (int i = 0, j = 0; i < 10; i++) {
     "   j = 0;
     " }
-    let declaration = s:GetVariableDeclaration()
+    let declaration = javacomplete#scanner#GetVariableDeclaration()
     " Assume it a class member, and remove modifiers
     let class = substitute(declaration, '^\(public\s\+\|protected\s\+\|private\s\+\|abstract\s\+\|static\s\+\|final\s\+\|native\s\+\)*', '', '')
     let class = substitute(class, '\s*\([a-zA-Z0-9_.]\+\)\(\[\]\)\?\s\+.*', '\1\2', '')
@@ -1583,7 +1161,7 @@ fu! javacomplete#Searchdecl()
 
     let matchs = s:SearchTypeAt(javacomplete#parse(), java_parser#MakePos(line, col))
 
-    let stat = s:GetStatement()
+    let stat = javacomplete#scanner#GetStatement()
     for t in matchs
       if stat =~ t.name
         let coor = java_parser#DecodePos(t.pos)
@@ -1854,155 +1432,6 @@ fu! s:fnamecanonize(fname, mods)
   return fnamemodify(a:fname, a:mods . ':gs?[\\/]\+?/?')
 endfu
 
-fu! s:Index(list, expr, key)
-  let i = 0
-  while i < len(a:list)
-    if get(a:list[i], a:key, '') == a:expr
-      return i
-    endif
-    let i += 1
-  endwhile
-  return -1
-endfu
-
-fu! s:Match(list, expr, key)
-  let i = 0
-  while i < len(a:list)
-    if get(a:list[i], a:key, '') =~ a:expr
-      return i
-    endif
-    let i += 1
-  endwhile
-  return -1
-endfu
-
-fu! s:KeepCursor(cmd)
-  let lnum_old = line('.')
-  let col_old = col('.')
-  exe a:cmd
-  call cursor(lnum_old, col_old)
-endfu
-
-fu! s:InCommentOrLiteral(line, col)
-  if has("syntax") && &ft != 'jsp'
-    return synIDattr(synID(a:line, a:col, 1), "name") =~? '\(Comment\|String\|Character\)'
-  endif
-endfu
-
-function! javacomplete#InComment(line, col)
-  return s:InComment(a:line, a:col)
-endfunction
-
-function! s:InComment(line, col)
-  if has("syntax") && &ft != 'jsp'
-    return synIDattr(synID(a:line, a:col, 1), "name") =~? 'comment'
-  endif
-  "  if getline(a:line) =~ '\s*\*'
-  "    return 1
-  "  endif
-  "  let idx = strridx(getline(a:line), '//')
-  "  if idx >= 0 && idx < a:col
-  "    return 1
-  "  endif
-  "  return 0
-endfunction
-
-" set string literal empty, remove comments, trim begining or ending spaces
-" test case: ' 	sb. /* block comment*/ append( "stringliteral" ) // comment '
-function! s:Prune(str, ...)
-  if a:str =~ '^\s*$' | return '' | endif
-
-  let str = substitute(a:str, '"\(\\\(["\\''ntbrf]\)\|[^"]\)*"', '""', 'g')
-  let str = substitute(str, '\/\/.*', '', 'g')
-  let str = s:RemoveBlockComments(str)
-  return a:0 > 0 ? str : str . ' '
-endfunction
-
-" Given argument, replace block comments with spaces of same number
-fu! s:RemoveBlockComments(str, ...)
-  let result = a:str
-  let ib = match(result, '\/\*')
-  let ie = match(result, '\*\/')
-  while ib != -1 && ie != -1 && ib < ie
-    let result = strpart(result, 0, ib) . (a:0 == 0 ? ' ' : repeat(' ', ie-ib+2)) . result[ie+2: ]
-    let ib = match(result, '\/\*')
-    let ie = match(result, '\*\/')
-  endwhile
-  return result
-endfu
-
-fu! s:Trim(str)
-  let str = substitute(a:str, '^\s*', '', '')
-  return substitute(str, '\s*$', '', '')
-endfu
-
-fu! s:SplitAt(str, index)
-  return [strpart(a:str, 0, a:index+1), strpart(a:str, a:index+1)]
-endfu
-
-" TODO: search pair used in string, like 
-" 	'create(ao.fox("("), new String).foo().'
-function! s:GetMatchedIndexEx(str, idx, one, another)
-  let pos = a:idx
-  while 0 <= pos && pos < len(a:str)
-    let pos = match(a:str, '['. a:one . escape(a:another, ']') .']', pos+1)
-    if pos != -1
-      if a:str[pos] == a:one
-        let pos = s:GetMatchedIndexEx(a:str, pos, a:one, a:another)
-      elseif a:str[pos] == a:another
-        break
-      endif
-    endif
-  endwhile
-  return 0 <= pos && pos < len(a:str) ? pos : -3
-endfunction
-
-function! s:SearchPairBackward(str, idx, one, another)
-  let idx = a:idx
-  let n = 0
-  while idx >= 0
-    let idx -= 1
-    if a:str[idx] == a:one
-      if n == 0
-        break
-      endif
-      let n -= 1
-    elseif a:str[idx] == a:another  " nested 
-      let n += 1
-    endif
-  endwhile
-  return idx
-endfunction
-
-fu! s:CountDims(str)
-  if match(a:str, '[[\]]') == -1
-    return 0
-  endif
-
-  " int[] -> [I, String[] -> 
-  let dims = len(matchstr(a:str, '^[\+'))
-  if dims == 0
-    let idx = len(a:str)-1
-    while idx >= 0 && a:str[idx] == ']'
-      let dims += 1
-      let idx = s:SearchPairBackward(a:str, idx, '[', ']')-1
-    endwhile
-  endif
-  return dims
-endfu
-
-fu! s:GotoUpperBracket()
-  let searched = 0
-  while (!searched)
-    call search('[{}]', 'bW')
-    if getline('.')[col('.')-1] == '}'
-      normal %
-    else
-      let searched = 1
-    endif
-  endwhile
-endfu
-
 " Improve recognition of variable declaration using my version of searchdecl() for accuracy reason.
 " TODO:
 fu! s:Searchdecl(name, ...)
@@ -2013,7 +1442,7 @@ fu! s:Searchdecl(name, ...)
   let lnum_old = line('.')
   let col_old = col('.')
 
-  call s:GotoUpperBracket()
+  call javacomplete#util#GotoUpperBracket()
   let lnum_bracket = line('.')
   let col_bracket = col('.')
   call search('\<' . a:name . '\>', 'W', lnum_old)
@@ -2029,7 +1458,7 @@ fu! s:Searchdecl(name, ...)
       if search('\([{}]\|\<' . a:name . '\>\)', 'bW') == 0
         break
       endif
-      if s:InComment(line('.'), col('.')) "|| s:InStringLiteral()
+      if javacomplete#util#InComment(line('.'), col('.')) "|| s:InStringLiteral()
         continue
       endif
       let cword = expand('<cword>')
@@ -2048,7 +1477,7 @@ fu! s:Searchdecl(name, ...)
       if search('\([{}]\|\<' . a:name . '\>\)', 'W') == 0
         break
       endif
-      if s:InComment(line('.'), col('.')) "|| s:InStringLiteral()
+      if javacomplete#util#InComment(line('.'), col('.')) "|| s:InStringLiteral()
         continue
       endif
       let cword = expand('<cword>')
@@ -2081,7 +1510,7 @@ call s:SetCurrentFileKey()
 
 function! s:CheckForExistCompletedClassName()
   if exists('g:ClassnameCompleted') && g:ClassnameCompleted
-    call javacomplete#imports#AddImport()
+    call javacomplete#imports#Add()
     let g:ClassnameCompleted = 0
   endif
 endfu
@@ -2824,7 +2253,7 @@ endfunction
 augroup javacomplete
   autocmd!
   autocmd BufEnter *.java call s:SetCurrentFileKey()
-  autocmd VimLeave * call javacomplete#TerminateServer()
+  autocmd VimLeave * call javacomplete#server#Terminate()
   autocmd TextChangedI *.java call s:CheckForExistCompletedClassName()
 augroup END
 
