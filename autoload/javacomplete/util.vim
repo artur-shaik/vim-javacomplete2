@@ -156,3 +156,23 @@ function! javacomplete#util#Sort(ci)
   endif
   return ci
 endfunction
+
+function! javacomplete#util#CleanFQN(fqnDeclaration) 
+  let start = 0
+  let fqnDeclaration = a:fqnDeclaration
+  let result = matchlist(fqnDeclaration, '\<'. g:RE_IDENTIFIER. '\%(\s*\.\s*\('. g:RE_IDENTIFIER. '\)\)*', start)
+  while !empty(result)
+
+    if len(result[1]) > 0
+      let fqnDeclaration = substitute(fqnDeclaration, result[0], result[1], '')
+      let shift = result[1]
+    else
+      let shift = result[0]
+    endif
+    let start = match(fqnDeclaration, shift, start) + len(shift)
+
+    let result = matchlist(fqnDeclaration, '\<'. g:RE_IDENTIFIER. '\%(\s*\.\s*\('. g:RE_IDENTIFIER. '\)\)*', start)
+  endwhile
+
+  return fqnDeclaration
+endfunction

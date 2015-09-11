@@ -101,7 +101,7 @@ endfu
 
 function! s:SetJVMLauncher(interpreter)
   if s:GetJVMLauncher() != a:interpreter
-    let s:cache = {}
+    let b:j_cache = {}
   endif
   let s:interpreter = a:interpreter
 endfu
