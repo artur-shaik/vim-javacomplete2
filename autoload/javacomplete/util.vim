@@ -142,3 +142,17 @@ function! javacomplete#util#GetClassNameWithScope(...)
   return curline[word_l : word_r]
 endfunction
 
+function! s:MemberCompare(m1, m2)
+  return a:m1['n'] == a:m2['n'] ? 0 : a:m1['n'] > a:m2['n'] ? 1 : -1
+endfunction
+
+function! javacomplete#util#Sort(ci)
+  let ci = a:ci
+  if has_key(ci, 'fields')
+    call sort(ci['fields'], 's:MemberCompare')
+  endif
+  if has_key(ci, 'methods')
+    call sort(ci['methods'], 's:MemberCompare')
+  endif
+  return ci
+endfunction
