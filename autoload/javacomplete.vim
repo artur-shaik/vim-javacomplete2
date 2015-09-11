@@ -51,6 +51,14 @@ let b:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 's
 let b:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
 let b:J_KEYWORDS		= b:J_PRIMITIVE_TYPES + b:J_KEYWORDS_MODS + b:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
+let b:PATH_SEP	= ':'
+let b:FILE_SEP	= '/'
+let b:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
+if b:IS_WINDOWS
+  let b:PATH_SEP	= ';'
+  let b:FILE_SEP	= '\'
+endif
+
 let g:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
 let g:RE_IDENTIFIER	= '[a-zA-Z_$][a-zA-Z0-9_$]*'
 let g:RE_ANNOTATION	= '@[a-zA-Z_][a-zA-Z0-9_$]*'
