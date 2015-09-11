@@ -47,7 +47,7 @@ function! s:GenerateImports()
       let lnum = search('\<import\>', 'Wc')
       if (lnum == 0)
         break
-      elseif !javacomplete#InComment(line("."), col(".")-1)
+      elseif !javacomplete#util#InComment(line("."), col(".")-1)
         normal w
         " TODO: search semicolon or import keyword, excluding comment
         let stat = matchstr(getline(lnum)[col('.')-1:], '\(static\s\+\)\?\(' .g:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*;')
@@ -209,7 +209,7 @@ function! s:AddImport(import)
 
 endfunction
 
-function! javacomplete#imports#AddImport(...)
+function! javacomplete#imports#Add(...)
   call javacomplete#server#Start()
 
   let i = 0
@@ -219,7 +219,7 @@ function! javacomplete#imports#AddImport(...)
     if offset <= 0
       return 
     endif
-    let classname = javacomplete#GetClassNameWithScope(offset)
+    let classname = javacomplete#util#GetClassNameWithScope(offset)
     let i += 1
   endwhile
 
@@ -275,7 +275,7 @@ function! javacomplete#imports#AddImport(...)
   endif
 endfunction
 
-function! javacomplete#imports#RemoveUnusedImports()
+function! javacomplete#imports#RemoveUnused()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
@@ -296,7 +296,7 @@ function! javacomplete#imports#RemoveUnusedImports()
   endif
 endfunction
 
-function! javacomplete#imports#AddMissingImports()
+function! javacomplete#imports#AddMissing()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
