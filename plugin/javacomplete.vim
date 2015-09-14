@@ -1,22 +1,23 @@
 " Java complete plugin file
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 
-command! JCimportsAddMissing call javacomplete#AddMissingImports()
-command! JCimportsRemoveUnused call javacomplete#RemoveUnusedImports()
-command! JCimportAdd call javacomplete#AddImport()
-command! JCimportAddI call javacomplete#AddImport(1)
+command! JCimportsAddMissing call javacomplete#imports#AddMissing()
+command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
+command! JCimportAdd call javacomplete#imports#Add()
+command! JCimportAddI call javacomplete#imports#Add(1)
 
-command! JCserverShowPort call javacomplete#ShowPort()
-command! JCserverShowPID call javacomplete#ShowPID()
-command! JCserverStart call javacomplete#StartServer()
-command! JCserverTerminate call javacomplete#TerminateServer()
-command! JCserverCompile call javacomplete#CompileJavavi()
+command! JCserverShowPort call javacomplete#server#ShowPort()
+command! JCserverShowPID call javacomplete#server#ShowPID()
+command! JCserverStart call javacomplete#server#Start()
+command! JCserverTerminate call javacomplete#server#Terminate()
+command! JCserverCompile call javacomplete#server#Compile()
 
-command! JCdebugEnableLogs call javacomplete#EnableLogs()
-command! JCdebugDisableLogs call javacomplete#DisableLogs()
-command! JCdebugGetLogContent call javacomplete#GetLogContent()
+command! JCdebugEnableLogs call javacomplete#logger#Enable()
+command! JCdebugDisableLogs call javacomplete#logger#Disable()
+command! JCdebugGetLogContent call javacomplete#logger#GetContent()
 
 command! JCcacheClear call javacomplete#ClearCache()
 
+command! JCstart call javacomplete#Start()
 
-autocmd Filetype java JCserverStart
+autocmd Filetype java JCstart
