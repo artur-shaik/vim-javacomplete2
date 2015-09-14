@@ -1,6 +1,8 @@
 package kg.ash.javavi.readers.source;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.TreeVisitor;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -9,9 +11,11 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,14 +30,11 @@ public class ClassNamesFetcher {
     }
 
     public Set<String> getNames() {
-        ClassTypeVisitor classVisitor = new ClassTypeVisitor();
-        classVisitor.visit(compilationUnit, null);
-
-        TypesVisitor visitor = new TypesVisitor();
-        visitor.visit(compilationUnit, null);
-
-        AnnotationsVisitor annotationsVisitor = new AnnotationsVisitor();
-        annotationsVisitor.visit(compilationUnit, null);
+        List<VoidVisitorAdapter> adapters = new ArrayList<>();
+        adapters.add(new ClassTypeVisitor());
+        adapters.add(new TypesVisitor());
+        adapters.add(new AnnotationsVisitor());
+        adapters.forEach(a -> a.visit(compilationUnit, null));
 
         return resultList;
     }
@@ -80,6 +81,19 @@ public class ClassNamesFetcher {
     }
 
     private class TypesVisitor extends VoidVisitorAdapter<Object>{
+
+        @Override
+        public void visit(BlockStmt type, Object arg) {
+            TypesVisitor t = this;
+            TreeVisitor tv = new TreeVisitor() {
+                public void process(Node node) {
+                    if (node instanceof ClassOrInterfaceType) {
+                        t.visit((ClassOrInterfaceType)node, arg);
+                    }
+                }
+            };
+            tv.visitDepthFirst(type);
+        }
 
         @Override
         public void visit(FieldAccessExpr type, Object arg) {
