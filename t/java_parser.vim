@@ -1,4 +1,5 @@
 source autoload/java_parser.vim
+source t/javacomplete.vim
 
 function! SID() abort
   redir => l:scriptnames
@@ -36,7 +37,7 @@ describe 'javaparser test'
     end
 
     it 'GetInnerText test'
-        let tree = Call('javacomplete#parse', 't/data/LambdaNamedClass.java')
+        let tree = Call('javacomplete#parseradapter#Parse', 't/data/LambdaNamedClass.java')
 
         call Call('java_parser#GotoPosition', 380)
         Expect Call('s:GetInnerText', '(') == '(String t, BigDecimal d)'
