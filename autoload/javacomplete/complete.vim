@@ -1,3 +1,9 @@
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" This file contains everything related to completions
+
 let s:CONTEXT_AFTER_DOT		        = 1
 let s:CONTEXT_METHOD_PARAM	        = 2
 let s:CONTEXT_IMPORT		        = 3

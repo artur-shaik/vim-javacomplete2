@@ -1,5 +1,9 @@
-" using java_parser.vim					{{{1
-" javacomplete#parse()					{{{2
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Methods that calling internal parser
+
 function! javacomplete#parseradapter#Parse(...)
   let filename = a:0 == 0 ? '%' : a:1
 

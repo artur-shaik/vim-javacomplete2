@@ -1,5 +1,8 @@
-
-" scanning and parsing							{{{1
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Simple parsing functions
 
 " Search back from the cursor position till meeting '{' or ';'.
 " '{' means statement start, ';' means end of a previous statement.

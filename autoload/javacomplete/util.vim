@@ -1,3 +1,9 @@
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Utility functions
+
 " TODO: search pair used in string, like 
 " 	'create(ao.fox("("), new String).foo().'
 function! javacomplete#util#GetMatchedIndexEx(str, idx, one, another)

@@ -1,3 +1,9 @@
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Debug methods
+
 let s:log = []
 let s:loglevel = 1
 function! javacomplete#logger#Enable()

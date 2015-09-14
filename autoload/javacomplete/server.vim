@@ -1,3 +1,9 @@
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Java server bridge initiator and caller
+
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
 if has("python")

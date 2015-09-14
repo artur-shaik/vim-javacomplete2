@@ -1,10 +1,6 @@
-" Vim completion script
-" Version:	2.3.1
-" Language:	Java
+" Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-08
-" Copyright:	Copyright (C) 2006-2015 cheng fang, artur shaik. All rights reserved.
-" License:	Vim License	(see vim's :help license)
+" Last Change:	2015-09-14
 
 let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm',		'word': 'clone(',	'abbr': 'clone()',	'menu': 'Object clone()', },

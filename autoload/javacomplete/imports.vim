@@ -1,3 +1,9 @@
+" Vim completion script for java
+" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Last Change:	2015-09-14
+"
+" Everything to work with imports
+
 " Similar with filter(), but returns a new list instead of operating in-place.
 " `item` has the value of the current item.
 function! s:filter(expr, string)
