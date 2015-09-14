@@ -132,7 +132,9 @@ To enable inserting class imports with F4, add:
 `JCserverCompile` - compile server manually;
 
 
-`JCdebugSetLogLevel` - enable logs;
+`JCdebugEnableLogs` - enable logs;
+
+`JCdebugDisableLogs` - disable logs;
 
 `JCdebugGetLogContent` - get debug logs;
 
