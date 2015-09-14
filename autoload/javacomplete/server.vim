@@ -192,16 +192,16 @@ function! javacomplete#server#GetClassPath()
   endif
 
   if empty($CLASSPATH)
-    if s:JAVA_HOME == ''
+    if g:JAVA_HOME == ''
       let java = javacomplete#GetJVMLauncher()
       let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
       for line in javaSettings
         if line =~ 'java\.home'
-          let s:JAVA_HOME = split(line, ' = ')[1]
+          let g:JAVA_HOME = split(line, ' = ')[1]
         endif
       endfor
     endif
-    return path. s:JAVA_HOME. '/lib'
+    return path. g:JAVA_HOME. '/lib'
   endif
 
   return path . $CLASSPATH

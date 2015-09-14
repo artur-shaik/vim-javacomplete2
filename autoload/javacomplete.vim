@@ -80,7 +80,7 @@ let g:RE_CASTING	= '^\s*(\(' .g:RE_QUALID. '\))\s*\(' . g:RE_IDENTIFIER . '\)\>'
 
 let g:RE_KEYWORDS	= '\<\%(' . join(b:J_KEYWORDS, '\|') . '\)\>'
 
-let s:JAVA_HOME = $JAVA_HOME
+let g:JAVA_HOME = $JAVA_HOME
 
 let b:dotexpr = ''			" expression ends with '.'
 let b:incomplete = ''			" incomplete word: 1. dotexpr.method(|) 2. new classname(|) 3. dotexpr.ab|, 4. ja|, 5. method(|
