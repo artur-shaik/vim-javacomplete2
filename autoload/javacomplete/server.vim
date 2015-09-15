@@ -17,6 +17,14 @@ else
   finish
 endif
 
+function! s:System(cmd, caller)
+  call s:WatchVariant(a:cmd)
+  let t = reltime()
+  let res = system(a:cmd)
+  call s:Debug(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
+  return res
+endfunction
+
 if exists('*uniq')
   function! s:_uniq(list) abort
     return uniq(a:list)
