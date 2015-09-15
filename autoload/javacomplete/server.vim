@@ -193,7 +193,7 @@ function! javacomplete#server#GetClassPath()
 
   if empty($CLASSPATH)
     if g:JAVA_HOME == ''
-      let java = javacomplete#GetJVMLauncher()
+      let java = s:GetJVMLauncher()
       let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
       for line in javaSettings
         if line =~ 'java\.home'
