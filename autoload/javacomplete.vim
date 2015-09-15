@@ -102,6 +102,15 @@ function! javacomplete#Complete(findstart, base)
   return javacomplete#complete#Complete(a:findstart, a:base)
 endfunction
 
+function! s:GetBase(extra)
+  let base = expand("~/.javacomplete2/". a:extra)
+  if !isdirectory(base)
+    call mkdir(base, "p")
+  endif
+
+  return base
+endfunction
+
 function! s:FindClassPath() abort
   if executable('mvn')
     let base = s:GetBase("mvnclasspath/")
