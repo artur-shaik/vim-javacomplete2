@@ -18,10 +18,9 @@ else
 endif
 
 function! s:System(cmd, caller)
-  call s:WatchVariant(a:cmd)
   let t = reltime()
   let res = system(a:cmd)
-  call s:Debug(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
+  call javacomplete#logger#Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
   return res
 endfunction
 
