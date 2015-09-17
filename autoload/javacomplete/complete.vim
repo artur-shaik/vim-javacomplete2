@@ -1354,6 +1354,8 @@ function! s:DoGetNestedList(classes)
   for class in a:classes
     if !useFQN
       let fieldType = javacomplete#util#CleanFQN(class.m)
+    else
+      let fieldType = class.m
     endif
     let s .= "{'kind':'C','word':'". class.n . "','menu':'". fieldType . "','dup':1},"
   endfor
