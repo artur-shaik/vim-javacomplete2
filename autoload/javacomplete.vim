@@ -47,12 +47,13 @@ let g:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 's
 let g:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
 let g:J_KEYWORDS		= g:J_PRIMITIVE_TYPES + g:J_KEYWORDS_MODS + g:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
-let b:PATH_SEP	= ':'
-let b:FILE_SEP	= '/'
-let b:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
-if b:IS_WINDOWS
-  let b:PATH_SEP	= ';'
-  let b:FILE_SEP	= '\'
+let g:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
+if g:IS_WINDOWS
+  let g:PATH_SEP	= ';'
+  let g:FILE_SEP	= '\'
+else
+  let g:PATH_SEP	= ':'
+  let g:FILE_SEP	= '/'
 endif
 
 let g:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
@@ -82,10 +83,6 @@ let g:RE_KEYWORDS	= '\<\%(' . join(g:J_KEYWORDS, '\|') . '\)\>'
 
 let g:JAVA_HOME = $JAVA_HOME
 
-let b:dotexpr = ''			" expression ends with '.'
-let b:incomplete = ''			" incomplete word: 1. dotexpr.method(|) 2. new classname(|) 3. dotexpr.ab|, 4. ja|, 5. method(|
-let b:errormsg = ''
-
 let g:j_cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
 let g:j_files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
@@ -114,7 +111,7 @@ endfunction
 function! s:FindClassPath() abort
   if executable('mvn')
     let base = s:GetBase("mvnclasspath/")
-    let key = substitute(g:JavaComplete_PomPath, b:FILE_SEP, '_', 'g')
+    let key = substitute(g:JavaComplete_PomPath, g:FILE_SEP, '_', 'g')
     let path = base . key
 
     if g:JavaComplete_PomPath != "" && filereadable(path)
@@ -199,7 +196,7 @@ if !exists("g:JavaComplete_SourcesPath")
   let sources = s:GlobPathList(getcwd(), '**/src', 0)
   for src in sources
     if match(src, '.*build.*') < 0
-      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. b:PATH_SEP
+      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP
     endif
   endfor
   call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
@@ -207,7 +204,7 @@ endif
 
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
   if exists('g:JavaComplete_LibsPath')
-    let g:JavaComplete_LibsPath .= b:PATH_SEP
+    let g:JavaComplete_LibsPath .= g:PATH_SEP
   else
     let g:JavaComplete_LibsPath = ""
   endif

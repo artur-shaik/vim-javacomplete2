@@ -18,6 +18,9 @@ let s:CONTEXT_OTHER 		        = 0
 let s:MODIFIER_ABSTRACT         = '10000000001'
 
 let b:context_type = s:CONTEXT_OTHER
+let b:dotexpr = ''
+let b:incomplete = ''
+let b:errormsg = ''
 
 " This function is used for the 'omnifunc' option.		{{{1
 function! javacomplete#complete#Complete(findstart, base)
@@ -933,7 +936,7 @@ endfunction
 " return only classpath which are directories
 function! s:GetClassDirs()
   let dirs = []
-  for path in split(javacomplete#server#GetClassPath(), b:PATH_SEP)
+  for path in split(javacomplete#server#GetClassPath(), g:PATH_SEP)
     if isdirectory(path)
       call add(dirs, fnamemodify(path, ':p:h'))
     endif

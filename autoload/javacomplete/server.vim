@@ -124,7 +124,7 @@ function! javacomplete#server#Compile()
 
   let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
   if isdirectory(javaviDir. "target/classes") 
-    if b:IS_WINDOWS
+    if g:IS_WINDOWS
       silent exe '!rmdir \s "'. javaviDir. "target/classes"
     else
       silent exe '!rm -r '. javaviDir. "target/classes"
@@ -135,7 +135,7 @@ function! javacomplete#server#Compile()
     exe '!'. 'mvn -f "'. javaviDir. '/pom.xml" compile'
   else
     call mkdir(javaviDir. "target/classes", "p")
-    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar'. b:PATH_SEP .' -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
+    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar'. g:PATH_SEP .' -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
   endif
 endfunction
 
@@ -176,8 +176,8 @@ endfunction
 
 function! javacomplete#server#GetClassPath()
   let jars = s:GetExtraPath()
-  let path = s:GetJavaviClassPath() . b:PATH_SEP. s:GetJavaParserClassPath(). b:PATH_SEP
-  let path = path . join(jars, b:PATH_SEP) . b:PATH_SEP
+  let path = s:GetJavaviClassPath() . g:PATH_SEP. s:GetJavaParserClassPath(). g:PATH_SEP
+  let path = path . join(jars, g:PATH_SEP) . g:PATH_SEP
 
   if &ft == 'jsp'
     let path .= s:GetClassPathOfJsp()
@@ -216,15 +216,15 @@ endfunction
 
 function! s:ExpandAllPaths(path)
     let result = ''
-    let list = s:_uniq(sort(split(a:path, b:PATH_SEP)))
+    let list = s:_uniq(sort(split(a:path, g:PATH_SEP)))
     for l in list
-      let result = result. substitute(expand(l), '\\', '/', 'g') . b:PATH_SEP
+      let result = result. substitute(expand(l), '\\', '/', 'g') . g:PATH_SEP
     endfor
     return result
 endfunction
 
 function! s:GetJavaParserClassPath()
-  let path = g:JavaComplete_JavaParserJar . b:PATH_SEP
+  let path = g:JavaComplete_JavaParserJar . g:PATH_SEP
   if exists('b:classpath') && b:classpath !~ '^\s*$'
     return path . b:classpath
   endif
@@ -244,7 +244,7 @@ function! s:GetExtraPath()
   let jars = []
   let extrapath = ''
   if exists('g:JavaComplete_LibsPath')
-    let paths = split(g:JavaComplete_LibsPath, b:PATH_SEP)
+    let paths = split(g:JavaComplete_LibsPath, g:PATH_SEP)
     for path in paths
       call extend(jars, s:ExpandPathToJars(path))
     endfor
@@ -262,7 +262,7 @@ function! s:ExpandPathToJars(path)
   let files = javacomplete#GlobPathList(a:path, "*", 1)
   for file in files
     if s:IsJarOrZip(file)
-      call add(jars, b:PATH_SEP . file)
+      call add(jars, g:PATH_SEP . file)
     elseif isdirectory(file)
       call extend(jars, s:ExpandPathToJars(file))
     endif
@@ -290,10 +290,10 @@ fu! s:GetClassPathOfJsp()
   while 1
     if isdirectory(path . '/WEB-INF' )
       if isdirectory(path . '/WEB-INF/classes')
-        let b:classpath_jsp .= b:PATH_SEP . path . '/WEB-INF/classes'
+        let b:classpath_jsp .= g:PATH_SEP . path . '/WEB-INF/classes'
       endif
       if isdirectory(path . '/WEB-INF/lib')
-        let b:classpath_jsp .= b:PATH_SEP . path . '/WEB-INF/lib/*.jar'
+        let b:classpath_jsp .= g:PATH_SEP . path . '/WEB-INF/lib/*.jar'
         endif
       endif
       return b:classpath_jsp
@@ -309,15 +309,7 @@ fu! s:GetClassPathOfJsp()
 endfu
 
 function! s:GetClassPath()
-  return exists('s:classpath') ? join(s:classpath, b:PATH_SEP) : ''
+  return exists('s:classpath') ? join(s:classpath, g:PATH_SEP) : ''
 endfu
-
-let b:PATH_SEP	= ':'
-let b:FILE_SEP	= '/'
-let b:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
-if b:IS_WINDOWS
-  let b:PATH_SEP	= ';'
-  let b:FILE_SEP	= '\'
-endif
 
 " vim:set fdm=marker sw=2 nowrap:
