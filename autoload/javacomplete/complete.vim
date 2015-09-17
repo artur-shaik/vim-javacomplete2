@@ -315,7 +315,7 @@ function! s:CompleteAfterWord(incomplete)
     " other files
     let filepatterns = ''
     for dirpath in s:GetSourceDirs(expand('%:p'))
-      let filepatterns .= escape(dirpath, ' \') . '/*.java '
+      let filepatterns .= escape(dirpath, ' \') . '/**/*.java '
     endfor
     exe 'vimgrep /\s*' . g:RE_TYPE_DECL . '/jg ' . filepatterns
     for item in getqflist()
