@@ -134,3 +134,5 @@ function! javacomplete#parseradapter#SearchNameInAST(tree, name, targetPos, full
   " call javacomplete#logger#Log(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
   return result
 endfunction
+
+" vim:set fdm=marker sw=2 nowrap:

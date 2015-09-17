@@ -182,3 +182,5 @@ function! javacomplete#util#CleanFQN(fqnDeclaration)
 
   return fqnDeclaration
 endfunction
+
+" vim:set fdm=marker sw=2 nowrap:

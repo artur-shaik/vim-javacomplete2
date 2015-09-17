@@ -319,3 +319,5 @@ if b:IS_WINDOWS
   let b:PATH_SEP	= ';'
   let b:FILE_SEP	= '\'
 endif
+
+" vim:set fdm=marker sw=2 nowrap:

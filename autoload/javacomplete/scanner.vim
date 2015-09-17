@@ -173,3 +173,5 @@ function! javacomplete#scanner#GetVariableDeclaration()
   silent call cursor(lnum_old, col_old)
   return s:MergeLines(lnum, col, lnum_old, col_old)
 endfunction
+
+" vim:set fdm=marker sw=2 nowrap:

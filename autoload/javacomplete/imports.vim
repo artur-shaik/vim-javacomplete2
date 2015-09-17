@@ -340,3 +340,4 @@ function! javacomplete#imports#AddMissing()
   endif
 endfunction
 
+" vim:set fdm=marker sw=2 nowrap:

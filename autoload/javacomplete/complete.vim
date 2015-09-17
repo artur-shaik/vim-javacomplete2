@@ -1531,3 +1531,5 @@ function! s:DoGetPackageInfoInDirs(package, onlyPackages, ...)
   endfor
   return list
 endfunction
+
+" vim:set fdm=marker sw=2 nowrap:

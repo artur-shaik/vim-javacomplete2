@@ -224,3 +224,5 @@ endif
 function! javacomplete#Start()
   call javacomplete#server#Start()
 endfunction
+
+" vim:set fdm=marker sw=2 nowrap:

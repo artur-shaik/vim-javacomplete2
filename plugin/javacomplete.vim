@@ -21,3 +21,5 @@ command! JCcacheClear call javacomplete#ClearCache()
 command! JCstart call javacomplete#Start()
 
 autocmd Filetype java JCstart
+
+" vim:set fdm=marker sw=2 nowrap:
