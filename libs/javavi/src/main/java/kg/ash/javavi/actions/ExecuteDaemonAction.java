@@ -28,7 +28,6 @@ public class ExecuteDaemonAction implements Action {
 
     private void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
             switch (args[i]) {
                 case "-D": {
                     daemonPort = Integer.parseInt(args[i+1]);

@@ -5,13 +5,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Map.Entry;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.StringTokenizer;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
 import kg.ash.javavi.searchers.*;
@@ -70,15 +71,21 @@ public class Reflection implements ClassReader {
         return null;
     }
 
+    private List<String> classes = new ArrayList<>();
+
     public SourceClass getSourceClass(Class cls) {
         TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
 
         SourceClass clazz = new SourceClass();
-        clazz.setName(cls.getSimpleName());
+        String name = cls.getName();
+        if (name.contains(".")) {
+            name = name.substring(name.lastIndexOf(".") + 1);
+        }
+        clazz.setName(name);
         clazz.setModifiers(cls.getModifiers());
         clazz.setIsInterface(cls.isInterface());
         clazz.setPackage(cls.getPackage().getName());
-
+        
         for (int i = 0; i < cls.getTypeParameters().length; i++) {
             Type type = cls.getTypeParameters()[i];
             if (i < typeArguments.size()) {
@@ -89,30 +96,38 @@ public class Reflection implements ClassReader {
             }
         }
 
+        List<Class> linkedClasses = new ArrayList<>();
+        for (Class c : cls.getDeclaredClasses()) {
+            clazz.addNestedClass(c.getName());
+            linkedClasses.add(c);
+        }
+
         Class superclass = cls.getSuperclass();
-        List<String> linkedClasses = new ArrayList<>();
         if (superclass != null) {
             clazz.setSuperclass(superclass.getName());
-            linkedClasses.add(superclass.getName());
+            linkedClasses.add(superclass);
         }
 
         Type[] interfaces = cls.getGenericInterfaces();
+        ClassSearcher seacher = new ClassSearcher();
         for (Type iface : interfaces) {
-            String genericName = iface.getTypeName().replace('$', '.');
+            String genericName = iface.getTypeName();
             for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
                 genericName = genericName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
             }
             clazz.addInterface(genericName);
-            linkedClasses.add(genericName);
+
+            TargetParser parser = new TargetParser(sources);
+            String ifaceClassName = parser.parse(genericName);
+            if (seacher.find(ifaceClassName, sources)) {
+                clazz.addLinkedClass(seacher.getReader().setTypeArguments(parser.getTypeArguments()).read(genericName));
+            }
         }
 
-        ClassSearcher seacher = new ClassSearcher();
-        for (String linkedClass : linkedClasses) {
-            TargetParser parser = new TargetParser(sources);
-            linkedClass = parser.parse(linkedClass);
-            if (seacher.find(linkedClass, sources)) {
-                clazz.addLinkedClass(seacher.getReader().setTypeArguments(parser.getTypeArguments()).read(linkedClass));
-            }
+        for (Class linkedClass : linkedClasses) {
+            if (classes.contains(linkedClass.getName())) continue;
+            classes.add(linkedClass.getName());
+            clazz.addLinkedClass(getSourceClass(linkedClass));
         }
 
         Constructor[] constructors = cls.getConstructors();
@@ -129,11 +144,11 @@ public class Reflection implements ClassReader {
 
             Type[] parameterTypes = ctor.getGenericParameterTypes();
             for (Type t : parameterTypes) {
-                String name = t.getTypeName();
+                String typeName = t.getTypeName();
                 for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
-                    name = name.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
+                    typeName = typeName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
                 }
-                constructor.addTypeParameter(new ClassTypeParameter(name));
+                constructor.addTypeParameter(new ClassTypeParameter(typeName));
             }
 
             clazz.addConstructor(constructor);
@@ -187,11 +202,11 @@ public class Reflection implements ClassReader {
 
             Type[] parameterTypes = m.getGenericParameterTypes();
             for (Type t : parameterTypes) {
-                String name = t.getTypeName();
+                String typeName = t.getTypeName();
                 for (Entry<String,String> kv : tAA.entrySet()) {
-                    name = name.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
+                    typeName = typeName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
                 }
-                method.addTypeParameter(new ClassTypeParameter(name));
+                method.addTypeParameter(new ClassTypeParameter(typeName));
             }
 
             clazz.addMethod(method);

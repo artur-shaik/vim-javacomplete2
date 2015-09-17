@@ -30,7 +30,7 @@ public class OutputClassInfoTest {
 
     @Test
     public void testEmptyClass() {
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class OutputClassInfoTest {
 
         clazz.addConstructor(cc);
 
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class OutputClassInfoTest {
 
         clazz.addConstructor(cc);
 
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[{'m':'1','d':'public Bar()'},{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[{'m':'1','d':'public Bar()'},{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class OutputClassInfoTest {
 
         clazz.addField(field);
 
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[{'n':'foo','c':'Foo','m':'1','t':'Foo'},{'n':'bar','c':'Bar','m':'10','t':'Bar'},],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[{'n':'foo','c':'Foo','m':'1','t':'Foo'},{'n':'bar','c':'Bar','m':'10','t':'Bar'},],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -102,27 +102,27 @@ public class OutputClassInfoTest {
 
         clazz.addMethod(method);
 
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[],'methods':[{'n':'foo','c':'Foo','m':'1','r':'Foo','d':'public Foo foo()'},{'n':'bar','c':'Bar','m':'10','r':'Bar','d':'private Bar bar()'},],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[{'n':'foo','c':'Foo','m':'1','r':'Foo','d':'public Foo foo()'},{'n':'bar','c':'Bar','m':'10','r':'Bar','d':'private Bar bar()'},],},}", oci.get(clazz));
     }
 
     @Test
     public void testExtends() {
         clazz.setSuperclass("foo.baz.Baz");
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','extends':['foo.baz.Baz'],'implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','extends':['foo.baz.Baz'],'implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
     public void testImplements() {
         clazz.addInterface("foo.baz.Baz");
         clazz.addInterface("foo.bas.Bas");
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':['foo.baz.Baz','foo.bas.Bas',],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':['foo.baz.Baz','foo.bas.Bas',],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
     public void testTypeArguments() {
         clazz.addTypeArgument("A");
         clazz.addTypeArgument("B");
-        Assert.assertEquals("{'foo.bar.Bar<A,B>':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar<A,B>','classpath':'1','fqn':'foo.bar.Bar<A,B>','implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar<A,B>':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar<A,B>','classpath':'1','fqn':'foo.bar.Bar<A,B>','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class OutputClassInfoTest {
         clazz.addInterface("foo.bas.Bas");
         clazz.setSuperclass("foo.baz.Baz");
 
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','extends':['foo.baz.Baz'],'implements':['foo.baz.Baz','foo.bas.Bas',],'ctors':[{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[{'n':'foo','c':'Foo','m':'1','t':'Foo'},],'methods':[{'n':'foo','c':'Foo','m':'1','r':'Foo','d':'public Foo foo()'},],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','extends':['foo.baz.Baz'],'implements':['foo.baz.Baz','foo.bas.Bas',],'nested':[],'ctors':[{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[{'n':'foo','c':'Foo','m':'1','t':'Foo'},],'methods':[{'n':'foo','c':'Foo','m':'1','r':'Foo','d':'public Foo foo()'},],},}", oci.get(clazz));
     }
 
     @Test
@@ -162,19 +162,19 @@ public class OutputClassInfoTest {
     @Test
     public void testNullConstructor() {
         clazz.addConstructor(null);
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
     public void testNullField() {
         clazz.addField(null);
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
     public void testNullMethod() {
         clazz.addMethod(null);
-        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
+        Assert.assertEquals("{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
 }

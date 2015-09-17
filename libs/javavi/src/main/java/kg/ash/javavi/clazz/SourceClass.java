@@ -20,12 +20,14 @@ public class SourceClass {
     private List<SourceClass> linkedClasses = new ArrayList<>();
     private List<String> typeArguments = new ArrayList<>();
 
+    private List<String> nestedClasses = new ArrayList<>();
+
     public String getName() {
         String args = "";
         for (String type : typeArguments) {
             args += type + ",";
         }
-        return String.format("%s.%s%s", pakage, name, args.length() > 0 ? "<" + args.substring(0, args.length() - 1) + ">" : "");
+        return String.format("%s%s%s", pakage == null ? "" : pakage + ".", name, args.length() > 0 ? "<" + args.substring(0, args.length() - 1) + ">" : "");
     }
 
     public void setName(String name) {
@@ -132,5 +134,13 @@ public class SourceClass {
 
     public void addTypeArgument(String type) {
         typeArguments.add(type);
+    }
+
+    public void addNestedClass(String cls) {
+        nestedClasses.add(cls);
+    }
+
+    public List<String> getNestedClasses() {
+        return nestedClasses;
     }
 }

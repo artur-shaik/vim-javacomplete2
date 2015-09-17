@@ -45,6 +45,7 @@ public class OutputClassInfo {
 
         StringBuilder sb = init(clazz);
         isIntefaceOrClass(sb, clazz);
+        hasNested(sb, clazz);
         hasConstructors(sb, clazz);
         hasFields(sb, clazz);
         hasMethods(sb, clazz);
@@ -85,6 +86,13 @@ public class OutputClassInfo {
         clazz.getInterfaces().forEach(iface -> 
                 sb.append("'").append(iface).append("',"));
         sb.append("],").append(Javavi.NEWLINE);;
+    }
+
+    private void hasNested(StringBuilder sb, SourceClass clazz) {
+        sb.append("'nested':[");
+        clazz.getNestedClasses().forEach(nested -> 
+                sb.append("'").append(nested).append("',"));
+        sb.append("],").append(Javavi.NEWLINE);
     }
 
     private void hasConstructors(StringBuilder sb, SourceClass clazz) {

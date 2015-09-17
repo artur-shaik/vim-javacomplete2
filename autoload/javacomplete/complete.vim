@@ -266,9 +266,9 @@ function! s:CompleteAfterWord(incomplete)
 
   let pkgs = []
   let types = []
-  for key in keys(b:j_cache)
+  for key in keys(g:j_cache)
     if key =~# '^' . a:incomplete
-      if type(b:j_cache[key]) == type('') || get(b:j_cache[key], 'tag', '') == 'PACKAGE'
+      if type(g:j_cache[key]) == type('') || get(g:j_cache[key], 'tag', '') == 'PACKAGE'
         call add(pkgs, {'kind': 'P', 'word': key})
 
         " filter out type info
@@ -400,8 +400,8 @@ function! s:CompleteAfterDot(expr)
       let srcpath = join(s:GetSourceDirs(expand('%:p'), s:GetPackageName()), ',')
       call javacomplete#logger#Log('O2. ' . fqn)
       call s:FetchClassInfo(fqn)
-      if get(get(b:j_cache, fqn, {}), 'tag', '') == 'CLASSDEF'
-        let ti = b:j_cache[fqn]
+      if get(get(g:j_cache, fqn, {}), 'tag', '') == 'CLASSDEF'
+        let ti = g:j_cache[fqn]
         let itemkind = 11
         let ii = i
       endif
@@ -484,11 +484,17 @@ function! s:CompleteAfterDot(expr)
       " array creation expr:	"new int[i=1] [val()].|", "new java.lang.String[].|"
     elseif items[0] =~ '^\s*new\s\+'
       call javacomplete#logger#Log('creation expr. "' . items[0] . '"')
-      let subs = split(substitute(items[0], '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([([]\)', '\1;\2', ''), ';')
-      if subs[1][0] == '['
-        let ti = g:J_ARRAY_TYPE_INFO
-      elseif subs[1][0] == '('
+      let subs = split(substitute(items[0], '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([<([]\|\)', '\1;\2', ''), ';')
+      if len(subs) == 1
         let ti = s:DoGetClassInfo(subs[0])
+        let members = javacomplete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
+        let result = s:DoGetNestedList(members[3])
+        return eval('['. result . ']')
+      elseif subs[1][0] == '['
+        let ti = g:J_ARRAY_TYPE_INFO
+      elseif subs[1][0] == '(' || subs[1] =~ '<>(.*'
+        let s = substitute(subs[0], '\.', '\$', 'g')
+        let ti = s:DoGetClassInfo(s)
         " exclude interfaces and abstract class.  TODO: exclude the inaccessible
         if get(ti, 'flags', '')[-10:-10] || get(ti, 'flags', '')[-11:-11]
           echo 'cannot instantiate the type ' . subs[0]
@@ -875,8 +881,14 @@ function! s:GetDeclaredClassName(var)
   endif
 
   let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
-  return get(variable, 'tag', '') == 'VARDEF' ? java_parser#type2Str(variable.vartype) : get(variable, 't', '')
+  if get(variable, 'tag', '') == 'VARDEF'
+    if has_key(variable, 't')
+      return substitute(variable.t, '\.', '\$', 'g')
+    endif
+    return java_parser#type2Str(variable.vartype)
+  endif
 
+  return get(variable, 't', '')
 endfunction
 
 function! s:IsStatic(modifier)
@@ -884,11 +896,11 @@ function! s:IsStatic(modifier)
 endfunction
 
 function! s:IsBuiltinType(name)
-  return index(b:J_PRIMITIVE_TYPES, a:name) >= 0
+  return index(g:J_PRIMITIVE_TYPES, a:name) >= 0
 endfunction
 
 function! s:IsKeyword(name)
-  return index(b:J_KEYWORDS, a:name) >= 0
+  return index(g:J_KEYWORDS, a:name) >= 0
 endfunction
 
 function! s:HasKeyword(name)
@@ -935,8 +947,8 @@ function! s:GetPackageName()
   let col_old = col('.')
 
   call cursor(1, 1)
-  let lnum = search('^\s*package[ \t\r\n]\+\([a-zA-Z][a-zA-Z0-9.]*\);', 'w')
-  let packageName = substitute(getline(lnum), '^\s*package\s\+\([a-zA-Z][a-zA-Z0-9.]*\);', '\1', '')
+  let lnum = search('^\s*package[ \t\r\n]\+\([a-zA-Z][a-zA-Z0-9._]*\);', 'w')
+  let packageName = substitute(getline(lnum), '^\s*package\s\+\([a-zA-Z][a-zA-Z0-9._]*\);', '\1', '')
 
   call cursor(lnum_old, col_old)
   return packageName
@@ -946,19 +958,19 @@ endfunction
 " class information							{{{2
 
 function! s:FetchClassInfo(fqn)
-  if has_key(b:j_cache, a:fqn)
-    return b:j_cache[a:fqn]
+  if has_key(g:j_cache, a:fqn)
+    return g:j_cache[a:fqn]
   endif
 
   let res = javacomplete#server#Communicate('-E', a:fqn, 'FetchClassInfo in Batch')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
-      if !has_key(b:j_cache, key)
+      if !has_key(g:j_cache, key)
         if type(dict[key]) == type({})
-          let b:j_cache[key] = javacomplete#util#Sort(dict[key])
+          let g:j_cache[key] = javacomplete#util#Sort(dict[key])
         elseif type(dict[key]) == type([])
-          let b:j_cache[key] = sort(dict[key])
+          let g:j_cache[key] = sort(dict[key])
         endif
       endif
     endfor
@@ -968,8 +980,8 @@ endfunction
 " a:1	filepath
 " a:2	package name
 function! s:DoGetClassInfo(class, ...)
-  if has_key(b:j_cache, a:class)
-    return b:j_cache[a:class]
+  if has_key(g:j_cache, a:class)
+    return g:j_cache[a:class]
   endif
 
   call javacomplete#logger#Log("DoGetClassInfo: ". a:class)
@@ -1008,16 +1020,23 @@ function! s:DoGetClassInfo(class, ...)
     endif
   endif
 
-  let typename = a:class 
-  "substitute(a:class, '\s', '', 'g')
-  let typeArguments = ''
+  let typename = a:class
 
+  let typeArguments = ''
   let splittedType = s:SplitTypeArguments(typename)
   if type(splittedType) == type([])
     let typename = splittedType[0]
     let typeArguments = splittedType[1]
   endif
 
+  if stridx(typename, '$') > 0
+    let sc = split(typename, '\$')
+    let typename = sc[0]
+    let nested = '$'.sc[1]
+  else
+    let nested = ''
+  endif
+  
   if typename !~ '^\s*' . g:RE_QUALID . '\s*$' || s:HasKeyword(typename)
     call javacomplete#logger#Log("No qualid: ". typename)
     return {}
@@ -1028,12 +1047,13 @@ function! s:DoGetClassInfo(class, ...)
 
   let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
-    let fqn = fqn. typeArgumentsCollected
+    let fqn = fqn . nested . typeArgumentsCollected
     call s:FetchClassInfo(fqn)
 
     let key = s:KeyInCache(fqn)
+    call javacomplete#logger#Log(key)
     if !empty(key)
-      return get(b:j_cache[key], 'tag', '') == 'CLASSDEF' ? b:j_cache[key] : {}
+      return get(g:j_cache[key], 'tag', '') == 'CLASSDEF' ? g:j_cache[key] : {}
     endif
   endfor
 
@@ -1121,8 +1141,9 @@ function! s:KeyInCache(fqn)
   let fqn = substitute(fqn, '>', '\\>', 'g')
   let fqn = substitute(fqn, ']', '\\]', 'g')
   let fqn = substitute(fqn, '[', '\\[', 'g')
+  let fqn = substitute(fqn, '\$', '.', 'g')
 
-  let keys = keys(b:j_cache)
+  let keys = keys(g:j_cache)
   let idx = match(keys, '\v'. fqn. '$')
   
   if idx >= 0
@@ -1166,21 +1187,21 @@ endfunction
 " Return:	TClassInfo or {} when not found
 " See ClassInfoFactory.getClassInfo() in insenvim.
 function! s:DoGetReflectionClassInfo(fqn)
-  if !has_key(b:j_cache, a:fqn)
+  if !has_key(g:j_cache, a:fqn)
     let res = javacomplete#server#Communicate('-C', a:fqn, 's:DoGetReflectionClassInfo')
     if res =~ '^{'
-      let b:j_cache[a:fqn] = javacomplete#util#Sort(eval(res))
+      let g:j_cache[a:fqn] = javacomplete#util#Sort(eval(res))
     elseif res =~ '^['
       for type in eval(res)
         if get(type, 'name', '') != ''
-          let b:j_cache[type.name] = javacomplete#util#Sort(type)
+          let g:j_cache[type.name] = javacomplete#util#Sort(type)
         endif
       endfor
     else
       let b:errormsg = res
     endif
   endif
-  return get(b:j_cache, a:fqn, {})
+  return get(g:j_cache, a:fqn, {})
 endfunction
 
 function! s:Tree2ClassInfo(t)
@@ -1204,7 +1225,7 @@ function! s:Tree2ClassInfo(t)
   " convert type name in extends to fqn for class defined in source files
   if has_key(a:t, 'filepath') && a:t.filepath != javacomplete#GetCurrentFileKey()
     let filepath = a:t.filepath
-    let packagename = get(b:j_files[filepath].unit, 'package', '')
+    let packagename = get(g:j_files[filepath].unit, 'package', '')
   else
     let filepath = expand('%:p')
     let packagename = s:GetPackageName()
@@ -1234,20 +1255,20 @@ endfunction
 " package information							{{{2
 
 function! s:DoGetInfoByReflection(class, option)
-  if has_key(b:j_cache, a:class)
-    return b:j_cache[a:class]
+  if has_key(g:j_cache, a:class)
+    return g:j_cache[a:class]
   endif
 
   let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])
-      let b:j_cache[a:class] = sort(v)
+      let g:j_cache[a:class] = sort(v)
     elseif type(v) == type({})
       if get(v, 'tag', '') =~# '^\(PACKAGE\|CLASSDEF\)$'
-        let b:j_cache[a:class] = v
+        let g:j_cache[a:class] = v
       else
-        call extend(b:j_cache, v, 'force')
+        call extend(g:j_cache, v, 'force')
       endif
     endif
     unlet v
@@ -1255,7 +1276,7 @@ function! s:DoGetInfoByReflection(class, option)
     let b:errormsg = res
   endif
 
-  return get(b:j_cache, a:class, {})
+  return get(g:j_cache, a:class, {})
 endfunction
 
 " search in members							{{{2
@@ -1271,7 +1292,7 @@ function! s:CanAccess(mods, kind)
 endfunction
 
 function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
-  let result = [[], [], []]
+  let result = [[], [], [], []]
 
   if a:kind != 13
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_fields', []) : [])
@@ -1289,13 +1310,17 @@ function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAl
         endif
       endif
     endfor
+
+    for c in get(a:ci, 'nested', [])
+        call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+    endfor
   endif
 
   if a:kind/10 != 0
     let types = get(a:ci, 'classes', [])
     for t in types
       if empty(a:name) || (a:fullmatch ? t[strridx(t, '.')+1:] ==# a:name : t[strridx(t, '.')+1:] =~# '^' . a:name)
-        if !has_key(b:j_cache, t) || !has_key(b:j_cache[t], 'flags') || a:kind == 1 || b:j_cache[t].flags[-1:]
+        if !has_key(g:j_cache, t) || !has_key(g:j_cache[t], 'flags') || a:kind == 1 || g:j_cache[t].flags[-1:]
           call add(result[0], t)
         endif
       endif
@@ -1320,6 +1345,19 @@ function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAl
 endfunction
 
 " generate member list							{{{2
+function! s:DoGetNestedList(classes)
+  let s = ''
+  let useFQN = javacomplete#UseFQN()
+  for class in a:classes
+    if !useFQN
+      let fieldType = javacomplete#util#CleanFQN(class.m)
+    endif
+    let s .= "{'kind':'C','word':'". class.n . "','menu':'". fieldType . "','dup':1},"
+  endfor
+
+  return s
+endfunction
+
 function! s:DoGetFieldList(fields)
   let s = ''
   let useFQN = javacomplete#UseFQN()
@@ -1394,7 +1432,7 @@ function! s:DoGetMemberList(ci, kind)
     " Use dup here for member type can share name with field.
     for class in members[0]
       "for class in get(a:ci, 'classes', [])
-      let v = get(b:j_cache, class, {})
+      let v = get(g:j_cache, class, {})
       if v == {} || v.flags[-1:]
         let s .= "{'kind': 'C', 'word': '" . substitute(class, a:ci.name . '\.', '\1', '') . "','dup':1},"
       endif
@@ -1432,6 +1470,7 @@ function! s:DoGetMemberList(ci, kind)
     endif
 
     let s .= s:DoGetMethodList(smethodlist, kind == 12)
+    let s .= s:DoGetNestedList(members[3])
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
     let s = substitute(s, '\<\(public\|static\|synchronized\|transient\|volatile\|final\|strictfp\|serializable\|native\)\s\+', '', 'g')

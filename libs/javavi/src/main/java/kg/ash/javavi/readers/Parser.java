@@ -1,5 +1,11 @@
 package kg.ash.javavi.readers;
 
+import com.github.javaparser.*;
+import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.body.*;
+import com.github.javaparser.ast.stmt.*;
+import com.github.javaparser.ast.type.*;
+import com.github.javaparser.ast.visitor.*;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -13,22 +19,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
-import com.github.javaparser.*;
-import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.type.*;
-import com.github.javaparser.ast.stmt.*;
-import com.github.javaparser.ast.visitor.*;
+import kg.ash.javavi.Javavi;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.*;
-import kg.ash.javavi.searchers.*;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
-import kg.ash.javavi.Javavi;
+import kg.ash.javavi.searchers.*;
 
 public class Parser implements ClassReader {
 
     private String sources;
     private String sourceFile;
+    private ClassOrInterfaceDeclaration parentClass = null;
 
     public Parser(String sources, String sourceFile) {
         this.sources = sources;
@@ -45,6 +46,9 @@ public class Parser implements ClassReader {
     public SourceClass read(String targetClass) {
         if (sourceFile == null || sourceFile.isEmpty()) return null;
 
+        if (targetClass.contains("$")) {
+            targetClass = targetClass.split("\\$")[0];
+        }
         if (Javavi.cachedClasses.containsKey(targetClass)) {
             return Javavi.cachedClasses.get(targetClass);
         }
@@ -65,13 +69,13 @@ public class Parser implements ClassReader {
             }
         }
 
-        ClassVisitor visitor = new ClassVisitor(clazz);
-        visitor.visit(cu, null);
-        clazz = visitor.getClazz();
-
         ClassOrInterfaceVisitor coiVisitor = new ClassOrInterfaceVisitor(clazz);
         coiVisitor.visit(cu, null);
         clazz = coiVisitor.getClazz();
+
+        ClassVisitor visitor = new ClassVisitor(clazz);
+        visitChildren(parentClass.getChildrenNodes(), visitor);
+        clazz = visitor.getClazz();
 
         List<String> impls = new ArrayList<>();
         if (clazz.getSuperclass() != null) {
@@ -105,6 +109,20 @@ public class Parser implements ClassReader {
         return clazz;
     }
 
+    private void visitChildren(List<Node> nodes, ClassVisitor visitor) {
+        for (Node n : nodes) {
+            if (n instanceof FieldDeclaration) {
+                visitor.visit((FieldDeclaration)n, null);
+            } else if (n instanceof MethodDeclaration) {
+                visitor.visit((MethodDeclaration)n, null);
+            } else if (n instanceof ConstructorDeclaration) {
+                visitor.visit((ConstructorDeclaration)n, null);
+            } else if (n instanceof ClassOrInterfaceDeclaration) {
+                visitor.visit((ClassOrInterfaceDeclaration)n, null);
+            }
+        }
+    }
+
     private class ClassOrInterfaceVisitor extends VoidVisitorAdapter<Object> {
 
         private SourceClass clazz;
@@ -119,6 +137,7 @@ public class Parser implements ClassReader {
 
         @Override
         public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+            parentClass = n;
             clazz.setName(n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
@@ -203,6 +222,45 @@ public class Parser implements ClassReader {
                 clazz.addField(field);
             }
         }
+
+        @Override
+        public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+            SourceClass clazz = new SourceClass();
+            clazz.setName(this.clazz.getSimpleName() + "$" + n.getName());
+            clazz.setModifiers(n.getModifiers());
+            clazz.setIsInterface(n.isInterface());
+            if (n.getExtends() != null && n.getExtends().size() > 0) {
+                String className = n.getExtends().get(0).getName();
+                clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
+            } else {
+                clazz.setSuperclass("java.lang.Object");
+                if (clazz.getConstructors().isEmpty()) {
+                    ClassConstructor ctor = new ClassConstructor();
+                    ctor.setDeclaration(String.format("public %s()", clazz.getName()));
+
+                    ctor.setModifiers(1);
+                    clazz.addConstructor(ctor);
+                }
+            }
+
+            if (n.getImplements() != null) {
+                ClassSearcher seacher = new ClassSearcher();
+                for (ClassOrInterfaceType iface : n.getImplements()) {
+                    String className = iface.getName();
+                    clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
+                }
+            }
+
+            clazz.setPackage(this.clazz.getPackage());
+
+            ClassVisitor visitor = new ClassVisitor(clazz);
+            visitChildren(n.getChildrenNodes(), visitor);
+            this.clazz.addNestedClass(clazz.getName());
+            this.clazz.addLinkedClass(clazz);
+
+            Javavi.cachedClasses.put(clazz.getName(), clazz);
+        }
+
     }
 
     private static String getDeclarationName(String code) {

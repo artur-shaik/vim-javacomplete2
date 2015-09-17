@@ -42,10 +42,10 @@ let g:J_JSP_BUILTIN_OBJECTS = {'session':	'javax.servlet.http.HttpSession',
       \	'page':		'javax.servlet.jsp.HttpJspPage', }
 
 
-let b:J_PRIMITIVE_TYPES	= ['boolean', 'byte', 'char', 'int', 'short', 'long', 'float', 'double']
-let b:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 'synchronized', 'volatile', 'transient', 'native', 'strictfp', 'abstract']
-let b:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
-let b:J_KEYWORDS		= b:J_PRIMITIVE_TYPES + b:J_KEYWORDS_MODS + b:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
+let g:J_PRIMITIVE_TYPES	= ['boolean', 'byte', 'char', 'int', 'short', 'long', 'float', 'double']
+let g:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 'synchronized', 'volatile', 'transient', 'native', 'strictfp', 'abstract']
+let g:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
+let g:J_KEYWORDS		= g:J_PRIMITIVE_TYPES + g:J_KEYWORDS_MODS + g:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
 let b:PATH_SEP	= ':'
 let b:FILE_SEP	= '/'
@@ -78,7 +78,7 @@ let g:RE_SELECT_OR_ACCESS	= '^\s*\(' . g:RE_IDENTIFIER . '\)\s*\(\[.*\]\)\=\s*$'
 let g:RE_ARRAY_ACCESS	= '^\s*\(' . g:RE_IDENTIFIER . '\)\s*\(\[.*\]\)\+\s*$'
 let g:RE_CASTING	= '^\s*(\(' .g:RE_QUALID. '\))\s*\(' . g:RE_IDENTIFIER . '\)\>'
 
-let g:RE_KEYWORDS	= '\<\%(' . join(b:J_KEYWORDS, '\|') . '\)\>'
+let g:RE_KEYWORDS	= '\<\%(' . join(g:J_KEYWORDS, '\|') . '\)\>'
 
 let g:JAVA_HOME = $JAVA_HOME
 
@@ -86,16 +86,16 @@ let b:dotexpr = ''			" expression ends with '.'
 let b:incomplete = ''			" incomplete word: 1. dotexpr.method(|) 2. new classname(|) 3. dotexpr.ab|, 4. ja|, 5. method(|
 let b:errormsg = ''
 
-let b:j_cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
-let b:j_files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
+let g:j_cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
+let g:j_files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
 fu! SScope()
   return s:
 endfu
 
 function! javacomplete#ClearCache()
-  let b:j_cache = {}
-  let b:j_files = {}
+  let g:j_cache = {}
+  let g:j_files = {}
 endfunction
 
 function! javacomplete#Complete(findstart, base)
@@ -154,7 +154,7 @@ function! s:GlobPathList(path, pattern, suf)
   endif
 endfunction
 
-" key of b:j_files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
+" key of g:j_files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
 function! javacomplete#GetCurrentFileKey()
   return s:GetCurrentFileKey()
 endfunction

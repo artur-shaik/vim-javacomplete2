@@ -24,6 +24,9 @@ public class ClassSearcher {
         } else {
             String[] sourcesArray = sources.split(File.pathSeparator);
             for (String sourceDir : sourcesArray) {
+                if (targetClass.contains("$")) {
+                    targetClass = targetClass.split("\\$")[0];
+                }
                 SourceFileVisitor visitor = new SourceFileVisitor(targetClass);
                 try {
                     Files.walkFileTree(Paths.get(sourceDir), visitor);

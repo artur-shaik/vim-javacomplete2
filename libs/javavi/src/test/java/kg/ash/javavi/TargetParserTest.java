@@ -31,6 +31,12 @@ public class TargetParserTest {
         Assert.assertEquals("Integer", parser.getTypeArguments().get(0));
 
         Assert.assertEquals("java.lang.Class", parser.parse("java.lang.Class<?>"));
+
+        Assert.assertEquals("java.util.HashMap$KeySet", parser.parse("java.util.HashMap$KeySet<(kg.ash.demo.String|java.lang.String),java.math.BigDecimal>"));
+        Assert.assertEquals(2, parser.getTypeArguments().size());
+        Assert.assertEquals("java.lang.String", parser.getTypeArguments().get(0));
+        Assert.assertEquals("java.math.BigDecimal", parser.getTypeArguments().get(1));
+
     }
 
     @Test
