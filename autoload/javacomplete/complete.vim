@@ -1,6 +1,6 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-14
+" Last Change:	2015-09-17
 "
 " This file contains everything related to completions
 

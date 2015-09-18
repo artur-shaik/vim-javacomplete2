@@ -1,4 +1,4 @@
-*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-09-07
+*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-09-18
 
 		    JAVACOMPLETE2 REFERENCE MANUAL	by artur shaik~
 		    					ashaihullin@gmail.com~
@@ -20,8 +20,6 @@
 5. Limitations					|javacomplete-limitations|
 6. History					
    6.1 javacomplete				|javacomplete-history|
-   6.2 Parser					|java-parser-history|
-   6.3 Javavi				        |javacomplete-reflection|
 7. Todo						|javacomplete-todo|
 8. Thanks					|javacomplete-thanks|
 
@@ -292,6 +290,10 @@ The embedded parser works a bit slower than expected.
 
 6.1 javacomplete				*javacomplete-history*
 
+v2.3.2
+    2015-09-18  Nested classes.
+                Vimscript refactored.
+
 v2.3.1
     2015-09-07  Better experience with imports.
                 Commands added.
@@ -447,92 +449,6 @@ v0.70 2007-01-27	Complete the reflection part.
 v0.60 2007-01-25	Design TClassInfo, etc.
 v0.50 2007-01-21	Use java and Reflection.class directly.
 
-
-6.3 Parser					*java-parser-history*
-
-v0.68
-    2015-07-08  Lambda expressions parsing.
-
-v0.67
-    2007-09-11	Append a error string to imported qid when error occurs.
-    2007-09-10	Improved regexp constants.
-    2007-09-07	Fixed type2Str(). Removed qualident2Str(). 
-
-v0.66.1	08-30	Changed classCreatorRest().
-v0.66	08-27	Minor changes
-
-v0.65
-    2007-08-23
-    -	Improved s:scanComment(), s:Strpart(), s:String2Flags().
-    -	Improved recognizing methods, ctors, and variable declarators declared in most common form.
-    -	Added s:optFinalParameter(), s:methodDeclaratorRest_opt(). 
-    -	Removed s:GetLine() and s:GetCol().
-    -	Rewrote binary functions.
-
-v0.64
-    2007-08-21
-    -	Added quick recognizing fields or methods declared in most common form.
-    -	Optimized code: s:modeAndEXPR(), formalParameter(), and others.
-
-v0.63
-    2007-08-10	
-    -	Removed the unclear s:tokens and s:modifier_keywords.
-    -	Add java_parser#GetSnapshot() and java_parser#Restore().
-    2007-08-09	Fixed a bug when no top level class defined
-
-v0.62 2007-08-08
-    2007-08-08	Fix values in s:Flags and s:modifiersOpt() and the related.
-    2007-08-07	Optimize code of scanDoubleQuote() and importDeclaration().
-
-v0.61 2007-08-04
-    2007-08-01 Fix a bug typetag(). return a:token -> return tolower(a:token)
-    2007-07-31
-    -	Rename all script functions matching "s:Java_\(\i\+\)" to "s:\1".
-    -	Change s:EOI = ''
-    -	Use get() instead of s:GetOption(). Remove it.
-    -	Use repeat() instead of s:PrependChar(). Remove it.
-    -	Improve scanChar()
-
-v0.60 2007-07-31	Now it nearly is a complete parser and support Java5,6.
-			And tested correctly on all java files in jdk6 src.zip.
-    2007-07-19	Support new language features in java 5 and above.
-    2007-07-25	Add supports for parsing statement, block or expression
-    2007-07-28	Place it to autoload directory. 
-    2007-07-30	Clean this script.
-
-v0.51 2007-02-13	Optimize several scan function.
-v0.50 2007-02-10	Complete the skeleton.
-
-
-6.3 Javavi			*javacomplete-reflection*
-
-v2.2
-    2015-05-26  Lambda expression parsing.
-
-v2.0
-    2015-05-26  Search class with class loader or in source files.
-
-v0.77
-    2007-09-14	Improved generating information of all packages in jar files.
-    2007-09-06	
-    -	Improved getting paths of all system jar files for different JDKs 
-	in different platforms.
-    2007-08-14	Major improvement. Support nontoplevel classes.
-
-v0.76.3
-    2007-08-09	Redefined '-P' option for returning all packages and subpackages info in one time.
-
-v0.76.2
-    2007-08-06	Return a modifier value as a string because it more than 32bit.
-
-v0.76
-    2007-08-04	Support checking and reading package members for '-E'.
-    2007-08-02
-    -	Add an option '-E'.
-    -	Use ZipFile and ZipEntry instead of JarFile and JarEntry,
-	so that it can be compiled by and run on JDK1.1 and above.
-v0.7  2007-02-17	
-
 ==============================================================================
 7. Todo						*javacomplete-todo*
 
@@ -551,24 +467,6 @@ v0.7  2007-02-17
         * Cheng Fang author of original javacomplete plugin;
         * Zhang Li author of vim-javacompleteex plugin;
         * http://github.com/javaparser/javaparser library.
-
-    Originally thanked:
-
-        * Bram Moolenaar and all Vim contributors for Vim
-        * The insenvim project
-        * The javac and gjc sources
-        * All of you for using this script :)
-
-        * For help, documentation, bug report :
-	 	Martin Stubenschrott	author of IComplete
-		Vissale NEANG		author of OmniCppComplete
-		David Fishburn		author of SQLComplete and others
-		Nico Weber		testing on the Mac
-		Thomas Link		testing on cygwin+bash
-		Zhixing Yu
-	* For the bug of 'wildignore' options
-		Rodrigo Rosenfeld Rosas
-		Alexandru Mo?oi
 
 FeedBack:
 Any problem, bug or suggest are welcome to send to ashaihullin@gmail.com
