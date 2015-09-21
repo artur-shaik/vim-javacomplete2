@@ -222,4 +222,8 @@ function! javacomplete#Start()
   call javacomplete#server#Start()
 endfunction
 
+if exists("g:auto_javacomplete2_wsd")
+  call javacomplete#util#JavaFileTypeInit()
+endif
+
 " vim:set fdm=marker sw=2 nowrap:
