@@ -456,7 +456,8 @@ function! s:CompleteAfterDot(expr)
           let ti = s:DoGetClassInfo(ident)
           let itemkind = 11
 
-          if get(ti, 'tag', '') != 'CLASSDEF'
+          if get(ti, 'tag', '') != 'CLASSDEF' || get(ti, 'name', '') == 'java.lang.Object'
+            let tib = ti
             let ti = {}
           endif
 
@@ -465,7 +466,12 @@ function! s:CompleteAfterDot(expr)
             call javacomplete#logger#Log('F5. "package.|"')
             unlet ti
             let ti = s:GetMembers(ident)	" s:DoGetPackegInfo(ident)
-            let itemkind = 20
+            if empty(ti)
+              unlet ti
+              let ti = tib
+            else
+              let itemkind = 20
+            endif
           endif
         endif
       endif
@@ -486,13 +492,16 @@ function! s:CompleteAfterDot(expr)
       " class instance creation expr:	"new String().|", "new NonLoadableClass().|"
       " array creation expr:	"new int[i=1] [val()].|", "new java.lang.String[].|"
     elseif items[0] =~ '^\s*new\s\+'
-      call javacomplete#logger#Log('creation expr. "' . items[0] . '"')
-      let subs = split(substitute(items[0], '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([<([]\|\)', '\1;\2', ''), ';')
+      let joinedItems = join(items,'.')
+      call javacomplete#logger#Log('creation expr. "' . joinedItems . '"')
+      let subs = split(substitute(joinedItems, '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([<([]\|\)', '\1;\2', ''), ';')
       if len(subs) == 1
         let ti = s:DoGetClassInfo(subs[0])
-        let members = javacomplete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
-        let result = s:DoGetNestedList(members[3])
-        return eval('['. result . ']')
+        if get(ti, 'tag', '') == 'CLASSDEF' && get(ti, 'name', '') != 'java.lang.Object'
+          let members = javacomplete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
+          return eval('['. s:DoGetNestedList(members[3]) . ']')
+        endif
+        return s:GetMembers(subs[0])	" may be a package
       elseif subs[1][0] == '['
         let ti = g:J_ARRAY_TYPE_INFO
       elseif subs[1][0] == '(' || subs[1] =~ '<>(.*'
@@ -878,14 +887,24 @@ function! s:GetDeclaredClassName(var)
 
   " Special handling for builtin objects in JSP
   if &ft == 'jsp'
-    if get(s:JSP_BUILTIN_OBJECTS, a:var, '') != ''
-      return s:JSP_BUILTIN_OBJECTS[a:var]
+    if get(g:J_JSP_BUILTIN_OBJECTS, a:var, '') != ''
+      return g:J_JSP_BUILTIN_OBJECTS[a:var]
     endif
+    return ''
   endif
 
   let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
   if get(variable, 'tag', '') == 'VARDEF'
     if has_key(variable, 't')
+      let splitted = split(variable.t, '\.')
+      if len(splitted) > 1
+        let directFqn = javacomplete#imports#SearchSingleTypeImport(splitted[0], javacomplete#imports#GetImports('imports_fqn', javacomplete#GetCurrentFileKey()))
+        if empty(directFqn) 
+          return variable.t
+        endif
+      else
+        return variable.t
+      endif
       return substitute(variable.t, '\.', '\$', 'g')
     endif
     return java_parser#type2Str(variable.vartype)
