@@ -1,6 +1,6 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-14
+" Last Change:	2015-09-30
 "
 " Methods that calling internal parser
 
@@ -29,6 +29,10 @@ function! javacomplete#parseradapter#Parse(...)
     call java_parser#InitParser(lines)
     call java_parser#SetLogLevel(2)
     let props.unit = java_parser#compilationUnit()
+
+    if &ft == 'jsp'
+      return props
+    endif
 
     let package = has_key(props.unit, 'package') ? props.unit.package . '.' : ''
     call s:UpdateFQN(props.unit, package)

@@ -1,6 +1,6 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-17
+" Last Change:	2015-09-30
 "
 " This file contains everything related to completions
 
@@ -505,7 +505,17 @@ function! s:CompleteAfterDot(expr)
       elseif subs[1][0] == '['
         let ti = g:J_ARRAY_TYPE_INFO
       elseif subs[1][0] == '(' || subs[1] =~ '<>(.*'
-        let s = substitute(subs[0], '\.', '\$', 'g')
+        let splitted = split(subs[0], '\.')
+        if len(splitted) > 1
+          let directFqn = javacomplete#imports#SearchSingleTypeImport(splitted[0], javacomplete#imports#GetImports('imports_fqn', javacomplete#GetCurrentFileKey()))
+          if empty(directFqn) 
+            let s = subs[0]
+          else
+            let s = substitute(subs[0], '\.', '\$', 'g')
+          endif
+        else
+          let s = subs[0]
+        endif
         let ti = s:DoGetClassInfo(s)
         " exclude interfaces and abstract class.  TODO: exclude the inaccessible
         if get(ti, 'flags', '')[-10:-10] || get(ti, 'flags', '')[-11:-11]
@@ -695,28 +705,6 @@ function! s:ArrayAccess(arraytype, expr)
   return {}
 endfunction
 
-" searches for name of a var or a field and determines the meaning  {{{1
-
-" The standard search order of a variable or field is as follows:
-" 1. Local variables declared in the code block, for loop, or catch clause
-"    from current scope up to the most outer block, a method or an initialization block
-" 2. Parameters if the code is in a method or ctor
-" 3. Fields of the type
-" 4. Accessible inherited fields.
-" 5. If the type is a nested type,
-"    local variables of the enclosing block or fields of the enclosing class.
-"    Note that if the type is a static nested type, only static members of an enclosing block or class are searched
-"    Reapply this rule to the upper block and class enclosing the enclosing type recursively
-" 6. Accessible static fields imported.
-"    It is allowed that several fields with the same name.
-
-" The standard search order of a method is as follows:
-" 1. Methods of the type
-" 2. Accessible inherited methods.
-" 3. Methods of the enclosing class if the type is a nested type.
-" 4. Accessible static methods imported.
-"    It is allowed that several methods with the same name and signature.
-
 " first		return at once if found one.
 " fullmatch	1 - equal, 0 - match beginning
 " return [types, methods, fields, vars]
@@ -876,6 +864,21 @@ function! s:DetermineMethod(methods, parameters)
   return get(a:methods, 0, {})
 endfunction
 
+function! s:FastBackwardDeclarationSearch(name)
+  let lines = reverse(getline(0, '.'))
+  for line in lines
+    let splittedLine = split(line, ';')
+    for l in splittedLine
+      let l = javacomplete#util#Trim(l)
+      let matches = matchlist(l, '^\('. g:RE_QUALID. '\)\s*'. a:name)
+      if len(matches) > 0
+        return matches[1]
+      endif
+    endfor
+  endfor
+  return ''
+endfunction
+
 " Parser.GetType() in insenvim
 function! s:GetDeclaredClassName(var)
   let var = javacomplete#util#Trim(a:var)
@@ -885,12 +888,12 @@ function! s:GetDeclaredClassName(var)
   endif
 
 
-  " Special handling for builtin objects in JSP
+  " Special handling for objects in JSP
   if &ft == 'jsp'
     if get(g:J_JSP_BUILTIN_OBJECTS, a:var, '') != ''
       return g:J_JSP_BUILTIN_OBJECTS[a:var]
     endif
-    return ''
+    return s:FastBackwardDeclarationSearch(a:var)
   endif
 
   let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
