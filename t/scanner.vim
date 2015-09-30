@@ -24,6 +24,8 @@ describe 'javacomplete scanner test'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'var [ 0 ].') == 'var[0].'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'Boolean b = ((Boolean) var).method()') == '((Boolean)var).method()'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'List<String>::') == 'List<String>::'
+        Expect Call('javacomplete#scanner#ExtractCleanExpr', 'import ="java.util') == 'java.util'
+        Expect Call('javacomplete#scanner#ExtractCleanExpr', 'import = "java.util') == 'java.util'
     end
 
 end

@@ -79,6 +79,9 @@ function! javacomplete#complete#Complete(findstart, base)
         let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
         return start - strlen(b:incomplete)
 
+      elseif &ft == 'jsp' && statement =~# '.*page.*import.*'
+        let b:context_type = s:CONTEXT_IMPORT
+        let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
       else
         " type declaration
         let idx_type = matchend(statement, '^\s*' . g:RE_TYPE_DECL)

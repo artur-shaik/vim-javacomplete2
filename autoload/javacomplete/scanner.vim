@@ -1,6 +1,6 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-14
+" Last Change:	2015-09-30
 "
 " Simple parsing functions
 
@@ -69,7 +69,7 @@ function! javacomplete#scanner#ExtractCleanExpr(expr)
   let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
 
   let pos = strlen(cmd)-1 
-  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>"]'
+  while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>]'
     if cmd[pos] == ')'
       let pos = javacomplete#util#SearchPairBackward(cmd, pos, '(', ')')
     elseif cmd[pos] == ']'

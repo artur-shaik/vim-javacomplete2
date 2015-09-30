@@ -1,6 +1,6 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-14
+" Last Change:	2015-09-30
 "
 " Everything to work with imports
 
@@ -36,7 +36,6 @@ function! s:GenerateImports()
   if &ft == 'jsp'
     while 1
       let lnum = search('\<import\s*=\s*[''"]', 'Wc')
-      echom lnum
       if (lnum == 0)
         break
       endif
@@ -73,7 +72,6 @@ function! s:GenerateImports()
   endif
 
   call cursor(lnum_old, col_old)
-  call javacomplete#logger#Log(imports)
   return imports
 endfunction
 
@@ -89,14 +87,16 @@ function! javacomplete#imports#GetImports(kind, ...)
   endif
 
   for import in props.imports
-    let subs = split(substitute(import[0], '^\s*\(static\s\+\)\?\(' .g:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*$', '\1;\2', ''), ';', 1)
-    let qid = substitute(subs[1] , '\s', '', 'g')
-    if !empty(subs[0])
-      call add(props.imports_static, qid)
-    elseif qid[-1:] == '*'
-      call add(props.imports_star, qid[:-2])
-    else
-      call add(props.imports_fqn, qid)
+    let subs = matchlist(import[0], '^\s*\(static\s\+\)\?\(' .g:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*$')
+    if !empty(subs)
+      let qid = substitute(subs[2] , '\s', '', 'g')
+      if !empty(subs[1])
+        call add(props.imports_static, qid)
+      elseif qid[-1:] == '*'
+        call add(props.imports_star, qid[:-2])
+      else
+        call add(props.imports_fqn, qid)
+      endif
     endif
   endfor
   let g:j_files[filekey] = props
@@ -179,7 +179,11 @@ function! s:SortImports()
     let saveCursor = getcurpos()
     silent execute beginLine.','.lastLine. 'delete _'
     for imp in importsList
-      call append(beginLine - 1, 'import '. imp. ';')
+      if &ft == 'jsp'
+        call append(beginLine - 1, '<%@ page import = "'. imp. '" %>')
+      else
+        call append(beginLine - 1, 'import '. imp. ';')
+      endif
       let beginLine += 1
     endfor
     call setpos('.', saveCursor)
@@ -215,11 +219,19 @@ function! s:AddImport(import)
       let insertline = 0
     endif
 
-    call append(insertline, 'import '. a:import. ';')
+    if &ft == 'jsp'
+      call append(insertline, '<%@ page import = "'. a:import. '" %>')
+    else
+      call append(insertline, 'import '. a:import. ';')
+    endif
     call append(insertline, '')
   else
     let lastLine = imports[len(imports) - 1][1]
-    call append(lastLine, 'import '. a:import. ';')
+    if &ft == 'jsp'
+      call append(lastLine, '<%@ page import = "'. a:import. '" %>')
+    else
+      call append(lastLine, 'import '. a:import. ';')
+    endif
   endif
 
 endfunction
