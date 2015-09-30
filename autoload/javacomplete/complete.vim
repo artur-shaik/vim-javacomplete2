@@ -870,7 +870,7 @@ function! s:FastBackwardDeclarationSearch(name)
     let splittedLine = split(line, ';')
     for l in splittedLine
       let l = javacomplete#util#Trim(l)
-      let matches = matchlist(l, '^\('. g:RE_QUALID. '\)\s*'. a:name)
+      let matches = matchlist(l, '^\('. g:RE_QUALID. '\)\s\+'. a:name)
       if len(matches) > 0
         return matches[1]
       endif

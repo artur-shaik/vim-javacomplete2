@@ -35,18 +35,26 @@ function! s:GenerateImports()
 
   if &ft == 'jsp'
     while 1
-      let lnum = search('\<import\s*=[''"]', 'Wc')
+      let lnum = search('\<import\s*=\s*[''"]', 'Wc')
+      echom lnum
       if (lnum == 0)
         break
       endif
 
       let str = getline(lnum)
       if str =~ '<%\s*@\s*page\>' || str =~ '<jsp:\s*directive.page\>'
-        let str = substitute(str, '.*import=[''"]\([a-zA-Z0-9_$.*, \t]\+\)[''"].*', '\1', '')
-        for item in split(str, ',')
-          call add(imports, [substitute(item, '\s', '', 'g'), lnum])
-        endfor
+        let stat = matchlist(str, '.*import\s*=\s*[''"]\([a-zA-Z0-9_$.*, \t]\+\)[''"].*')
+        if !empty(stat)
+          for item in stat[1:]
+            if !empty(item)
+              for i in split(item, ',')
+                call add(imports, [substitute(i, '\s', '', 'g'), lnum])
+              endfor
+            endif
+          endfor
+        endif
       endif
+      call cursor(lnum + 1, 1)
     endwhile
   else
     while 1
@@ -65,6 +73,7 @@ function! s:GenerateImports()
   endif
 
   call cursor(lnum_old, col_old)
+  call javacomplete#logger#Log(imports)
   return imports
 endfunction
 
