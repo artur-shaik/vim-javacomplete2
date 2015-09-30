@@ -181,9 +181,9 @@ endfunction
 
 augroup javacomplete
   autocmd!
-  autocmd BufEnter *.java call s:SetCurrentFileKey()
+  autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
   autocmd VimLeave * call javacomplete#server#Terminate()
-  autocmd TextChangedI *.java call s:CheckForExistCompletedClassName()
+  autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
