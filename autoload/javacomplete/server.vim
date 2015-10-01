@@ -83,7 +83,7 @@ function! javacomplete#server#Start()
 
     JavacompletePy import vim
     JavacompletePy bridgeState = JavaviBridge()
-    JavacompletePy bridgeState.setupServer(vim.eval('s:GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
+    JavacompletePy bridgeState.setupServer(vim.eval('javacomplete#server#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
 
   endif
 endfunction
@@ -100,24 +100,24 @@ function! javacomplete#server#ShowPID()
   endif
 endfunction
 
-fu! javacomplete#server#GetCompiler()
-  return exists('s:compiler') && s:compiler !~  '^\s*$' ? s:compiler : 'javac'
-endfu
+function! javacomplete#server#GetCompiler()
+  return exists('g:JavaComplete_JavaCompiler') && g:JavaComplete_JavaCompiler !~  '^\s*$' ? g:JavaComplete_JavaCompiler : 'javac'
+endfunction
 
-fu! javacomplete#server#SetCompiler(compiler)
+function! javacomplete#server#SetCompiler(compiler)
   let s:compiler = a:compiler
-endfu
+endfunction
 
-function! s:GetJVMLauncher()
-  return exists('s:interpreter') && s:interpreter !~  '^\s*$' ? s:interpreter : 'java'
-endfu
+function! javacomplete#server#GetJVMLauncher()
+  return exists('g:JavaComplete_JvmLauncher') && g:JavaComplete_JvmLauncher !~  '^\s*$' ? g:JavaComplete_JvmLauncher : 'java'
+endfunction
 
-function! s:SetJVMLauncher(interpreter)
-  if s:GetJVMLauncher() != a:interpreter
+function! javacomplete#server#SetJVMLauncher(interpreter)
+  if javacomplete#server#GetJVMLauncher() != a:interpreter
     let g:j_cache = {}
   endif
-  let s:interpreter = a:interpreter
-endfu
+  let g:JavaComplete_JvmLauncher = a:interpreter
+endfunction
 
 function! javacomplete#server#Compile()
   call javacomplete#server#Terminate()
@@ -200,7 +200,7 @@ function! javacomplete#server#GetClassPath()
 
   if empty($CLASSPATH)
     if g:JAVA_HOME == ''
-      let java = s:GetJVMLauncher()
+      let java = javacomplete#server#GetJVMLauncher()
       let javaSettings = split(s:System(java. " -XshowSettings", "Get java settings"), '\n')
       for line in javaSettings
         if line =~ 'java\.home'
