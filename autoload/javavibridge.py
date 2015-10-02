@@ -36,7 +36,7 @@ class JavaviBridge():
             environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if sys.platform == 'win32' else ':') + classpath
         else:
             environ['CLASSPATH'] = classpath
-        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=True, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=sys.platform != 'win32', env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     def pid(self):
         return self.popen.pid
