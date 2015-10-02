@@ -129,7 +129,7 @@ function! s:GenerateClassPath(path, pom) abort
   let lines = split(system('mvn --file ' . a:pom . ' dependency:build-classpath -DincludeScope=test'), "\n")
   for i in range(len(lines))
     if lines[i] =~ 'Dependencies classpath:'
-      let cp = lines[i+1]
+      let cp = lines[i+1] . g:PATH_SEP . join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP)
       call writefile([cp], a:path)
       return cp
     endif
