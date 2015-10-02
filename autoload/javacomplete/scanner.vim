@@ -16,6 +16,8 @@ function! javacomplete#scanner#GetStatement()
   let lnum_old = line('.')
   let col_old = col('.')
 
+  call s:SkipBlock()
+
   while 1
     if search('[{};]\|<%\|<%!', 'bW') == 0
       let lnum = 1
@@ -34,6 +36,53 @@ function! javacomplete#scanner#GetStatement()
 
   silent call cursor(lnum_old, col_old)
   return s:MergeLines(lnum, col, lnum_old, col_old)
+endfunction
+
+function! s:SkipBlock()
+  let pos = line('.')
+  let clbracket = 0
+  let quoteFlag = 0
+  while pos > 0
+    let pos -= 1
+    if pos == 0
+      break
+    endif
+
+    let line = getline(pos)
+    let cursor = len(line)
+    while cursor > 0
+      if line[cursor] == '"'
+        if quoteFlag == 0
+          let quoteFlag = 1
+        else
+          let quoteFlag = 0
+        endif
+      endif
+
+      if quoteFlag
+        let line = line[0 : cursor - 1]. line[cursor + 1 : -1]
+        let cursor -= 1
+        continue
+      endif
+
+      if line[cursor] == '}'
+        let clbracket += 1
+      elseif line[cursor] == '{' 
+        if clbracket > 0
+          let clbracket -= 1
+        else
+          break
+        endif
+      elseif line[cursor] == '(' && clbracket == 0
+        call cursor(pos, cursor)
+        break
+      endif
+      let cursor -= 1
+    endwhile
+    if clbracket > 0
+      continue
+    endif
+  endwhile
 endfunction
 
 function! s:MergeLines(lnum, col, lnum_old, col_old)
