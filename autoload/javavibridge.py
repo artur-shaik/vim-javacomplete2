@@ -36,7 +36,16 @@ class JavaviBridge():
             environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if sys.platform == 'win32' else ':') + classpath
         else:
             environ['CLASSPATH'] = classpath
-        self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=sys.platform != 'win32', env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
+        is_win = sys.platform == 'win32'
+        shell = is_win == False
+        if is_win and vim.eval('v:progname') == 'gvim':
+            info = subprocess.STARTUPINFO()
+            info.dwFlags = 1
+            info.wShowWindow = 7
+            self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=shell, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE, startupinfo = info)
+        else:
+            self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=shell, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     def pid(self):
         return self.popen.pid
