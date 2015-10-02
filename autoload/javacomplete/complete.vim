@@ -867,6 +867,7 @@ function! s:DetermineMethod(methods, parameters)
   return get(a:methods, 0, {})
 endfunction
 
+" Used in jsp files to find last declaration of object 'name'
 function! s:FastBackwardDeclarationSearch(name)
   let lines = reverse(getline(0, '.'))
   for line in lines
