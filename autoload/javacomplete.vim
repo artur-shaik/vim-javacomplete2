@@ -2,6 +2,19 @@
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 " Last Change:	2015-09-30
 
+" It doesn't make sense to do any work if vim doesn't support any Python since
+" we relly on it to properly work.
+if has("python")
+  command! -nargs=1 JavacompletePy py <args>
+  command! -nargs=1 JavacompletePyfile pyfile <args>
+elseif has("python3")
+  command! -nargs=1 JavacompletePy py3 <args>
+  command! -nargs=1 JavacompletePyfile py3file <args>
+else
+  echoerr "Javacomplete needs Python support to run!"
+  finish
+endif
+
 let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm',		'word': 'clone(',	'abbr': 'clone()',	'menu': 'Object clone()', },
       \	{'kind': 'm',		'word': 'equals(',	'abbr': 'equals()',	'menu': 'boolean equals(Object)', },
@@ -108,21 +121,40 @@ function! s:GetBase(extra)
   return base
 endfunction
 
+function! s:ReadClassPathFile(classpath_file)
+  let cp = ''
+  let file = g:JavaComplete_Home. "/autoload/classpath.py"
+  execute "JavacompletePyfile" file
+  JavacompletePy import vim
+  JavacompletePy vim.command("let cp = '%s'" % os.pathsep.join(ReadClasspathFile(vim.eval('a:classpath_file'))).replace('\\', '/'))
+  return cp
+endfunction
+
 function! s:FindClassPath() abort
-  if executable('mvn')
+  if executable('mvn') && g:JavaComplete_PomPath != ""
     let base = s:GetBase("mvnclasspath/")
     let key = substitute(g:JavaComplete_PomPath, '[\\/:;]', '_', 'g')
     let path = base . key
 
-    if g:JavaComplete_PomPath != "" && filereadable(path)
+    if filereadable(path)
       if getftime(path) >= getftime(g:JavaComplete_PomPath)
         return join(readfile(path), '')
       endif
     endif
     return s:GenerateClassPath(path, g:JavaComplete_PomPath)
-  else
-    return '.'
   endif
+
+  if has('python') || has('python3')
+    let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
+    if !empty(classpath_file) && filereadable(classpath_file)
+      let cp = s:ReadClassPathFile(classpath_file)
+      if !empty(cp)
+        return cp
+      endif
+    endif
+  endif
+
+  return '.'
 endfunction
 
 function! s:GenerateClassPath(path, pom) abort
@@ -210,12 +242,13 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_PomPath')
-    let g:JavaComplete_PomPath = fnamemodify(findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
+    let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+    if g:JavaComplete_PomPath != ""
+      let g:JavaComplete_PomPath = fnamemodify(g:JavaComplete_PomPath, ':p')
+    endif
   endif
 
-  if g:JavaComplete_PomPath != ""
-    let g:JavaComplete_LibsPath .= s:FindClassPath()
-  endif
+  let g:JavaComplete_LibsPath .= s:FindClassPath()
 endif
 
 function! javacomplete#Start()
