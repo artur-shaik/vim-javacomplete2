@@ -29,6 +29,7 @@ function! javacomplete#util#Prune(str, ...)
   let str = substitute(a:str, '"\(\\\(["\\''ntbrf]\)\|[^"]\)*"', '""', 'g')
   let str = substitute(str, '\/\/.*', '', 'g')
   let str = javacomplete#util#RemoveBlockComments(str)
+  let str = javacomplete#util#Trim(str)
   return a:0 > 0 ? str : str . ' '
 endfunction
 

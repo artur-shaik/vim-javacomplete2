@@ -51,4 +51,9 @@ describe 'javacomplete utils test'
         Expect Call('javacomplete#util#CleanFQN', 'java.lang.Object java.util.HashMap.get()') == 'Object get()'
         Expect Call('javacomplete#util#CleanFQN', 'public java.math.BigDecimal java.util.HashMap.computeIfAbsent(java.lang.String,java.util.function.Function<? super java.lang.String, ? extends java.math.BigDecimal>)') == 'public BigDecimal computeIfAbsent(String,Function<? super String, ? extends BigDecimal>)'
     end
+
+    it 'Prune test'
+        Expect Call('javacomplete#util#Prune', ' 	sb. /* block comment*/ append( "stringliteral" ) // comment ') == 'sb.   append( "" ) '
+        Expect Call('javacomplete#util#Prune', ' 	list.stream(\n\t\ts -> {System.out.println(s)}).') == 'list.stream(\n\t\ts -> {System.out.println(s)}). '
+    end
 end
