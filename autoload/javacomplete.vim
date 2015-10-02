@@ -210,7 +210,7 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_PomPath')
-    let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+    let g:JavaComplete_PomPath = fnamemodify(findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
   endif
 
   if g:JavaComplete_PomPath != ""
