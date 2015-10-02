@@ -28,6 +28,7 @@ public class ClassNamesFetcher {
     public ClassNamesFetcher(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
     }
+
     @SuppressWarnings("unchecked")
     public Set<String> getNames() {
         List<VoidVisitorAdapter> adapters = new ArrayList<>();
