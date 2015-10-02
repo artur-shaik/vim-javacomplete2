@@ -123,21 +123,10 @@ endfunction
 
 function! s:ReadClassPathFile(classpath_file)
   let cp = ''
-JavacompletePy <<EOF
-import vim, os
-from xml.etree.ElementTree import *
-javacomplete_classpath_tree = parse(vim.eval('classpath_file'))
-javacomplete_classpath_list = []
-for a in javacomplete_classpath_tree.findall('classpathentry'):
-  kind = a.get('kind')
-  if kind == 'src' and 'output' in a.keys():
-    javacomplete_classpath_list.append(os.path.abspath(a.get('output')))
-  elif kind == 'lib' and 'path' in a.keys():
-    javacomplete_classpath_list.append(os.path.abspath(a.get('path')))
-  elif kind == 'output' and 'path' in a.keys():
-    javacomplete_classpath_list.append(os.path.abspath(a.get('path')))
-vim.command("let cp = '%s'" % os.pathsep.join(javacomplete_classpath_list).replace('\\', '/'))
-EOF
+  let file = g:JavaComplete_Home. "/autoload/classpath.py"
+  execute "JavacompletePyfile" file
+  JavacompletePy import vim
+  JavacompletePy vim.command("let cp = '%s'" % os.pathsep.join(ReadClasspathFile(vim.eval('a:classpath_file'))).replace('\\', '/'))
   return cp
 endfunction
 
