@@ -4,19 +4,6 @@
 "
 " Java server bridge initiator and caller
 
-" It doesn't make sense to do any work if vim doesn't support any Python since
-" we relly on it to properly work.
-if has("python")
-  command! -nargs=1 JavacompletePy py <args>
-  command! -nargs=1 JavacompletePyfile pyfile <args>
-elseif has("python3")
-  command! -nargs=1 JavacompletePy py3 <args>
-  command! -nargs=1 JavacompletePyfile py3file <args>
-else
-  echoerr "Javacomplete needs Python support to run!"
-  finish
-endif
-
 function! s:System(cmd, caller)
   let t = reltime()
   let res = system(a:cmd)
