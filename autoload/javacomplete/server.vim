@@ -164,11 +164,11 @@ function! javacomplete#server#Communicate(option, args, log)
     let args = substitute(a:args, '"', '\\"', 'g')
     let cmd = a:option. ' "'. args. '"'
     call javacomplete#logger#Log("Communicate: ". cmd. " [". a:log. "]")
-    let a:result = ""
+    let result = ""
 JavacompletePy << EOPC
-vim.command('let a:result = "%s"' % bridgeState.send(vim.eval("cmd")))
+vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
 EOPC
-    return a:result
+    return result
   endif
 
   return ""
