@@ -246,7 +246,13 @@ function! s:GetExtraPath()
   if exists('g:JavaComplete_LibsPath')
     let paths = split(g:JavaComplete_LibsPath, g:PATH_SEP)
     for path in paths
-      call extend(jars, s:ExpandPathToJars(path))
+      let exp = s:ExpandPathToJars(path)
+      if empty(exp)
+        " ex: target/classes
+        call extend(jars, [path])
+      else
+        call extend(jars, exp)
+      endif
     endfor
   endif
 

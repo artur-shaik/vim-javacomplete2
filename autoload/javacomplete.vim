@@ -111,7 +111,7 @@ endfunction
 function! s:FindClassPath() abort
   if executable('mvn')
     let base = s:GetBase("mvnclasspath/")
-    let key = substitute(g:JavaComplete_PomPath, g:FILE_SEP, '_', 'g')
+    let key = substitute(g:JavaComplete_PomPath, '[\\/:;]', '_', 'g')
     let path = base . key
 
     if g:JavaComplete_PomPath != "" && filereadable(path)
@@ -129,7 +129,7 @@ function! s:GenerateClassPath(path, pom) abort
   let lines = split(system('mvn --file ' . a:pom . ' dependency:build-classpath -DincludeScope=test'), "\n")
   for i in range(len(lines))
     if lines[i] =~ 'Dependencies classpath:'
-      let cp = lines[i+1]
+      let cp = lines[i+1] . g:PATH_SEP . join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP)
       call writefile([cp], a:path)
       return cp
     endif
@@ -210,7 +210,7 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_PomPath')
-    let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
+    let g:JavaComplete_PomPath = fnamemodify(findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
   endif
 
   if g:JavaComplete_PomPath != ""
