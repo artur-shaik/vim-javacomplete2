@@ -72,7 +72,7 @@ public class Reflection implements ClassReader {
     }
 
     private List<String> classes = new ArrayList<>();
-
+    @SuppressWarnings("unchecked")
     public SourceClass getSourceClass(Class cls) {
         TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
 
