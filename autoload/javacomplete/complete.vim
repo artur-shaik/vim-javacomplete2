@@ -1027,7 +1027,7 @@ function! s:DoGetClassInfo(class, ...)
   let t = get(javacomplete#parseradapter#SearchTypeAt(javacomplete#parseradapter#Parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
   if a:class == 'this' || a:class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename.'.'.a:class)
     if &ft == 'jsp'
-      let ci = s:DoGetReflectionClassInfo('javax.servlet.jsp.HttpJspPage')
+      let ci = s:FetchClassInfo('javax.servlet.jsp.HttpJspPage')
       if a:class == 'this'
         " TODO: search methods defined in <%! [declarations] %>
         "	search methods defined in other jsp files included
@@ -1209,28 +1209,6 @@ function! s:CollectFQNs(typename, packagename, filekey)
   endfor
   call add(fqns, 'java.lang.Object')
   return fqns
-endfunction
-
-" Parameters:
-"   class	the qualified class name
-" Return:	TClassInfo or {} when not found
-" See ClassInfoFactory.getClassInfo() in insenvim.
-function! s:DoGetReflectionClassInfo(fqn)
-  if !has_key(g:j_cache, a:fqn)
-    let res = javacomplete#server#Communicate('-C', a:fqn, 's:DoGetReflectionClassInfo')
-    if res =~ '^{'
-      let g:j_cache[a:fqn] = javacomplete#util#Sort(eval(res))
-    elseif res =~ '^['
-      for type in eval(res)
-        if get(type, 'name', '') != ''
-          let g:j_cache[type.name] = javacomplete#util#Sort(type)
-        endif
-      endfor
-    else
-      let b:errormsg = res
-    endif
-  endif
-  return get(g:j_cache, a:fqn, {})
 endfunction
 
 function! s:Tree2ClassInfo(t)
