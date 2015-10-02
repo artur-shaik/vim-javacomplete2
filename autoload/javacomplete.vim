@@ -111,7 +111,7 @@ endfunction
 function! s:FindClassPath() abort
   if executable('mvn')
     let base = s:GetBase("mvnclasspath/")
-    let key = substitute(g:JavaComplete_PomPath, g:FILE_SEP, '_', 'g')
+    let key = substitute(g:JavaComplete_PomPath, '[\\/:;]', '_', 'g')
     let path = base . key
 
     if g:JavaComplete_PomPath != "" && filereadable(path)
