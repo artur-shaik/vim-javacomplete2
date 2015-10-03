@@ -27,7 +27,9 @@ public class GetMissingImportsAction extends ImportsAction {
             }
         }
 
-        asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        if (compilationUnit.getPackage() != null) {
+            asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        }
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {
@@ -56,6 +58,7 @@ public class GetMissingImportsAction extends ImportsAction {
                 }
             }
         }
+        System.out.println(result);
         return result.append("]").toString();
     }
     
