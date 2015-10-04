@@ -157,7 +157,6 @@ public class Parser implements ClassReader {
             }
 
             if (n.getImplements() != null) {
-                ClassSearcher seacher = new ClassSearcher();
                 for (ClassOrInterfaceType iface : n.getImplements()) {
                     String className = iface.getName();
                     clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
@@ -245,7 +244,6 @@ public class Parser implements ClassReader {
             }
 
             if (n.getImplements() != null) {
-                ClassSearcher seacher = new ClassSearcher();
                 for (ClassOrInterfaceType iface : n.getImplements()) {
                     String className = iface.getName();
                     clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
