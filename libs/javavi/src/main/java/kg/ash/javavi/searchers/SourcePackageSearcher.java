@@ -58,11 +58,11 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
         }
 
         if (cu.getPackage() != null) {
-            int lastslash = sourcePath.lastIndexOf(File.separator);
+            int lastslash = sourcePath.replace('\\', '/').lastIndexOf('/');
             if (lastslash >= 0) {
                 String className  = sourcePath.substring(lastslash + 1);
-                String path = cu.getPackage().getName().toString().replace(".", File.separator);
-                return path + File.separator + className;
+                String path = cu.getPackage().getName().toString().replace(".", "/");
+                return path + "/" + className;
             }
         }
         return null;

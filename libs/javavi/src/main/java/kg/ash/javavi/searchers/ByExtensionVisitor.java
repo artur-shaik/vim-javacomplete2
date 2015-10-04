@@ -38,7 +38,7 @@ public class ByExtensionVisitor extends SimpleFileVisitor<Path> {
         if (name != null) {
             for (PathMatcher matcher : matchers) {
                 if (matcher.matches(name)) {
-                    resultList.add(file.toFile().getPath());
+                    resultList.add(file.toFile().getPath().replace('\\', '/'));
                     return;
                 }
             }

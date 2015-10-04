@@ -72,7 +72,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
-        targetFile = file.toFile().getPath();
+        targetFile = file.toFile().getPath().replace('\\', '/');
 
         return FileVisitResult.TERMINATE;
     }

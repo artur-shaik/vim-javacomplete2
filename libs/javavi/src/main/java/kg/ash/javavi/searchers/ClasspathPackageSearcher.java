@@ -45,14 +45,14 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
     private List<String> collectClassPath() {
         List<String> result = new ArrayList<>();
 
-        String extdirs = System.getProperty("java.ext.dirs");
+        String extdirs = System.getProperty("java.ext.dirs").replace('\\',  '/');
         for (String path : extdirs.split(File.pathSeparator)) {
-            result.addAll(addPathFromDir(path + File.separator));
+            result.addAll(addPathFromDir(path + '/'));
         }
 
-        result.addAll(addPathFromDir(System.getProperty("java.home")));
+        result.addAll(addPathFromDir(System.getProperty("java.home").replace('\\',  '/')));
 
-        String classPath = System.getProperty("java.class.path") + File.pathSeparator;
+        String classPath = System.getProperty("java.class.path").replace('\\', '/') + File.pathSeparator;
         for (String path : classPath.split(File.pathSeparator)) {
             if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
                 result.add(path);

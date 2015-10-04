@@ -32,7 +32,7 @@ public class ClassSearcher {
                     Files.walkFileTree(Paths.get(sourceDir), visitor);
 
                     if (visitor.getTargetFile() != null) {
-                        sourceFile = visitor.getTargetFile();
+                        sourceFile = visitor.getTargetFile().replace('\\', '/');
                         isInSource = true;
                         return true;
                     }

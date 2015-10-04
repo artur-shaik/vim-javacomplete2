@@ -44,7 +44,7 @@ public class PackagesLoader {
 
     private void appendEntry(String name, int source) {
         if (isClassFile(name)) {
-            int seppos = name.lastIndexOf(File.separatorChar);
+            int seppos = name.replace('\\', '/').lastIndexOf('/');
             if (seppos != -1) {
                 processClass(name, seppos, source);
             }
@@ -67,7 +67,7 @@ public class PackagesLoader {
     }
 
     private void addToParent(String name, int source) {
-        int seppos = name.lastIndexOf(File.separatorChar);
+        int seppos = name.replace('\\', '/').lastIndexOf('/');
         if (seppos == -1) {
             return;
         }
@@ -93,6 +93,6 @@ public class PackagesLoader {
     }
 
     private String makeDots(String name) {
-        return name.replaceAll(File.separator, ".").replaceAll("[.]{2,}", "");
+        return name.replaceAll("/", ".").replaceAll("[.]{2,}", "");
     }
 }

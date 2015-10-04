@@ -32,8 +32,8 @@ public class Parser implements ClassReader {
     private ClassOrInterfaceDeclaration parentClass = null;
 
     public Parser(String sources, String sourceFile) {
-        this.sources = sources;
-        this.sourceFile = sourceFile;
+        this.sources = sources.replace('\\', '/');
+        this.sourceFile = sourceFile.replace('\\', '/');
     }
 
     @Override
