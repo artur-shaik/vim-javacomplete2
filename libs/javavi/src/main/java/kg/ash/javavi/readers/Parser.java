@@ -1,29 +1,30 @@
 package kg.ash.javavi.readers;
 
-import com.github.javaparser.*;
-import com.github.javaparser.ast.*;
-import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.stmt.*;
-import com.github.javaparser.ast.type.*;
-import com.github.javaparser.ast.visitor.*;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.Reader;
-import java.lang.StringBuilder;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
+
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.TypeParameter;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
 import kg.ash.javavi.Javavi;
-import kg.ash.javavi.TargetParser;
-import kg.ash.javavi.clazz.*;
+import kg.ash.javavi.clazz.ClassConstructor;
+import kg.ash.javavi.clazz.ClassField;
+import kg.ash.javavi.clazz.ClassImport;
+import kg.ash.javavi.clazz.ClassMethod;
+import kg.ash.javavi.clazz.ClassTypeParameter;
+import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
-import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.searchers.ClassSearcher;
+import kg.ash.javavi.searchers.FqnSearcher;
 
 public class Parser implements ClassReader {
 

@@ -1,10 +1,10 @@
 package kg.ash.javavi.searchers;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import java.io.File;
-import java.util.List;
 
 public class ClasspathPackageSearcherTest {
 
@@ -14,5 +14,5 @@ public class ClasspathPackageSearcherTest {
         List<PackageEntry> entries = new ClasspathPackageSearcher().loadEntries();
         Assert.assertTrue(entries.size() > 0);
     }
-    
+
 }

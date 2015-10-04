@@ -1,9 +1,7 @@
 package kg.ash.javavi.searchers;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
 
 public class ClassMap {
 
@@ -22,7 +20,7 @@ public class ClassMap {
     public ClassMap(String name) {
         this.name = name;
     }
-    
+
     public boolean contains(String path) {
         return map.containsKey(path);
     }

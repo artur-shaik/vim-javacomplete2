@@ -1,22 +1,22 @@
 package kg.ash.javavi.output;
 
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
-import kg.ash.javavi.searchers.ClassMap;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class OutputClassInfoTest {
 
     private SourceClass clazz;
     private OutputClassInfo oci;
-    
+
     @Before
     public void Init() {
         oci = new OutputClassInfo();
