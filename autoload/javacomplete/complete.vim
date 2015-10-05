@@ -36,7 +36,7 @@ function! javacomplete#complete#Complete(findstart, base)
     let s:et_whole = reltime()
     let start = col('.') - 1
 
-    if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
+	if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
       let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       let curline = getline(".")
@@ -50,7 +50,6 @@ function! javacomplete#complete#Complete(findstart, base)
       endwhile
 
       return start
-
     elseif statement =~ '[.0-9A-Za-z_]\s*$'
       let valid = 1
       if statement =~ '\.\s*$'
@@ -320,7 +319,7 @@ function! s:CompleteAfterWord(incomplete)
     for dirpath in s:GetSourceDirs(expand('%:p'))
       let filepatterns .= escape(dirpath, ' \') . '/**/*.java '
     endfor
-    exe 'vimgrep /\s*' . g:RE_TYPE_DECL . '/jg ' . filepatterns
+    silent! exe 'vimgrep /\s*' . g:RE_TYPE_DECL . '/jg ' . filepatterns
     for item in getqflist()
       if item.text !~ '^\s*\*\s\+'
         let text = matchstr(javacomplete#util#Prune(item.text, -1), '\s*' . g:RE_TYPE_DECL)
