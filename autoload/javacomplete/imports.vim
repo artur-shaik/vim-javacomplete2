@@ -167,6 +167,7 @@ endfu
 
 function! s:SortImports()
   let imports = javacomplete#imports#GetImports('imports')
+  call javacomplete#logger#Log(imports)
   if (len(imports) > 0)
     let beginLine = imports[0][1]
     let lastLine = imports[len(imports) - 1][1]
@@ -214,15 +215,19 @@ function! s:AddImport(import)
   if empty(imports)
     let firstline = getline(1)
     if firstline =~ '^package.*'
-      let insertline = 1
+      let insertline = 3
+      call append(1, '')
     else
-      let insertline = 0
+      let insertline = 1
     endif
+    while (javacomplete#util#Trim(getline(insertline)) == '')
+      silent execute insertline. 'delete _'
+    endwhile
 
     if &ft == 'jsp'
-      call append(insertline, '<%@ page import = "'. a:import. '" %>')
+      call append(insertline - 1, '<%@ page import = "'. a:import. '" %>')
     else
-      call append(insertline, 'import '. a:import. ';')
+      call append(insertline - 1, 'import '. a:import. ';')
     endif
     call append(insertline, '')
   else
@@ -327,7 +332,7 @@ function! javacomplete#imports#AddMissing()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
-  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'RemoveUnusedImports')
+  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'AddMissingImports')
   if response =~ '^['
     let missing = eval(response)
     for import in missing
