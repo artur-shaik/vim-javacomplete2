@@ -1,6 +1,5 @@
 package kg.ash.javavi.searchers;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -8,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+
 import kg.ash.javavi.Javavi;
 
 public class SourceFileVisitor extends SimpleFileVisitor<Path> {
@@ -72,7 +72,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
-        targetFile = file.toFile().getPath();
+        targetFile = file.toFile().getPath().replace('\\', '/');
 
         return FileVisitResult.TERMINATE;
     }

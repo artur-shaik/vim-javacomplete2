@@ -1,14 +1,14 @@
 package kg.ash.javavi.readers.source;
 
-import com.github.javaparser.ast.CompilationUnit;
-import java.io.FileReader;
 import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
-import kg.ash.javavi.readers.source.CompilationUnitCreator;
+
+import com.github.javaparser.ast.CompilationUnit;
 
 public class ClassNamesFetcherTest {
-    
+
     @Test
     public void testClassnamesFetch() throws Exception {
         CompilationUnit cu = CompilationUnitCreator.createFromFile("src/test/resources/kg/ash/javavi/ClassWithClasses.java");
@@ -22,5 +22,5 @@ public class ClassNamesFetcherTest {
         Assert.assertTrue(result.contains("LinkedList"));
         Assert.assertEquals(5, result.size());
     }
-    
+
 }

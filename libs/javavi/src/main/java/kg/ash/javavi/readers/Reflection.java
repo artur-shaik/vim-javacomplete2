@@ -5,20 +5,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import kg.ash.javavi.TargetParser;
-import kg.ash.javavi.clazz.*;
-import kg.ash.javavi.searchers.*;
+import kg.ash.javavi.clazz.ClassConstructor;
+import kg.ash.javavi.clazz.ClassField;
+import kg.ash.javavi.clazz.ClassMethod;
+import kg.ash.javavi.clazz.ClassTypeParameter;
+import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.searchers.ClassSearcher;
 
 public class Reflection implements ClassReader {
-    
+
     private String sources;
     private List<String> typeArguments = null;
 
@@ -59,7 +60,7 @@ public class Reflection implements ClassReader {
                 int lastDotPos = binaryName.lastIndexOf('.');
                 if (lastDotPos == -1) break;
 
-                binaryName = String.format("%s$%s", 
+                binaryName = String.format("%s$%s",
                         binaryName.substring(0, lastDotPos),
                         binaryName.substring(lastDotPos+1, binaryName.length()));
 
@@ -86,7 +87,7 @@ public class Reflection implements ClassReader {
         clazz.setModifiers(cls.getModifiers());
         clazz.setIsInterface(cls.isInterface());
         clazz.setPackage(cls.getPackage().getName());
-        
+
         for (int i = 0; i < cls.getTypeParameters().length; i++) {
             Type type = cls.getTypeParameters()[i];
             if (i < typeArguments.size()) {
@@ -187,7 +188,7 @@ public class Reflection implements ClassReader {
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
             method.setModifiers(m.getModifiers());
-            
+
             String genericDeclaration = m.toGenericString();
             for (Entry<String,String> kv : tAA.entrySet()) {
                 genericDeclaration = genericDeclaration.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
