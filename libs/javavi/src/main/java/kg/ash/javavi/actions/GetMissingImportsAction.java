@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
 
 import kg.ash.javavi.clazz.ClassImport;
 
@@ -25,7 +26,10 @@ public class GetMissingImportsAction extends ImportsAction {
             }
         }
 
-        asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        PackageDeclaration pkg = compilationUnit.getPackage();
+        if (pkg != null) {
+            asteriskImports.add(pkg.getName().toStringWithoutComments());
+        }
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {
