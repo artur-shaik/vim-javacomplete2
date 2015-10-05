@@ -96,16 +96,16 @@ let g:RE_KEYWORDS	= '\<\%(' . join(g:J_KEYWORDS, '\|') . '\)\>'
 
 let g:JAVA_HOME = $JAVA_HOME
 
-let g:j_cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
-let g:j_files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
+let g:JavaComplete_Cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
+let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
 fu! SScope()
   return s:
 endfu
 
 function! javacomplete#ClearCache()
-  let g:j_cache = {}
-  let g:j_files = {}
+  let g:JavaComplete_Cache = {}
+  let g:JavaComplete_Files = {}
 endfunction
 
 function! javacomplete#Complete(findstart, base)
@@ -183,7 +183,7 @@ function! s:GlobPathList(path, pattern, suf)
   endif
 endfunction
 
-" key of g:j_files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
+" key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
 function! javacomplete#GetCurrentFileKey()
   return s:GetCurrentFileKey()
 endfunction

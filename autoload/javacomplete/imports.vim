@@ -77,7 +77,7 @@ endfunction
 
 function! javacomplete#imports#GetImports(kind, ...)
   let filekey = a:0 > 0 && !empty(a:1) ? a:1 : javacomplete#GetCurrentFileKey()
-  let props = get(g:j_files, filekey, {})
+  let props = get(g:JavaComplete_Files, filekey, {})
   let props['imports']	= filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
   let props['imports_static']	= []
   let props['imports_fqn']	= []
@@ -99,7 +99,7 @@ function! javacomplete#imports#GetImports(kind, ...)
       endif
     endif
   endfor
-  let g:j_files[filekey] = props
+  let g:JavaComplete_Files[filekey] = props
   return get(props, a:kind, [])
 endfu
 
@@ -137,7 +137,7 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   " read type info which are not in cache
   let commalist = ''
   for typename in candidates
-    if !has_key(g:j_cache, typename)
+    if !has_key(g:JavaComplete_Cache, typename)
       let commalist .= typename . ','
     endif
   endfor
@@ -146,14 +146,14 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
-        let g:j_cache[key] = s:Sort(dict[key])
+        let g:JavaComplete_Cache[key] = s:Sort(dict[key])
       endfor
     endif
   endif
 
   " search in all candidates
   for typename in candidates
-    let ti = get(g:j_cache, typename, 0)
+    let ti = get(g:JavaComplete_Cache, typename, 0)
     if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
       let members = javacomplete#complete#SearchMember(ti, a:name, a:fullmatch, 12, 1, 0)
       let result[1] += members[1]
@@ -204,8 +204,8 @@ function! s:AddImport(import)
   let splittedImport = split(a:import, '\.')
   let className = splittedImport[-1]
   if className != '*'
-    if has_key(g:j_cache, className)
-      call remove(g:j_cache, className)
+    if has_key(g:JavaComplete_Cache, className)
+      call remove(g:JavaComplete_Cache, className)
     endif
   endif
 

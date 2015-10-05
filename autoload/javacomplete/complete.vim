@@ -271,9 +271,9 @@ function! s:CompleteAfterWord(incomplete)
 
   let pkgs = []
   let types = []
-  for key in keys(g:j_cache)
+  for key in keys(g:JavaComplete_Cache)
     if key =~# '^' . a:incomplete
-      if type(g:j_cache[key]) == type('') || get(g:j_cache[key], 'tag', '') == 'PACKAGE'
+      if type(g:JavaComplete_Cache[key]) == type('') || get(g:JavaComplete_Cache[key], 'tag', '') == 'PACKAGE'
         call add(pkgs, {'kind': 'P', 'word': key})
 
         " filter out type info
@@ -405,8 +405,8 @@ function! s:CompleteAfterDot(expr)
       let srcpath = join(s:GetSourceDirs(expand('%:p'), s:GetPackageName()), ',')
       call javacomplete#logger#Log('O2. ' . fqn)
       call s:FetchClassInfo(fqn)
-      if get(get(g:j_cache, fqn, {}), 'tag', '') == 'CLASSDEF'
-        let ti = g:j_cache[fqn]
+      if get(get(g:JavaComplete_Cache, fqn, {}), 'tag', '') == 'CLASSDEF'
+        let ti = g:JavaComplete_Cache[fqn]
         let itemkind = 11
         let ii = i
       endif
@@ -989,19 +989,19 @@ endfunction
 " class information							{{{2
 
 function! s:FetchClassInfo(fqn)
-  if has_key(g:j_cache, a:fqn)
-    return g:j_cache[a:fqn]
+  if has_key(g:JavaComplete_Cache, a:fqn)
+    return g:JavaComplete_Cache[a:fqn]
   endif
 
   let res = javacomplete#server#Communicate('-E', a:fqn, 'FetchClassInfo in Batch')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
-      if !has_key(g:j_cache, key)
+      if !has_key(g:JavaComplete_Cache, key)
         if type(dict[key]) == type({})
-          let g:j_cache[key] = javacomplete#util#Sort(dict[key])
+          let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
         elseif type(dict[key]) == type([])
-          let g:j_cache[key] = sort(dict[key])
+          let g:JavaComplete_Cache[key] = sort(dict[key])
         endif
       endif
     endfor
@@ -1011,8 +1011,8 @@ endfunction
 " a:1	filepath
 " a:2	package name
 function! s:DoGetClassInfo(class, ...)
-  if has_key(g:j_cache, a:class)
-    return g:j_cache[a:class]
+  if has_key(g:JavaComplete_Cache, a:class)
+    return g:JavaComplete_Cache[a:class]
   endif
 
   call javacomplete#logger#Log("DoGetClassInfo: ". a:class)
@@ -1084,7 +1084,7 @@ function! s:DoGetClassInfo(class, ...)
     let key = s:KeyInCache(fqn)
     call javacomplete#logger#Log(key)
     if !empty(key)
-      return get(g:j_cache[key], 'tag', '') == 'CLASSDEF' ? g:j_cache[key] : {}
+      return get(g:JavaComplete_Cache[key], 'tag', '') == 'CLASSDEF' ? g:JavaComplete_Cache[key] : {}
     endif
   endfor
 
@@ -1174,7 +1174,7 @@ function! s:KeyInCache(fqn)
   let fqn = substitute(fqn, '[', '\\[', 'g')
   let fqn = substitute(fqn, '\$', '.', 'g')
 
-  let keys = keys(g:j_cache)
+  let keys = keys(g:JavaComplete_Cache)
   let idx = match(keys, '\v'. fqn. '$')
   
   if idx >= 0
@@ -1234,7 +1234,7 @@ function! s:Tree2ClassInfo(t)
   " convert type name in extends to fqn for class defined in source files
   if has_key(a:t, 'filepath') && a:t.filepath != javacomplete#GetCurrentFileKey()
     let filepath = a:t.filepath
-    let packagename = get(g:j_files[filepath].unit, 'package', '')
+    let packagename = get(g:JavaComplete_Files[filepath].unit, 'package', '')
   else
     let filepath = expand('%:p')
     let packagename = s:GetPackageName()
@@ -1264,20 +1264,20 @@ endfunction
 " package information							{{{2
 
 function! s:DoGetInfoByReflection(class, option)
-  if has_key(g:j_cache, a:class)
-    return g:j_cache[a:class]
+  if has_key(g:JavaComplete_Cache, a:class)
+    return g:JavaComplete_Cache[a:class]
   endif
 
   let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])
-      let g:j_cache[a:class] = sort(v)
+      let g:JavaComplete_Cache[a:class] = sort(v)
     elseif type(v) == type({})
       if get(v, 'tag', '') =~# '^\(PACKAGE\|CLASSDEF\)$'
-        let g:j_cache[a:class] = v
+        let g:JavaComplete_Cache[a:class] = v
       else
-        call extend(g:j_cache, v, 'force')
+        call extend(g:JavaComplete_Cache, v, 'force')
       endif
     endif
     unlet v
@@ -1285,7 +1285,7 @@ function! s:DoGetInfoByReflection(class, option)
     let b:errormsg = res
   endif
 
-  return get(g:j_cache, a:class, {})
+  return get(g:JavaComplete_Cache, a:class, {})
 endfunction
 
 " search in members							{{{2
@@ -1329,7 +1329,7 @@ function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAl
     let types = get(a:ci, 'classes', [])
     for t in types
       if empty(a:name) || (a:fullmatch ? t[strridx(t, '.')+1:] ==# a:name : t[strridx(t, '.')+1:] =~# '^' . a:name)
-        if !has_key(g:j_cache, t) || !has_key(g:j_cache[t], 'flags') || a:kind == 1 || g:j_cache[t].flags[-1:]
+        if !has_key(g:JavaComplete_Cache, t) || !has_key(g:JavaComplete_Cache[t], 'flags') || a:kind == 1 || g:JavaComplete_Cache[t].flags[-1:]
           call add(result[0], t)
         endif
       endif
@@ -1443,7 +1443,7 @@ function! s:DoGetMemberList(ci, kind)
     " Use dup here for member type can share name with field.
     for class in members[0]
       "for class in get(a:ci, 'classes', [])
-      let v = get(g:j_cache, class, {})
+      let v = get(g:JavaComplete_Cache, class, {})
       if v == {} || v.flags[-1:]
         let s .= "{'kind': 'C', 'word': '" . substitute(class, a:ci.name . '\.', '\1', '') . "','dup':1},"
       endif

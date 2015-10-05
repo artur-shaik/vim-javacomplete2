@@ -101,7 +101,7 @@ endfunction
 
 function! javacomplete#server#SetJVMLauncher(interpreter)
   if javacomplete#server#GetJVMLauncher() != a:interpreter
-    let g:j_cache = {}
+    let g:JavaComplete_Cache = {}
   endif
   let g:JavaComplete_JvmLauncher = a:interpreter
 endfunction
