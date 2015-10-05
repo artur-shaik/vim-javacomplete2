@@ -680,7 +680,7 @@ function! s:MethodInvocation(expr, ti, itemkind)
 
   let method = s:DetermineMethod(methods, subs[1])
   if !empty(method)
-    return s:ArrayAccess(method.r, a:expr)
+    return s:ArrayAccess(method.r, subs[0])
   endif
   return {}
 endfunction
