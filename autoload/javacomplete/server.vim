@@ -31,16 +31,16 @@ else
 endif
 
 function! s:Poll()
-  let a:value = 0
+  let value = 0
 JavacompletePy << EOPC
 try:
-  vim.command("let a:value = '%d'" % bridgeState.poll())
+  vim.command("let value = '%d'" % bridgeState.poll())
 except:
   # we'll get here if the bridgeState variable was not defined or if it's None.
   # In this case we stop the processing and return the default 0 value.
   pass
 EOPC
-  return a:value
+  return value
 endfunction
 
 function! javacomplete#server#Terminate()
