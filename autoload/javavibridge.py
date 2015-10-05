@@ -39,7 +39,7 @@ class JavaviBridge():
 
         is_win = sys.platform == 'win32'
         shell = is_win == False
-        if is_win and vim.eval('v:progname') == 'gvim':
+        if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
             info.wShowWindow = 7
