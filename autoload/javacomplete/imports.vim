@@ -167,6 +167,7 @@ endfu
 
 function! s:SortImports()
   let imports = javacomplete#imports#GetImports('imports')
+  call javacomplete#logger#Log(imports)
   if (len(imports) > 0)
     let beginLine = imports[0][1]
     let lastLine = imports[len(imports) - 1][1]
