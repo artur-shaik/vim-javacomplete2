@@ -200,7 +200,15 @@ function! s:AddImport(import)
   endfor
 
   let imports_star = javacomplete#imports#GetImports('imports_star')
+
   let splittedImport = split(a:import, '\.')
+  let className = splittedImport[-1]
+  if className != '*'
+    if has_key(g:j_cache, className)
+      call remove(g:j_cache, className)
+    endif
+  endif
+
   call remove(splittedImport, len(splittedImport) - 1)
   let imp = join(splittedImport, '.')
   for import in imports_star
