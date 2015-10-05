@@ -1,13 +1,12 @@
 package kg.ash.javavi.searchers;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.Before;
-import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PackagesLoaderTest {
 
@@ -60,7 +59,7 @@ public class PackagesLoaderTest {
 
         Assert.assertTrue(result.isEmpty());
     }
-    
+
     @Test
     public void testHandleTooManySlashes() {
         PackageSeacherIFace searcher = () -> {
@@ -76,5 +75,5 @@ public class PackagesLoaderTest {
 
         Assert.assertTrue(result.isEmpty());
     }
-    
+
 }

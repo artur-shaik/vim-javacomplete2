@@ -1,13 +1,12 @@
 package kg.ash.javavi.actions;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
+
 import kg.ash.javavi.clazz.ClassImport;
-import kg.ash.javavi.readers.source.ClassNamesFetcher;
-import kg.ash.javavi.readers.source.CompilationUnitCreator;
 
 public class GetMissingImportsAction extends ImportsAction {
 
@@ -61,5 +60,5 @@ public class GetMissingImportsAction extends ImportsAction {
         System.out.println(result);
         return result.append("]").toString();
     }
-    
+
 }

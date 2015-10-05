@@ -27,7 +27,6 @@ public class Daemon extends Thread {
 
     public void run() {
         ServerSocket echoServer = null;
-        String line;
         Socket clientSocket = null;
 
         while (true) {
@@ -43,7 +42,7 @@ public class Daemon extends Thread {
             } catch (IOException e) {
                 System.out.println(e);
                 break;
-            }   
+            }
 
             try {
                 clientSocket = echoServer.accept();
@@ -58,7 +57,7 @@ public class Daemon extends Thread {
                         String[] request = parseRequest(is.readLine());
                         if (request != null) {
                             os.print(Javavi.makeResponse(request));
-                        } 
+                        }
 
                         break;
                     }

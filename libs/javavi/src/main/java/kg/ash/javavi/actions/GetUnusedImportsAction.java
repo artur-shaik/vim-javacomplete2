@@ -1,7 +1,7 @@
 package kg.ash.javavi.actions;
 
 import com.github.javaparser.ast.ImportDeclaration;
-import java.util.Set;
+
 import kg.ash.javavi.clazz.ClassImport;
 
 public class GetUnusedImportsAction extends ImportsAction {
@@ -12,7 +12,7 @@ public class GetUnusedImportsAction extends ImportsAction {
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
             if (importDeclaration.isAsterisk() || importDeclaration.isStatic()) continue;
 
-            ClassImport classImport = 
+            ClassImport classImport =
                 new ClassImport(importDeclaration.getName().toStringWithoutComments(), importDeclaration.isStatic(), importDeclaration.isAsterisk());
 
             String classname = classImport.getTail();

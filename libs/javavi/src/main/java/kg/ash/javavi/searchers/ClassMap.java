@@ -1,9 +1,7 @@
 package kg.ash.javavi.searchers;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
-import java.util.ArrayList;
 
 public class ClassMap {
 
@@ -13,16 +11,16 @@ public class ClassMap {
     public static final int CLASS = 0;
     public static final int SUBPACKAGE = 1;
 
-    private String name;
+    private String name = null;
     private HashMap<String,Integer> map = new HashMap<>();
 
     private StringBuilder cachedSubpackages = new StringBuilder();
     private StringBuilder cachedClasses = new StringBuilder();
 
     public ClassMap(String name) {
-        this.name = name;
+        this.setName(name);
     }
-    
+
     public boolean contains(String path) {
         return map.containsKey(path);
     }
@@ -55,4 +53,11 @@ public class ClassMap {
         return cachedClasses;
     }
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }
