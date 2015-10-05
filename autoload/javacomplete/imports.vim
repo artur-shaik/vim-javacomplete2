@@ -227,9 +227,12 @@ function! s:AddImport(import)
     else
       let insertline = 1
     endif
+    let saveCursor = getcurpos()
     while (javacomplete#util#Trim(getline(insertline)) == '')
       silent execute insertline. 'delete _'
+      let saveCursor[1] -= 1
     endwhile
+    call setpos('.', saveCursor)
 
     if &ft == 'jsp'
       call append(insertline - 1, '<%@ page import = "'. a:import. '" %>')
