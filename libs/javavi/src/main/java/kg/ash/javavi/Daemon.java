@@ -62,10 +62,10 @@ public class Daemon extends Thread {
                         break;
                     }
                 } catch (Exception e) {
-
+                    Javavi.debug(e);
                 }
             } catch (IOException e) {
-                System.out.println(e);
+                Javavi.debug(e);
                 break;
             }
         }
