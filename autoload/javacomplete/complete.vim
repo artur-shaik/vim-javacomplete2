@@ -36,7 +36,21 @@ function! javacomplete#complete#Complete(findstart, base)
     let s:et_whole = reltime()
     let start = col('.') - 1
 
-    if statement =~ '[.0-9A-Za-z_]\s*$'
+	if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
+      let b:context_type = s:CONTEXT_COMPLETE_CLASS
+
+      let curline = getline(".")
+      let start = col('.') - 1
+
+      while start > 0 && curline[start - 1] =~ '[@A-Za-z0-9_]'
+        let start -= 1
+        if curline[start] == '@'
+          break
+        endif
+      endwhile
+
+      return start
+    elseif statement =~ '[.0-9A-Za-z_]\s*$'
       let valid = 1
       if statement =~ '\.\s*$'
         let valid = statement =~ '[")0-9A-Za-z_\]]\s*\.\s*$' && statement !~ '\<\H\w\+\.\s*$' && statement !~ '\C\<\(abstract\|assert\|break\|case\|catch\|const\|continue\|default\|do\|else\|enum\|extends\|final\|finally\|for\|goto\|if\|implements\|import\|instanceof\|interface\|native\|new\|package\|private\|protected\|public\|return\|static\|strictfp\|switch\|synchronized\|throw\|throws\|transient\|try\|volatile\|while\|true\|false\|null\)\.\s*$'
@@ -142,20 +156,6 @@ function! javacomplete#complete#Complete(findstart, base)
       let b:context_type = s:CONTEXT_METHOD_REFERENCE
       let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
       return start - strlen(b:incomplete)
-	elseif javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
-      let b:context_type = s:CONTEXT_COMPLETE_CLASS
-
-      let curline = getline(".")
-      let start = col('.') - 1
-
-      while start > 0 && curline[start - 1] =~ '[@A-Za-z0-9_]'
-        let start -= 1
-        if curline[start] == '@'
-          break
-        endif
-      endwhile
-
-      return start
     endif
 
     return -1
