@@ -254,7 +254,7 @@ function! javacomplete#complete#Complete(findstart, base)
     return result
   endif
 
-  if len(b:errormsg) > 0
+  if len(get(b:, 'errormsg', '')) > 0
     echoerr 'javacomplete error: ' . b:errormsg
     let b:errormsg = ''
   endif
@@ -337,7 +337,7 @@ function! s:CompleteAfterWord(incomplete)
   let result = []
 
   " add variables and members in source files
-  if b:context_type == s:CONTEXT_AFTER_DOT
+  if get(b:, 'context_type', '') == s:CONTEXT_AFTER_DOT
     let matches = s:SearchForName(a:incomplete, 0, 0)
     let result += sort(eval('[' . s:DoGetFieldList(matches[2]) . ']'))
     let result += sort(eval('[' . s:DoGetMethodList(matches[1]) . ']'))
@@ -556,7 +556,10 @@ function! s:CompleteAfterDot(expr)
   while !empty(ti) && ii < len(items)
     " method invocation:	"PrimaryExpr.method(parameters)[].|"
     if items[ii] =~ '^\s*' . g:RE_IDENTIFIER . '\s*('
-      let ti = s:MethodInvocation(items[ii], ti, itemkind)
+      let tmp = ti
+      unlet ti
+      let ti = s:MethodInvocation(items[ii], tmp, itemkind)
+      unlet tmp
       let itemkind = 0
       let ii += 1
       continue
@@ -677,7 +680,7 @@ function! s:MethodInvocation(expr, ti, itemkind)
 
   let method = s:DetermineMethod(methods, subs[1])
   if !empty(method)
-    return s:ArrayAccess(method.r, a:expr)
+    return s:ArrayAccess(method.r, subs[0])
   endif
   return {}
 endfunction
