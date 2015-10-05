@@ -36,7 +36,7 @@ function! javacomplete#complete#Complete(findstart, base)
     let s:et_whole = reltime()
     let start = col('.') - 1
 
-	if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z][A-Za-z0-9_]*$'
+	if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
       let b:context_type = s:CONTEXT_COMPLETE_CLASS
 
       let curline = getline(".")
@@ -166,8 +166,8 @@ function! javacomplete#complete#Complete(findstart, base)
   let result = []
 
   " Try to complete incomplete class name
-  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z][A-Za-z0-9_]*$'
-    if a:base =~ g:RE_ANNOTATION
+  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
+    if a:base =~ g:RE_ANNOTATION || a:base == '@'
       let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
     else
       let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')

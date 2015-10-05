@@ -18,7 +18,7 @@ public class OutputSimilarAnnotations extends OutputSimilar {
         List<String> keysResult = new ArrayList<>();
 
         classPackages.forEach((key, value) -> {
-            if (key.startsWith(target)) {
+            if (target.isEmpty() || key.startsWith(target)) {
                 value.getPaths().stream()
                     .filter(isFromClasspath(value))
                     .forEach(fqn -> addIfAnnotation(keysResult, fqn, key));

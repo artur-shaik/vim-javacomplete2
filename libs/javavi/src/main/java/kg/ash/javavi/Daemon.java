@@ -89,6 +89,9 @@ public class Daemon extends Thread {
                     continue;
                 }
                 if (ch == '"' && !slashFlag) {
+                    if (buff.length() == 0) {
+                        args.add(new String());
+                    }
                     quoteFlag = false;
                     continue;
                 }
