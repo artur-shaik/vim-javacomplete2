@@ -303,7 +303,7 @@ fu! java_parser#type2Str(type)
     return java_parser#type2Str(t.elementtype) . '[]'
   elseif t.tag == 'TYPEAPPLY'
     let s = ''
-    for arg in t.arguments
+    for arg in get(t, 'arguments', [])
       if type(arg) == type({}) && has_key(arg, 'tag')
         if arg.tag == 'TYPEAPPLY'
           let s .= java_parser#type2Str(arg). ','
@@ -319,7 +319,7 @@ fu! java_parser#type2Str(type)
       return t.clazz.name . '<'. s[0:-2]. '>'
     endif
 
-    return t.clazz.name
+    return get(t.clazz, 'name', '')
   elseif t.tag == 'TEMPLATE'
     let s = t.clazz.value . '<'
     for arg in t.arguments
