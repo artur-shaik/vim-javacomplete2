@@ -43,6 +43,7 @@ public class GetMissingImportsAction extends ImportsAction {
                 String[] splitted = packages.substring(1, packages.length() - 1).split(",");
                 boolean found = false;
                 for (String foundPackage : splitted) {
+                    if (foundPackage.trim().isEmpty()) continue;
                     foundPackage = foundPackage.trim().substring(1, foundPackage.length() - 1);
                     foundPackage = foundPackage.substring(0, foundPackage.lastIndexOf("."));
                     for (String asteriskImport : asteriskImports) {
