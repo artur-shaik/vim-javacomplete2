@@ -1,17 +1,15 @@
 package kg.ash.javavi;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.lang.StringBuilder;
-import java.lang.Thread;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.List;
 
 public class Daemon extends Thread {
 
@@ -27,7 +25,6 @@ public class Daemon extends Thread {
 
     public void run() {
         ServerSocket echoServer = null;
-        Socket clientSocket = null;
 
         while (true) {
             if (timeoutSeconds > 0) {
@@ -44,8 +41,7 @@ public class Daemon extends Thread {
                 break;
             }
 
-            try {
-                clientSocket = echoServer.accept();
+            try (Socket clientSocket = echoServer.accept()) {
 
                 if (timeoutTask != null) timeoutTask.cancel();
 
@@ -61,7 +57,7 @@ public class Daemon extends Thread {
 
                         break;
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     Javavi.debug(e);
                 }
             } catch (IOException e) {
