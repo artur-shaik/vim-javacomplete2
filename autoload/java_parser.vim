@@ -77,7 +77,7 @@ fu! java_parser#InitParser(lines, ...)
   let b:radix = 0		" The radix of a numeric literal token.
   let b:unicodeConversionBp =-1 " The buffer index of the last converted unicode character
 
-  let b:scanStrategy = get(s:options, 'scanStrategy', 1)	" 0 - only class members when parse full file; 
+  let b:scanStrategy = get(s:options, 'scanStrategy', -1)	" 0 - only class members when parse full file; 
   " 1 - keep statement as a whole string; 
   " 2 - all 
   " -1 - enable quick recognition of declarations in common form.
@@ -2823,16 +2823,16 @@ endfu
 " return fqn
 fu! s:importDeclaration()
   " OAO: Usualy it is in one line.
-  if b:scanStrategy < 0
-    let idx = matchend(b:lines[b:line], '\(\s\+static\>\)\?\s\+\([_$a-zA-Z][_$a-zA-Z0-9_]*\)\(\s*\.\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\)*\(\s*\.\s*\*\)\?;')
-    if idx != -1
-      let fqn = strpart(b:lines[b:line], b:col, idx-b:col-1)
-      let b:col = idx
-      let b:bp = b:idxes[b:line] + b:col
-      call s:nextToken()
-      return fqn
-    endif
-  endif
+  " if b:scanStrategy < 0
+  "   let idx = matchend(b:lines[b:line], '\(\s\+static\>\)\?\s\+\([_$a-zA-Z][_$a-zA-Z0-9_]*\)\(\s*\.\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\)*\(\s*\.\s*\*\)\?;')
+  "   if idx != -1
+  "     let fqn = strpart(b:lines[b:line], b:col, idx-b:col-1)
+  "     let b:col = idx
+  "     let b:bp = b:idxes[b:line] + b:col
+  "     call s:nextToken()
+  "     return fqn
+  "   endif
+  " endif
 
 
   call s:Info('==import==')
