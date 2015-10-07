@@ -280,12 +280,9 @@ function! javacomplete#imports#Add(...)
         return
       endif
 
-      let index = 0
-      for cn in result
-        echo "candidate [". index. "]: ". cn
-        let index += 1
-      endfor
-      let userinput = input('select one candidate [0]: ', '')
+      let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
+      let message .= "\nselect one candidate [0]: "
+      let userinput = input(message, '')
       if empty(userinput)
         let userinput = 0
       elseif userinput =~ '^[0-9]*$'
@@ -347,12 +344,9 @@ function! javacomplete#imports#AddMissing()
     let missing = eval(response)
     for import in missing
       if len(import) > 1
-        let index = 0
-        for cn in import
-          echo "candidate [". index. "]: ". cn
-          let index += 1
-        endfor
-        let userinput = input('select one candidate [0]: ', '')
+        let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
+        let message .= "\nselect one candidate [0]: "
+        let userinput = input(message, '')
         if empty(userinput)
           let userinput = 0
         elseif userinput =~ '^[0-9]*$'
