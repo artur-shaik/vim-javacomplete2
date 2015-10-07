@@ -1,16 +1,12 @@
 package kg.ash.javavi.readers.source;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.TreeVisitor;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.MultiTypeParameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -20,6 +16,10 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ClassNamesFetcher {
 
@@ -93,6 +93,8 @@ public class ClassNamesFetcher {
                         t.visit((ClassOrInterfaceType)node, arg);
                     } else if (node instanceof NameExpr) {
                         resultList.add(((NameExpr) node).getName());
+                    } else if (node instanceof MultiTypeParameter) {
+                        ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
                     }
                 }
             };
