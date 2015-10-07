@@ -276,10 +276,6 @@ function! javacomplete#imports#Add(...)
       let import = result[0]
 
     else
-      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
-        return
-      endif
-
       let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
       let message .= "\nselect one candidate [0]: "
       let userinput = input(message, '')
