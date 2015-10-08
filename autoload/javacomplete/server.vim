@@ -246,22 +246,9 @@ function! s:GetExtraPath()
   return jars
 endfunction
 
-function! s:ExpandPathToJars(path)
-  if s:IsJarOrZip(a:path)
-    return [a:path]
-  endif
-
-  let jars = []
-  let files = javacomplete#GlobPathList(a:path, "*", 1)
-  for file in files
-    if s:IsJarOrZip(file)
-      call add(jars, g:PATH_SEP . file)
-    elseif isdirectory(file)
-      call extend(jars, s:ExpandPathToJars(file))
-    endif
-  endfor
-
-  return jars
+function! s:ExpandPathToJars(path, ...)
+  return javacomplete#GlobPathList(a:path, "**5/*.jar", 1)
+  \ + javacomplete#GlobPathList(a:path, "**5/*.zip", 1)
 endfunction
 
 function! s:IsJarOrZip(path)
