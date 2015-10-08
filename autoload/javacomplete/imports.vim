@@ -265,6 +265,9 @@ function! javacomplete#imports#Add(...)
     let i += 1
   endwhile
 
+  if classname =~ '^@.*'
+    let classname = classname[1:]
+  endif
   let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
