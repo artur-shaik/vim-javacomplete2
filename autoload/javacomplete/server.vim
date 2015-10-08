@@ -247,8 +247,13 @@ function! s:GetExtraPath()
 endfunction
 
 function! s:ExpandPathToJars(path, ...)
-  return javacomplete#GlobPathList(a:path, "**5/*.jar", 1)
-  \ + javacomplete#GlobPathList(a:path, "**5/*.zip", 1)
+  if isdirectory(a:path)
+    return javacomplete#GlobPathList(a:path, "**5/*.jar", 1)
+    \ + javacomplete#GlobPathList(a:path, "**5/*.zip", 1)
+  elseif index(['zip', 'jar'], fnamemodify(a:path, ':e')) != -1
+    return [a:path]
+  endif
+  return []
 endfunction
 
 fu! s:GetClassPathOfJsp()
