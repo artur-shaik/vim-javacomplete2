@@ -227,7 +227,8 @@ function! s:AddImport(import)
       let insertline = 1
     endif
     let saveCursor = getcurpos()
-    while (javacomplete#util#Trim(getline(insertline)) == '')
+    let linesCount = line('$')
+    while (javacomplete#util#Trim(getline(insertline)) == '' && insertline < linesCount)
       silent execute insertline. 'delete _'
       let saveCursor[1] -= 1
     endwhile
