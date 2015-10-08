@@ -225,7 +225,13 @@ call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
-  let sources = s:GlobPathList(getcwd(), '**/src', 0)
+  let sources = s:GlobPathList(getcwd(), 'src', 0)
+  if len(sources) == 0
+    let sources = s:GlobPathList(getcwd(), '*/src', 0)
+  endif
+  if len(sources) == 0
+    let sources = s:GlobPathList(getcwd(), '*/*/src', 0)
+  endif
   for src in sources
     if match(src, '.*build.*') < 0
       let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP
