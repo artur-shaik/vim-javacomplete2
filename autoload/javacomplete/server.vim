@@ -251,15 +251,6 @@ function! s:ExpandPathToJars(path, ...)
   \ + javacomplete#GlobPathList(a:path, "**5/*.zip", 1)
 endfunction
 
-function! s:IsJarOrZip(path)
-    let filetype = strpart(a:path, len(a:path) - 4)
-    if filetype ==? ".jar" || filetype ==? ".zip"
-      return 1
-    endif
-
-    return 0
-endfunction
-
 fu! s:GetClassPathOfJsp()
   if exists('b:classpath_jsp')
     return b:classpath_jsp
