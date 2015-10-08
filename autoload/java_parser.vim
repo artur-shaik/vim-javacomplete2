@@ -1,8 +1,6 @@
 " Vim autoload script for a JAVA PARSER and more.
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Changed: 2015-07-08
-" Version:	0.69
 " License:	Vim License	(see vim's :help license)
 
 
