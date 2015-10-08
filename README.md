@@ -35,7 +35,8 @@ Features:
 - Generics;
 - Lambdas;
 - Annotations completion;
-- Nested classes.
+- Nested classes;
+- Jsp support, without taglibs.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -43,8 +44,7 @@ Features (originally existed):
 - Provide parameters information of a method, list all overload methods;
 - Complete an incomplete word;
 - Provide a complete JAVA parser written in Vim script language;
-- Use the JVM to obtain most information;
-- JSP is supported, Builtin objects such as request, session can be recognized.
+- Use the JVM to obtain most information.
  
 Features borrowed and ported to vimscript from vim-javacompleteex:
 - Complete class name;
@@ -95,9 +95,13 @@ Add this to your `.vimrc` file:
 
 To enable inserting class imports with F4, add:
 
-`nnoremap <F4> :JCimportAdd<cr>`
+`imap <F4> <Plug>(JavaComplete-Imports-Add)`
 
-`inoremap <F4> <esc>:JCimportAddI<cr>`
+`imap <F4> <Plug>(JavaComplete-Imports-RemoveUnused)`
+
+`nmap <F4> <Plug>(JavaComplete-Imports-Add)`
+
+`nmap <F4> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
 ### Optional
 
@@ -155,7 +159,7 @@ To enable inserting class imports with F4, add:
 - Cross session cache;
 - Most used (classes, methods, vars) at first place (smart suggestions);
 - FXML support;
-- Check for jsp support;
+- ~~Check for jsp support~~;
 - Refactoring support?;
 - Class creation helpers;
 - ~~Generics~~;
