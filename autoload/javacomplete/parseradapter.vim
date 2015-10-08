@@ -51,6 +51,10 @@ function! s:UpdateFQN(tree, qn)
   elseif a:tree.tag == 'CLASSDEF'
     let a:tree.fqn = a:qn . a:tree.name
     for def in a:tree.defs
+      if type(def) != type([])
+        unlet def
+        continue
+      endif
       if def.tag == 'CLASSDEF'
         call s:UpdateFQN(def, a:tree.fqn . '.')
       endif
@@ -66,6 +70,7 @@ function! s:visitTree(tree, param, parent) dict
   elseif type(a:tree) == type([])
     for tree in a:tree
       call self.visit(tree, a:param, a:parent)
+      unlet tree
     endfor
   endif
 endfunction

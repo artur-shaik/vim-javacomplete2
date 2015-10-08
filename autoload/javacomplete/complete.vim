@@ -1222,6 +1222,12 @@ function! s:Tree2ClassInfo(t)
   let t.ctors = []
   let t.classes = []
   for def in t.defs
+    if type(def) == type([]) && len(def) == 1
+      let tmp = def[0]
+      unlet def
+      let def = tmp
+      unlet tmp
+    endif
     if def.tag == 'METHODDEF'
       call add(def.n == t.name ? t.ctors : t.methods, def)
     elseif def.tag == 'VARDEF'
@@ -1229,6 +1235,7 @@ function! s:Tree2ClassInfo(t)
     elseif def.tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
+    unlet def
   endfor
 
   " convert type name in extends to fqn for class defined in source files
@@ -1373,6 +1380,9 @@ function! s:DoGetFieldList(fields)
   let s = ''
   let useFQN = javacomplete#UseFQN()
   for field in a:fields
+    if !has_key(field, 't')
+      continue
+    endif
     if type(field.t) == type([])
       let fieldType = field.t[0]
       let args = ''
