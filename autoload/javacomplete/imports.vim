@@ -145,7 +145,7 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
-        let g:JavaComplete_Cache[key] = s:Sort(dict[key])
+        let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
       endfor
     endif
   endif
