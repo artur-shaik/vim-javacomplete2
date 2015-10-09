@@ -971,7 +971,10 @@ function! s:GetClassDirs()
   return dirs
 endfunction
 
-" s:GetPackageName()							{{{2
+function! javacomplete#complete#GetPackageName()
+  return s:GetPackageName()
+endfunction
+
 function! s:GetPackageName()
   let lnum_old = line('.')
   let col_old = col('.')

@@ -210,9 +210,20 @@ function! javacomplete#UseFQN()
   return 0
 endfunction
 
+function! s:RemoveCurrentFromCache()
+  let package = javacomplete#complete#GetPackageName()
+  let classname = split(expand('%:t'), '\.')[0]
+  let fqn = package. '.'. classname
+  if has_key(g:JavaComplete_Cache, fqn)
+    call remove(g:JavaComplete_Cache, fqn)
+  endif
+  call javacomplete#server#Communicate('-clear-from-cache', fqn, 's:RemoveCurrentFromCache')
+endfunction
+
 augroup javacomplete
   autocmd!
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
+  autocmd BufWrite *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
   autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
 augroup END
