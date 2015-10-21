@@ -1,31 +1,15 @@
 package kg.ash.javavi;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.StringBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import kg.ash.javavi.actions.Action;
+import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.searchers.ClassMap;
-import kg.ash.javavi.actions.ActionFactory;
 
 public class Javavi {
 
-    static final String VERSION	= "2.3.2";
+    static final String VERSION	= "2.3.3";
 
     public static String NEWLINE = "";
 
@@ -57,7 +41,7 @@ public class Javavi {
     }
 
     private static void version() {
-        System.out.println("Reflection and parsing for javavi " + 
+        System.out.println("Reflection and parsing for javavi " +
                 "vim plugin (" + VERSION + ")");
     }
 
@@ -84,7 +68,7 @@ public class Javavi {
                 case "-v":
                     version();
                     return "";
-                case "-sources": 
+                case "-sources":
                     system.put("sources", args[++i]);
                     break;
                 case "-d":

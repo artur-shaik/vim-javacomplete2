@@ -1,6 +1,5 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-30
 "
 " Methods that calling internal parser
 
@@ -10,14 +9,14 @@ function! javacomplete#parseradapter#Parse(...)
   let changed = 0
   if filename == '%'
     let filename = javacomplete#GetCurrentFileKey()
-    let props = get(g:j_files, filename, {})
+    let props = get(g:JavaComplete_Files, filename, {})
     if get(props, 'changedtick', -1) != b:changedtick
       let changed = 1
       let props.changedtick = b:changedtick
       let lines = getline('^', '$')
     endif
   else
-    let props = get(g:j_files, filename, {})
+    let props = get(g:JavaComplete_Files, filename, {})
     if get(props, 'modifiedtime', 0) != getftime(filename)
       let changed = 1
       let props.modifiedtime = getftime(filename)
@@ -37,7 +36,7 @@ function! javacomplete#parseradapter#Parse(...)
     let package = has_key(props.unit, 'package') ? props.unit.package . '.' : ''
     call s:UpdateFQN(props.unit, package)
   endif
-  let g:j_files[filename] = props
+  let g:JavaComplete_Files[filename] = props
   return props.unit
 endfunction
 
@@ -51,6 +50,10 @@ function! s:UpdateFQN(tree, qn)
   elseif a:tree.tag == 'CLASSDEF'
     let a:tree.fqn = a:qn . a:tree.name
     for def in a:tree.defs
+      if type(def) != type([])
+        unlet def
+        continue
+      endif
       if def.tag == 'CLASSDEF'
         call s:UpdateFQN(def, a:tree.fqn . '.')
       endif
@@ -66,6 +69,7 @@ function! s:visitTree(tree, param, parent) dict
   elseif type(a:tree) == type([])
     for tree in a:tree
       call self.visit(tree, a:param, a:parent)
+      unlet tree
     endfor
   endif
 endfunction

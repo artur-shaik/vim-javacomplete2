@@ -1,8 +1,6 @@
 " Vim autoload script for a JAVA PARSER and more.
 " Language:	Java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Changed: 2015-07-08
-" Version:	0.69
 " License:	Vim License	(see vim's :help license)
 
 
@@ -77,7 +75,7 @@ fu! java_parser#InitParser(lines, ...)
   let b:radix = 0		" The radix of a numeric literal token.
   let b:unicodeConversionBp =-1 " The buffer index of the last converted unicode character
 
-  let b:scanStrategy = get(s:options, 'scanStrategy', 1)	" 0 - only class members when parse full file; 
+  let b:scanStrategy = get(s:options, 'scanStrategy', -1)	" 0 - only class members when parse full file; 
   " 1 - keep statement as a whole string; 
   " 2 - all 
   " -1 - enable quick recognition of declarations in common form.
@@ -303,7 +301,7 @@ fu! java_parser#type2Str(type)
     return java_parser#type2Str(t.elementtype) . '[]'
   elseif t.tag == 'TYPEAPPLY'
     let s = ''
-    for arg in t.arguments
+    for arg in get(t, 'arguments', [])
       if type(arg) == type({}) && has_key(arg, 'tag')
         if arg.tag == 'TYPEAPPLY'
           let s .= java_parser#type2Str(arg). ','
@@ -319,7 +317,7 @@ fu! java_parser#type2Str(type)
       return t.clazz.name . '<'. s[0:-2]. '>'
     endif
 
-    return t.clazz.name
+    return get(t.clazz, 'name', '')
   elseif t.tag == 'TEMPLATE'
     let s = t.clazz.value . '<'
     for arg in t.arguments
@@ -2823,16 +2821,16 @@ endfu
 " return fqn
 fu! s:importDeclaration()
   " OAO: Usualy it is in one line.
-  if b:scanStrategy < 0
-    let idx = matchend(b:lines[b:line], '\(\s\+static\>\)\?\s\+\([_$a-zA-Z][_$a-zA-Z0-9_]*\)\(\s*\.\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\)*\(\s*\.\s*\*\)\?;')
-    if idx != -1
-      let fqn = strpart(b:lines[b:line], b:col, idx-b:col-1)
-      let b:col = idx
-      let b:bp = b:idxes[b:line] + b:col
-      call s:nextToken()
-      return fqn
-    endif
-  endif
+  " if b:scanStrategy < 0
+  "   let idx = matchend(b:lines[b:line], '\(\s\+static\>\)\?\s\+\([_$a-zA-Z][_$a-zA-Z0-9_]*\)\(\s*\.\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\)*\(\s*\.\s*\*\)\?;')
+  "   if idx != -1
+  "     let fqn = strpart(b:lines[b:line], b:col, idx-b:col-1)
+  "     let b:col = idx
+  "     let b:bp = b:idxes[b:line] + b:col
+  "     call s:nextToken()
+  "     return fqn
+  "   endif
+  " endif
 
 
   call s:Info('==import==')

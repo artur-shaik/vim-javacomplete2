@@ -1,16 +1,14 @@
 package kg.ash.javavi.output;
 
-import java.lang.StringBuilder;
 import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+
 import kg.ash.javavi.Javavi;
-import kg.ash.javavi.searchers.ClassMap;
-import kg.ash.javavi.searchers.ClassSearcher;
-import kg.ash.javavi.clazz.*;
+import kg.ash.javavi.clazz.ClassConstructor;
+import kg.ash.javavi.clazz.ClassField;
+import kg.ash.javavi.clazz.ClassMethod;
+import kg.ash.javavi.clazz.ClassTypeParameter;
+import kg.ash.javavi.clazz.SourceClass;
 
 public class OutputClassInfo {
 
@@ -38,7 +36,7 @@ public class OutputClassInfo {
 
         return sb.toString();
     }
-    
+
     private void putClassInfo(HashMap<String, String> map, SourceClass clazz) {
         if (clazz == null || map.containsKey(clazz.getName()))
             return;
@@ -83,14 +81,14 @@ public class OutputClassInfo {
             sb.append("'implements':[");
         }
 
-        clazz.getInterfaces().forEach(iface -> 
+        clazz.getInterfaces().forEach(iface ->
                 sb.append("'").append(iface).append("',"));
         sb.append("],").append(Javavi.NEWLINE);;
     }
 
     private void hasNested(StringBuilder sb, SourceClass clazz) {
         sb.append("'nested':[");
-        clazz.getNestedClasses().forEach(nested -> 
+        clazz.getNestedClasses().forEach(nested ->
                 sb.append("'").append(nested).append("',"));
         sb.append("],").append(Javavi.NEWLINE);
     }

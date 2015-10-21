@@ -1,23 +1,8 @@
 package kg.ash.javavi.searchers;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.lang.StringBuilder;
-import java.lang.System;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.StringTokenizer;
-import java.util.zip.ZipFile;
-import com.github.javaparser.*;
-import com.github.javaparser.ast.*;
-import kg.ash.javavi.Javavi;
 
 public class PackagesLoader {
 
@@ -44,7 +29,7 @@ public class PackagesLoader {
 
     private void appendEntry(String name, int source) {
         if (isClassFile(name)) {
-            int seppos = name.lastIndexOf(File.separatorChar);
+            int seppos = name.replace('\\', '/').lastIndexOf('/');
             if (seppos != -1) {
                 processClass(name, seppos, source);
             }
@@ -67,7 +52,7 @@ public class PackagesLoader {
     }
 
     private void addToParent(String name, int source) {
-        int seppos = name.lastIndexOf(File.separatorChar);
+        int seppos = name.replace('\\', '/').lastIndexOf('/');
         if (seppos == -1) {
             return;
         }
@@ -93,6 +78,6 @@ public class PackagesLoader {
     }
 
     private String makeDots(String name) {
-        return name.replaceAll(File.separator, ".").replaceAll("[.]{2,}", "");
+        return name.replaceAll("/", ".").replaceAll("[.]{2,}", "");
     }
 }

@@ -1,7 +1,5 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.Javavi;
-import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.readers.Parser;
 
@@ -12,5 +10,5 @@ public class GetClassInfoFromSourceAction extends ActionWithTarget {
         Parser parser = new Parser(sources, parseTarget(args));
         return new OutputClassInfo().get(parser.read(null));
     }
-    
+
 }

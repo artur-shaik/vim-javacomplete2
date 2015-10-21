@@ -22,4 +22,15 @@ command! JCstart call javacomplete#Start()
 
 autocmd Filetype java,jsp JCstart
 
+function! s:nop(s)
+  return ''
+endfunction
+
+nnoremap <Plug>(JavaComplete-Imports-AddMissing) :call javacomplete#imports#AddMissing()<cr>
+inoremap <Plug>(JavaComplete-Imports-AddMissing) <c-r>=<SID>nop(javacomplete#imports#AddMissing())<cr>
+nnoremap <Plug>(JavaComplete-Imports-RemoveUnused) :call javacomplete#imports#RemoveUnused()<cr>
+inoremap <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#imports#RemoveUnused())<cr>
+nnoremap <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
+inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
+
 " vim:set fdm=marker sw=2 nowrap:

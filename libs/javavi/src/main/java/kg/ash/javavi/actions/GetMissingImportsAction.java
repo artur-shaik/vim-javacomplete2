@@ -1,13 +1,12 @@
 package kg.ash.javavi.actions;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
+
 import kg.ash.javavi.clazz.ClassImport;
-import kg.ash.javavi.readers.source.ClassNamesFetcher;
-import kg.ash.javavi.readers.source.CompilationUnitCreator;
 
 public class GetMissingImportsAction extends ImportsAction {
 
@@ -27,7 +26,9 @@ public class GetMissingImportsAction extends ImportsAction {
             }
         }
 
-        asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        if (compilationUnit.getPackage() != null) {
+            asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        }
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {
@@ -42,6 +43,7 @@ public class GetMissingImportsAction extends ImportsAction {
                 String[] splitted = packages.substring(1, packages.length() - 1).split(",");
                 boolean found = false;
                 for (String foundPackage : splitted) {
+                    if (foundPackage.trim().isEmpty()) continue;
                     foundPackage = foundPackage.trim().substring(1, foundPackage.length() - 1);
                     foundPackage = foundPackage.substring(0, foundPackage.lastIndexOf("."));
                     for (String asteriskImport : asteriskImports) {
@@ -56,7 +58,8 @@ public class GetMissingImportsAction extends ImportsAction {
                 }
             }
         }
+        System.out.println(result);
         return result.append("]").toString();
     }
-    
+
 }

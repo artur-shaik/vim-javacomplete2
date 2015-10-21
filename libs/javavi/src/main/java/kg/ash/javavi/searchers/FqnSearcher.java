@@ -13,6 +13,8 @@ public class FqnSearcher {
 
     public FqnSearcher(String sources) {
         this.sources = sources;
+        if (this.sources != null)
+            this.sources = this.sources.replace('\\', '/');
     }
 
     public String getFqn(SourceClass clazz, String name) {

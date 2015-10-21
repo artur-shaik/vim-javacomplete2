@@ -22,6 +22,8 @@ public class ActionFactory {
                 return new GetUnusedImportsAction();
             case "-missing-imports":
                 return new GetMissingImportsAction();
+            case "-clear-from-cache":
+                return new RemoveClassInfoFromCache();
         }
 
         return null;

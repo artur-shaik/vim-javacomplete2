@@ -1,6 +1,5 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-30
 
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
@@ -96,16 +95,16 @@ let g:RE_KEYWORDS	= '\<\%(' . join(g:J_KEYWORDS, '\|') . '\)\>'
 
 let g:JAVA_HOME = $JAVA_HOME
 
-let g:j_cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
-let g:j_files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
+let g:JavaComplete_Cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
+let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
 fu! SScope()
   return s:
 endfu
 
 function! javacomplete#ClearCache()
-  let g:j_cache = {}
-  let g:j_files = {}
+  let g:JavaComplete_Cache = {}
+  let g:JavaComplete_Files = {}
 endfunction
 
 function! javacomplete#Complete(findstart, base)
@@ -183,7 +182,7 @@ function! s:GlobPathList(path, pattern, suf)
   endif
 endfunction
 
-" key of g:j_files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
+" key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
 function! javacomplete#GetCurrentFileKey()
   return s:GetCurrentFileKey()
 endfunction
@@ -211,9 +210,20 @@ function! javacomplete#UseFQN()
   return 0
 endfunction
 
+function! s:RemoveCurrentFromCache()
+  let package = javacomplete#complete#GetPackageName()
+  let classname = split(expand('%:t'), '\.')[0]
+  let fqn = package. '.'. classname
+  if has_key(g:JavaComplete_Cache, fqn)
+    call remove(g:JavaComplete_Cache, fqn)
+  endif
+  call javacomplete#server#Communicate('-clear-from-cache', fqn, 's:RemoveCurrentFromCache')
+endfunction
+
 augroup javacomplete
   autocmd!
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
+  autocmd BufWrite *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
   autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
 augroup END
@@ -225,7 +235,10 @@ call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
   let g:JavaComplete_SourcesPath = ''
-  let sources = s:GlobPathList(getcwd(), '**/src', 0)
+  let sources = s:GlobPathList(getcwd(), 'src', 0)
+  for i in ['*/', '*/*/', '*/*/*/']
+    call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
+  endfor
   for src in sources
     if match(src, '.*build.*') < 0
       let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP

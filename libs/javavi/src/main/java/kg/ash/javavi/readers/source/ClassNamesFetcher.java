@@ -6,6 +6,7 @@ import com.github.javaparser.ast.TreeVisitor;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.MultiTypeParameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -90,6 +91,10 @@ public class ClassNamesFetcher {
                 public void process(Node node) {
                     if (node instanceof ClassOrInterfaceType) {
                         t.visit((ClassOrInterfaceType)node, arg);
+                    } else if (node instanceof NameExpr) {
+                        resultList.add(((NameExpr) node).getName());
+                    } else if (node instanceof MultiTypeParameter) {
+                        ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
                     }
                 }
             };
@@ -126,5 +131,5 @@ public class ClassNamesFetcher {
         }
 
     }
-    
+
 }

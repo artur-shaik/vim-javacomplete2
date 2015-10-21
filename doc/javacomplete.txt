@@ -76,9 +76,10 @@ You can add this command to your .vimrc or _vimrc.
 
 3. Map key you prefer for insert class import:
 
-        :nnoremap <F4> :JCAddImport<cr>
-        :inoremap <F4> <esc>:JCaddImportI<cr>
-
+        imap <c-k>a <Plug>(JavaComplete-Imports-Add)
+        imap <c-k>r <Plug>(JavaComplete-Imports-RemoveUnused)
+        nmap <c-k>a <Plug>(JavaComplete-Imports-Add)
+        nmap <c-k>r <Plug>(JavaComplete-Imports-RemoveUnused)
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
@@ -231,6 +232,8 @@ A single letter indicates the kind of compeltion item. These kinds are:
     
     JCcacheClear - clear cache manually.
 
+    
+
 ==============================================================================
 3. Java parser in Vim    			*javacomplete-parser*
 
@@ -289,6 +292,14 @@ The embedded parser works a bit slower than expected.
 6. History					
 
 6.1 javacomplete				*javacomplete-history*
+
+v2.3.3
+    2015-10-08  Jsp files support, no taglibs yet.
+                Vimscript refactored.
+                Read eclipse ".classpath" file.
+                Option to set jvm launcher and compiler for javavi server.
+                Using <Plug> mappings.
+                Bug fixes.
 
 v2.3.2
     2015-09-18  Nested classes.

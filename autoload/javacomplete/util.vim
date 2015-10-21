@@ -1,6 +1,5 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-14
 "
 " Utility functions
 
@@ -136,17 +135,20 @@ function! javacomplete#util#GetClassNameWithScope(...)
   let curline = getline('.')
   let word_l = offset - 1
   let word_r = offset - 2
-  while curline[word_l - 1] =~ '[@A-Za-z0-9_]'
-    if curline[word_l - 1] == '@'
+  while curline[word_l - 1] =~ '[\.@A-Za-z0-9_]'
+    let word_l -= 1
+    if curline[word_l] == '@'
       break
     endif
-    let word_l -= 1
   endwhile
   while curline[word_r + 1] =~ '[A-Za-z0-9_]'
     let word_r += 1
   endwhile
 
-  return curline[word_l : word_r]
+  let c = curline[word_l : word_r]
+
+  call javacomplete#logger#Log(c)
+  return c
 endfunction
 
 function! s:MemberCompare(m1, m2)

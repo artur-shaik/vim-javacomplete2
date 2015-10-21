@@ -1,6 +1,5 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
-" Last Change:	2015-09-30
 "
 " Everything to work with imports
 
@@ -77,7 +76,7 @@ endfunction
 
 function! javacomplete#imports#GetImports(kind, ...)
   let filekey = a:0 > 0 && !empty(a:1) ? a:1 : javacomplete#GetCurrentFileKey()
-  let props = get(g:j_files, filekey, {})
+  let props = get(g:JavaComplete_Files, filekey, {})
   let props['imports']	= filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
   let props['imports_static']	= []
   let props['imports_fqn']	= []
@@ -99,7 +98,7 @@ function! javacomplete#imports#GetImports(kind, ...)
       endif
     endif
   endfor
-  let g:j_files[filekey] = props
+  let g:JavaComplete_Files[filekey] = props
   return get(props, a:kind, [])
 endfu
 
@@ -137,7 +136,7 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   " read type info which are not in cache
   let commalist = ''
   for typename in candidates
-    if !has_key(g:j_cache, typename)
+    if !has_key(g:JavaComplete_Cache, typename)
       let commalist .= typename . ','
     endif
   endfor
@@ -146,14 +145,14 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
-        let g:j_cache[key] = s:Sort(dict[key])
+        let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
       endfor
     endif
   endif
 
   " search in all candidates
   for typename in candidates
-    let ti = get(g:j_cache, typename, 0)
+    let ti = get(g:JavaComplete_Cache, typename, 0)
     if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
       let members = javacomplete#complete#SearchMember(ti, a:name, a:fullmatch, 12, 1, 0)
       let result[1] += members[1]
@@ -200,7 +199,15 @@ function! s:AddImport(import)
   endfor
 
   let imports_star = javacomplete#imports#GetImports('imports_star')
+
   let splittedImport = split(a:import, '\.')
+  let className = splittedImport[-1]
+  if className != '*'
+    if has_key(g:JavaComplete_Cache, className)
+      call remove(g:JavaComplete_Cache, className)
+    endif
+  endif
+
   call remove(splittedImport, len(splittedImport) - 1)
   let imp = join(splittedImport, '.')
   for import in imports_star
@@ -214,15 +221,23 @@ function! s:AddImport(import)
   if empty(imports)
     let firstline = getline(1)
     if firstline =~ '^package.*'
-      let insertline = 1
+      let insertline = 3
+      call append(1, '')
     else
-      let insertline = 0
+      let insertline = 1
     endif
+    let saveCursor = getcurpos()
+    let linesCount = line('$')
+    while (javacomplete#util#Trim(getline(insertline)) == '' && insertline < linesCount)
+      silent execute insertline. 'delete _'
+      let saveCursor[1] -= 1
+    endwhile
+    call setpos('.', saveCursor)
 
     if &ft == 'jsp'
-      call append(insertline, '<%@ page import = "'. a:import. '" %>')
+      call append(insertline - 1, '<%@ page import = "'. a:import. '" %>')
     else
-      call append(insertline, 'import '. a:import. ';')
+      call append(insertline - 1, 'import '. a:import. ';')
     endif
     call append(insertline, '')
   else
@@ -250,6 +265,9 @@ function! javacomplete#imports#Add(...)
     let i += 1
   endwhile
 
+  if classname =~ '^@.*'
+    let classname = classname[1:]
+  endif
   let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
   if response =~ '^['
     let result = eval(response)
@@ -261,16 +279,9 @@ function! javacomplete#imports#Add(...)
       let import = result[0]
 
     else
-      if exists('g:ClassnameCompleted') && g:ClassnameCompleted
-        return
-      endif
-
-      let index = 0
-      for cn in result
-        echo "candidate [". index. "]: ". cn
-        let index += 1
-      endfor
-      let userinput = input('select one candidate [0]: ', '')
+      let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
+      let message .= "\nselect one candidate [0]: "
+      let userinput = input(message, '')
       if empty(userinput)
         let userinput = 0
       elseif userinput =~ '^[0-9]*$'
@@ -327,17 +338,14 @@ function! javacomplete#imports#AddMissing()
   let currentBuf = getline(1,'$')
   let current = join(currentBuf, '<_javacomplete-linebreak>')
 
-  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'RemoveUnusedImports')
+  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'AddMissingImports')
   if response =~ '^['
     let missing = eval(response)
     for import in missing
       if len(import) > 1
-        let index = 0
-        for cn in import
-          echo "candidate [". index. "]: ". cn
-          let index += 1
-        endfor
-        let userinput = input('select one candidate [0]: ', '')
+        let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
+        let message .= "\nselect one candidate [0]: "
+        let userinput = input(message, '')
         if empty(userinput)
           let userinput = 0
         elseif userinput =~ '^[0-9]*$'
