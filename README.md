@@ -95,13 +95,17 @@ Add this to your `.vimrc` file:
 
 To enable inserting class imports with F4, add:
 
-`imap <F4> <Plug>(JavaComplete-Imports-Add)`
-
-`imap <F4> <Plug>(JavaComplete-Imports-RemoveUnused)`
-
 `nmap <F4> <Plug>(JavaComplete-Imports-Add)`
 
-`nmap <F4> <Plug>(JavaComplete-Imports-RemoveUnused)`
+`imap <F4> <Plug>(JavaComplete-Imports-Add)`
+
+`nmap <F5> <Plug>(JavaComplete-Imports-AddMissing)`
+
+`imap <F5> <Plug>(JavaComplete-Imports-AddMissing)`
+
+`nmap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)`
+
+`imap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
 ### Optional
 
