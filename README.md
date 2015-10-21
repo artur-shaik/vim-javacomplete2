@@ -93,6 +93,16 @@ Add this to your `.vimrc` file:
 
 `autocmd FileType java set omnifunc=javacomplete#Complete`
 
+To enable import R.java for an android project
+
+if you are using maven-android-plugin,please add this into your vimrc
+
+```vim
+if filereadable("AndroidManifest.xml")
+    let g:JavaComplete_SourcesPath = "target/generated-sources/r"
+endif
+```
+
 To enable inserting class imports with F4, add:
 
 `nmap <F4> <Plug>(JavaComplete-Imports-Add)`
