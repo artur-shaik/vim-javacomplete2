@@ -95,9 +95,11 @@ Add this to your `.vimrc` file:
 
 You can enable importing R.java for an Android project by using the maven-android-plugin by adding the following to your vimrc:
 
+```vim
 if filereadable("AndroidManifest.xml")
     let g:JavaComplete_SourcesPath = "target/generated-sources/r"
 endif
+```
 
 To enable inserting class imports with F4, add:
 
