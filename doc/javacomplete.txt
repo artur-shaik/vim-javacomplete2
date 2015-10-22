@@ -59,27 +59,36 @@ You can download the lastest version from this url:
 
 1.4 Install					*javacomplete-install*
 
-1. This assumes you are using [Vundle](https://github.com/gmarik/Vundle.vim). Adapt
-for your plugin manager of choice. Put this into your `.vimrc`.
+1. This assumes you are using [Vundle](https://github.com/gmarik/Vundle.vim). Adapt for your plugin manager of choice. Put this into your `.vimrc`.
 
     " Java completion plugin.
     Plugin 'artur-shaik/vim-javacomplete2'
 
 2. Set 'omnifunc' option. e.g. >
-	:setlocal omnifunc=javacomplete#Complete
-<   Or, use autocmd: >
-	:" Only do this part when compiled with support for autocommands.
-	:if has("autocmd")
-	:  autocmd Filetype java setlocal omnifunc=javacomplete#Complete
-	:endif
-You can add this command to your .vimrc or _vimrc.
 
-3. Map key you prefer for insert class import:
+    autocmd Filetype java setlocal omnifunc=javacomplete#Complete
 
-        imap <c-k>a <Plug>(JavaComplete-Imports-Add)
-        imap <c-k>r <Plug>(JavaComplete-Imports-RemoveUnused)
-        nmap <c-k>a <Plug>(JavaComplete-Imports-Add)
-        nmap <c-k>r <Plug>(JavaComplete-Imports-RemoveUnused)
+You can enable importing R.java for an Android project by using the maven-android-plugin by adding the following to your vimrc:
+
+    if filereadable("AndroidManifest.xml")
+        let g:JavaComplete_SourcesPath = "target/generated-sources/r"
+    endif
+
+3. Map keys you prefer:
+For insert class import with <F4>:
+
+    nmap <F4> <Plug>(JavaComplete-Imports-Add)
+    imap <F4> <Plug>(JavaComplete-Imports-Add)
+
+For add all missing imports with <F5>:
+
+    nmap <F5> <Plug>(JavaComplete-Imports-AddMissing)
+    imap <F5> <Plug>(JavaComplete-Imports-AddMissing)
+
+For remove all missing imports with <F6>:
+
+    nmap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)
+    imap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
