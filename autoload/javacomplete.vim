@@ -232,30 +232,22 @@ let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
 call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
+let s:JavaComplete_SourcesPath_temp = ''
+let s:sources = s:GlobPathList(getcwd(), 'src', 0)
+for i in ['*/', '*/*/', '*/*/*/']
+  call extend(s:sources, s:GlobPathList(getcwd(), i. '/src', 0))
+endfor
+for src in s:sources
+  if match(src, '.*build.*') < 0
+    let s:JavaComplete_SourcesPath_temp = s:JavaComplete_SourcesPath_temp. src. g:PATH_SEP
+  endif
+endfor
 
 if !exists("g:JavaComplete_SourcesPath")
-
-    let g:JavaComplete_SourcesPath = ''
-    let sources = s:GlobPathList(getcwd(), 'src', 0)
-    for i in ['*/', '*/*/', '*/*/*/']
-        call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
-    endfor
-    for src in sources
-        if match(src, '.*build.*') < 0
-            let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP
-        endif
-    endfor
+    let g:JavaComplete_SourcesPath = s:JavaComplete_SourcesPath_temp
     call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
 elseif exists("g:JavaComplete_SourcesPath")
-    let sources = s:GlobPathList(getcwd(), 'src', 0)
-    for i in ['*/', '*/*/', '*/*/*/']
-        call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
-    endfor
-    for src in sources
-        if match(src, '.*build.*') < 0
-            let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP. src
-        endif
-    endfor
+    let g:JavaComplete_SourcesPath .= g:PATH_SEP . s:JavaComplete_SourcesPath_temp
     call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
