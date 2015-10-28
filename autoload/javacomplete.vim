@@ -234,17 +234,28 @@ let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javap
 call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 if !exists("g:JavaComplete_SourcesPath")
-  let g:JavaComplete_SourcesPath = ''
-  let sources = s:GlobPathList(getcwd(), 'src', 0)
-  for i in ['*/', '*/*/', '*/*/*/']
-    call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
-  endfor
-  for src in sources
-    if match(src, '.*build.*') < 0
-      let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP
-    endif
-  endfor
-  call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
+    let g:JavaComplete_SourcesPath = ''
+    let sources = s:GlobPathList(getcwd(), 'src', 0)
+    for i in ['*/', '*/*/', '*/*/*/']
+        call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
+    endfor
+    for src in sources
+        if match(src, '.*build.*') < 0
+            let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. src. g:PATH_SEP
+        endif
+    endfor
+    call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
+elseif exists("g:JavaComplete_SourcesPath")
+    let sources = s:GlobPathList(getcwd(), 'src', 0)
+    for i in ['*/', '*/*/', '*/*/*/']
+        call extend(sources, s:GlobPathList(getcwd(), i. '/src', 0))
+    endfor
+    for src in sources
+        if match(src, '.*build.*') < 0
+            let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP. src
+        endif
+    endfor
+    call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
 endif
 
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
