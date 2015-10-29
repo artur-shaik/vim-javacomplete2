@@ -232,6 +232,7 @@ let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
 
 call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
+
 let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', '')
 let s:sources = s:GlobPathList(getcwd(), 'src', 0)
 for i in ['*/', '*/*/', '*/*/*/']
@@ -244,6 +245,7 @@ for src in s:sources
 endfor
 unlet s:sources
 call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
+
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
   if exists('g:JavaComplete_LibsPath')
     let g:JavaComplete_LibsPath .= g:PATH_SEP
