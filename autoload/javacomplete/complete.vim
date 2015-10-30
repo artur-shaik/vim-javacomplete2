@@ -803,6 +803,8 @@ function! s:DetermineLambdaArguments(unit, ti, name)
       elseif typename != 'void' && !s:IsBuiltinType(typename)
         let ti = s:DoGetClassInfo(typename)
       endif
+    else " It can be static request."
+      let ti = s:DoGetClassInfo(items[0])
     endif
 
     let ii = 1
@@ -815,16 +817,13 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     endwhile
 
     if has_key(ti, 'methods')
-      let method = {}
+      let methods = []
       for m in ti.methods
         if m.n == split(items[-1], '(')[0]
-          let method = m
+          call add(methods, m)
         endif
       endfor
 
-      if a:ti.idx < len(method.p)
-        let type = method.p[a:ti.idx]
-      endif
     endif
   elseif has_key(t, 'stats') && !empty(t.stats)
     if t.stats.tag == 'VARDEF'
@@ -844,21 +843,30 @@ function! s:DetermineLambdaArguments(unit, ti, name)
   endif
 
   " type should be FunctionInterface, and it contains only one abstract method
-  if !empty(type)
-    let functionalMembers = s:DoGetClassInfo(type)
-    if has_key(functionalMembers, 'methods')
-      for m in functionalMembers.methods
-        if m.m == s:MODIFIER_ABSTRACT
-          if argIdx < len(m.p)
-            let type = m.p[argIdx]
-            break
-          endif
-        endif
-      endfor
 
-      return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': argPos}, 'pos': argPos}
+  for method in methods
+    if a:ti.idx < len(method.p)
+      let type = method.p[a:ti.idx]
     endif
-  endif
+    if !empty(type)
+      let pType = ''
+      let functionalMembers = s:DoGetClassInfo(type)
+      if has_key(functionalMembers, 'methods')
+        for m in functionalMembers.methods
+          if m.m == s:MODIFIER_ABSTRACT
+            if argIdx < len(m.p)
+              let pType = m.p[argIdx]
+              break
+            endif
+          endif
+        endfor
+
+        if !empty(pType)
+          return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': argPos}, 'pos': argPos}
+        endif
+      endif
+    endif
+  endfor
 
   return {}
 endfunction
