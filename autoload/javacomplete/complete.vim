@@ -1073,7 +1073,7 @@ function! s:DoGetClassInfo(class, ...)
       " - the methods of the Object class.
       " What will be returned for this?
       " - besides the above, all fields and methods of current class. No ctors.
-      return javacomplete#util#Sort(s:Tree2ClassInfo(t, 1))
+      return javacomplete#util#Sort(s:Tree2ClassInfo(t))
     endif
   endif
 
@@ -1238,9 +1238,8 @@ function! s:CollectFQNs(typename, packagename, filekey)
   return fqns
 endfunction
 
-function! s:Tree2ClassInfo(t, ...)
+function! s:Tree2ClassInfo(t)
   let t = a:t
-  let filterStatic = a:0 > 0 && a:1 == 1 ? 1 : 0
 
   " fill fields and methods
   let t.fields = []
@@ -1255,13 +1254,9 @@ function! s:Tree2ClassInfo(t, ...)
       unlet tmp
     endif
     if def.tag == 'METHODDEF'
-      if filterStatic != 1 || !s:IsStatic(def.m)
-        call add(def.n == t.name ? t.ctors : t.methods, def)
-      endif
+      call add(def.n == t.name ? t.ctors : t.methods, def)
     elseif def.tag == 'VARDEF'
-      if filterStatic != 1 || !s:IsStatic(def.m)
-        call add(t.fields, def)
-      endif
+      call add(t.fields, def)
     elseif def.tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
@@ -1496,7 +1491,9 @@ function! s:DoGetMemberList(ci, kind)
     for field in members[2]
       "for field in get(a:ci, 'fields', [])
       if s:IsStatic(field['m'])
-        call add(sfieldlist, field)
+        if kind != 1
+          call add(sfieldlist, field)
+        endif
       elseif kind / 10 == 0
         call add(fieldlist, field)
       endif
@@ -1506,7 +1503,9 @@ function! s:DoGetMemberList(ci, kind)
     let smethodlist = []
     for method in members[1]
       if s:IsStatic(method['m'])
-        call add(smethodlist, method)
+        if kind != 1
+          call add(smethodlist, method)
+        endif
       elseif kind / 10 == 0
         call add(methodlist, method)
       endif
