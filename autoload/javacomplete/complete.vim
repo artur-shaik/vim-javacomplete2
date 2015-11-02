@@ -1549,6 +1549,16 @@ function! s:GetMembers(fqn, ...)
   let list = []
   let isClass = 0
 
+  if b:context_type == s:CONTEXT_IMPORT_STATIC
+    let res = javacomplete#server#Communicate('-E', a:fqn, 's:GetMembers for static')
+    if res =~ "^{'"
+      let dict = eval(res)
+      for key in keys(dict)
+        let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
+      endfor
+    endif
+  endif
+
   let v = s:DoGetInfoByReflection(a:fqn, '-p')
   if type(v) == type([])
     let list = v
