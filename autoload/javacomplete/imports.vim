@@ -125,35 +125,33 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
       call add(candidates, item[:-3])
     elseif item[strridx(item, '.')+1:] ==# a:name
           \ || (!a:fullmatch && item[strridx(item, '.')+1:] =~ '^' . a:name)
-      call add(candidates, item[:strridx(item, '.')])
+      call add(candidates, item[:strridx(item, '.') - 1])
     endif
   endfor
   if empty(candidates)
     return result
   endif
 
-
   " read type info which are not in cache
   let commalist = ''
   for typename in candidates
     if !has_key(g:JavaComplete_Cache, typename)
-      let commalist .= typename . ','
+      let res = javacomplete#server#Communicate('-E', typename, 's:SearchStaticImports')
+      if res =~ "^{'"
+        let dict = eval(res)
+        for key in keys(dict)
+          let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
+        endfor
+      endif
     endif
   endfor
-  if commalist != ''
-    let res = javacomplete#server#Communicate('-E', commalist, 's:SearchStaticImports in Batch')
-    if res =~ "^{'"
-      let dict = eval(res)
-      for key in keys(dict)
-        let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
-      endfor
-    endif
-  endif
 
   " search in all candidates
   for typename in candidates
     let ti = get(g:JavaComplete_Cache, typename, 0)
     if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
+      call add(result[0], ti)
+
       let members = javacomplete#complete#SearchMember(ti, a:name, a:fullmatch, 12, 1, 0)
       let result[1] += members[1]
       let result[2] += members[2]

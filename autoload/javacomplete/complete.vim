@@ -749,6 +749,7 @@ function! s:SearchForName(name, first, fullmatch)
 
   " static import
   let si = javacomplete#imports#SearchStaticImports(a:name, a:fullmatch)
+  let result[0] += si[0]
   let result[1] += si[1]
   let result[2] += si[2]
 
@@ -909,7 +910,15 @@ function! s:GetDeclaredClassName(var)
     return s:FastBackwardDeclarationSearch(a:var)
   endif
 
-  let variable = get(s:SearchForName(var, 1, 1)[2], -1, {})
+  let result = s:SearchForName(var, 1, 1)
+  let class = get(result[0], -1, {})
+  if get(class, 'tag', '') == 'CLASSDEF'
+    if has_key(class, 'name')
+      return class.name
+    endif
+  endif
+
+  let variable = get(result[2], -1, {})
   if get(variable, 'tag', '') == 'VARDEF'
     if has_key(variable, 't')
       let splitted = split(variable.t, '\.')
@@ -1092,7 +1101,6 @@ function! s:DoGetClassInfo(class, ...)
     call s:FetchClassInfo(fqn)
 
     let key = s:KeyInCache(fqn)
-    call javacomplete#logger#Log(key)
     if !empty(key)
       return get(g:JavaComplete_Cache[key], 'tag', '') == 'CLASSDEF' ? g:JavaComplete_Cache[key] : {}
     endif
