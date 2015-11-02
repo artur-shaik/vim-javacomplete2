@@ -1073,7 +1073,7 @@ function! s:DoGetClassInfo(class, ...)
       " - the methods of the Object class.
       " What will be returned for this?
       " - besides the above, all fields and methods of current class. No ctors.
-      return javacomplete#util#Sort(s:Tree2ClassInfo(t))
+      return javacomplete#util#Sort(s:Tree2ClassInfo(t, 1))
     endif
   endif
 
@@ -1238,8 +1238,9 @@ function! s:CollectFQNs(typename, packagename, filekey)
   return fqns
 endfunction
 
-function! s:Tree2ClassInfo(t)
+function! s:Tree2ClassInfo(t, ...)
   let t = a:t
+  let filterStatic = a:0 > 0 && a:1 == 1 ? 1 : 0
 
   " fill fields and methods
   let t.fields = []
@@ -1254,9 +1255,13 @@ function! s:Tree2ClassInfo(t)
       unlet tmp
     endif
     if def.tag == 'METHODDEF'
-      call add(def.n == t.name ? t.ctors : t.methods, def)
+      if filterStatic != 1 || !s:IsStatic(def.m)
+        call add(def.n == t.name ? t.ctors : t.methods, def)
+      endif
     elseif def.tag == 'VARDEF'
-      call add(t.fields, def)
+      if filterStatic != 1 || !s:IsStatic(def.m)
+        call add(t.fields, def)
+      endif
     elseif def.tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
