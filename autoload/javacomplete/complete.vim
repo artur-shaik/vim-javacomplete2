@@ -796,7 +796,7 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     endwhile
 
     let items = reverse(result)
-    let typename = s:GetDeclaredClassName(items[0])
+    let typename = s:GetDeclaredClassName(items[0], 1)
     let ti = {}
     if (typename != '')
       if typename[1] == '[' || typename[-1:] == ']'
@@ -894,7 +894,8 @@ function! s:FastBackwardDeclarationSearch(name)
 endfunction
 
 " Parser.GetType() in insenvim
-function! s:GetDeclaredClassName(var)
+" a:1 - include related type
+function! s:GetDeclaredClassName(var, ...)
   let var = javacomplete#util#Trim(a:var)
   call javacomplete#logger#Log('GetDeclaredClassName for "' . var . '"')
   if var =~# '^\(this\|super\)$'
@@ -911,13 +912,6 @@ function! s:GetDeclaredClassName(var)
   endif
 
   let result = s:SearchForName(var, 1, 1)
-  let class = get(result[0], -1, {})
-  if get(class, 'tag', '') == 'CLASSDEF'
-    if has_key(class, 'name')
-      return class.name
-    endif
-  endif
-
   let variable = get(result[2], -1, {})
   if get(variable, 'tag', '') == 'VARDEF'
     if has_key(variable, 't')
@@ -935,7 +929,20 @@ function! s:GetDeclaredClassName(var)
     return java_parser#type2Str(variable.vartype)
   endif
 
-  return get(variable, 't', '')
+  if has_key(variable, 't')
+    return variable.t
+  endif
+
+  if a:0 > 0 
+    let class = get(result[0], -1, {})
+    if get(class, 'tag', '') == 'CLASSDEF'
+      if has_key(class, 'name')
+        return class.name
+      endif
+    endif
+  endif
+
+  return ''
 endfunction
 
 function! s:IsStatic(modifier)

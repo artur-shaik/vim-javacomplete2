@@ -150,9 +150,10 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   for typename in candidates
     let ti = get(g:JavaComplete_Cache, typename, 0)
     if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
-      call add(result[0], ti)
-
       let members = javacomplete#complete#SearchMember(ti, a:name, a:fullmatch, 12, 1, 0)
+      if !empty(members[1]) || !empty(members[2])
+        call add(result[0], ti)
+      endif
       let result[1] += members[1]
       let result[2] += members[2]
     else
