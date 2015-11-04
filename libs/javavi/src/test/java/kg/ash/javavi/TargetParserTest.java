@@ -16,6 +16,8 @@ public class TargetParserTest {
         Assert.assertEquals(1, parser.getTypeArguments().size());
         Assert.assertEquals("java.util.List<HashMap<String,BigDecimal>>", parser.getTypeArguments().get(0));
 
+        Assert.assertEquals("HashMap", parser.parse("HashMap<Long, HashMap<String,String>>"));
+
         Assert.assertEquals("java.util.HashMap", parser.parse("java.util.HashMap<(kg.ash.demo.String|java.lang.String),java.math.BigDecimal>"));
         Assert.assertEquals(2, parser.getTypeArguments().size());
         Assert.assertEquals("java.lang.String", parser.getTypeArguments().get(0));
