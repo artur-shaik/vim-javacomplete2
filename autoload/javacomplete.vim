@@ -225,7 +225,10 @@ augroup javacomplete
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
   autocmd BufWrite *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
-  autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
+
+  if has("patch-7.3.867")
+    autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
+  endif
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
