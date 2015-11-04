@@ -311,6 +311,7 @@ fu! java_parser#type2Str(type)
           let s .= arg.name. ','
         endif
       endif
+      unlet arg
     endfor
 
     if len(s) > 0
