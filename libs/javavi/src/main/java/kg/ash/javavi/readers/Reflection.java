@@ -156,7 +156,7 @@ public class Reflection implements ClassReader {
             clazz.addConstructor(constructor);
         }
 
-        Field[] fields = cls.getFields();
+        Field[] fields = cls.getDeclaredFields();
         for (Field f : fields) {
             ClassField field = new ClassField();
             field.setName(f.getName());
@@ -171,7 +171,7 @@ public class Reflection implements ClassReader {
             clazz.addField(field);
         }
 
-        Method[] methods = cls.getMethods();
+        Method[] methods = cls.getDeclaredMethods();
         for (Method m : methods) {
 
             // workaround for Iterable<T> that give us

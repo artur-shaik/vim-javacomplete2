@@ -1449,6 +1449,18 @@ function! s:DoGetMethodList(methods, ...)
   return s
 endfunction
 
+function! s:UniqDeclaration(members)
+  let declarations = {}
+  for m in a:members
+    let declarations[javacomplete#util#CleanFQN(m.d)] = m
+  endfor
+  let result = []
+  for k in keys(declarations)
+    call add(result, declarations[k])
+  endfor
+  return result
+endfunction
+
 " kind:
 "	0 - for instance, 1 - this, 2 - super, 3 - class, 4 - array, 5 - method result, 6 - primitive type
 "	11 - for type, with `class` and static member and nested types.
@@ -1472,6 +1484,7 @@ function! s:DoGetMemberList(ci, kind)
   let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
 
   let members = javacomplete#complete#SearchMember(a:ci, '', 1, kind, 1, 0, kind == 2)
+  let members[1] = s:UniqDeclaration(members[1])
 
   " add accessible member types
   if kind / 10 != 0
