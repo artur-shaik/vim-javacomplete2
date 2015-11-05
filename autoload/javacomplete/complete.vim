@@ -779,6 +779,7 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     return {}
   endif
 
+  let methods = []
   let t = a:ti
   let type = ''
   if has_key(t, 'meth') && !empty(t.meth)
@@ -818,7 +819,6 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     endwhile
 
     if has_key(ti, 'methods')
-      let methods = []
       for m in ti.methods
         if m.n == split(items[-1], '(')[0]
           call add(methods, m)
@@ -849,26 +849,34 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     if a:ti.idx < len(method.p)
       let type = method.p[a:ti.idx]
     endif
-    if !empty(type)
-      let pType = ''
-      let functionalMembers = s:DoGetClassInfo(type)
-      if has_key(functionalMembers, 'methods')
-        for m in functionalMembers.methods
-          if m.m == s:MODIFIER_ABSTRACT
-            if argIdx < len(m.p)
-              let pType = m.p[argIdx]
-              break
-            endif
-          endif
-        endfor
-
-        if !empty(pType)
-          return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': argPos}, 'pos': argPos}
-        endif
-      endif
+    let res = s:GetLambdaParameterType(type, a:name, argIdx, argPos)
+    if !has_key(res, 'tag')
+      return res
     endif
   endfor
 
+  return s:GetLambdaParameterType(type, a:name, argIdx, argPos)
+endfunction
+
+function! s:GetLambdaParameterType(type, name, argIdx, argPos)
+  let pType = ''
+  if !empty(a:type)
+    let functionalMembers = s:DoGetClassInfo(a:type)
+    if has_key(functionalMembers, 'methods')
+      for m in functionalMembers.methods
+        if m.m == s:MODIFIER_ABSTRACT
+          if a:argIdx < len(m.p)
+            let pType = m.p[a:argIdx]
+            break
+          endif
+        endif
+      endfor
+
+      if !empty(pType)
+        return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': a:argPos}, 'pos': a:argPos}
+      endif
+    endif
+  endif
   return {}
 endfunction
 
