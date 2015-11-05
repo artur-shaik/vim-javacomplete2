@@ -83,6 +83,7 @@ public class TargetParser {
             } else if (c == ',' && lbr == 0) {
                 ta = ta.substring(stidx, i - stidx) + "<_split_>" + ta.substring(i - stidx + 1, ta.length());
                 stidx = i;
+                i += 9;
             }
 
             i++;

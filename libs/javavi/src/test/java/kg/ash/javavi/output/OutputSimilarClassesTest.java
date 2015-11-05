@@ -15,19 +15,19 @@ public class OutputSimilarClassesTest {
     public void Init() {
         classPackages = new HashMap<>();
 
-        ClassMap classMap = new ClassMap("Barabaz");
+        ClassMap classMap = new ClassMap("Barabaz", ClassMap.CLASS);
         classMap.add("bar", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classPackages.put("Barabaz", classMap);
 
-        classMap = new ClassMap("Bara");
+        classMap = new ClassMap("Bara", ClassMap.CLASS);
         classMap.add("bar.bara", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classPackages.put("Bara", classMap);
 
-        classMap = new ClassMap("Bazaraz");
+        classMap = new ClassMap("Bazaraz", ClassMap.CLASS);
         classMap.add("bar.baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classPackages.put("Bazaraz", classMap);
 
-        classMap = new ClassMap("Foobar");
+        classMap = new ClassMap("Foobar", ClassMap.CLASS);
         classMap.add("bar.bas", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classPackages.put("Foobar", classMap);
     }

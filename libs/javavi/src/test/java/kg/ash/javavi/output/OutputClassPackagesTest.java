@@ -13,7 +13,7 @@ public class OutputClassPackagesTest {
 
     @Before
     public void Init() {
-        ClassMap classMap = new ClassMap(target);
+        ClassMap classMap = new ClassMap(target, ClassMap.CLASS);
         classMap.add("bar.baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classMap.add("foo.bar", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
 
@@ -23,7 +23,7 @@ public class OutputClassPackagesTest {
 
     @Test
     public void testCorrect() {
-        Assert.assertEquals("['foo.bar.Bar','bar.baz.Bar',]", new OutputClassPackages(classPackages).get(target));
+        Assert.assertEquals("['bar.baz.Bar','foo.bar.Bar',]", new OutputClassPackages(classPackages).get(target));
     }
 
     @Test

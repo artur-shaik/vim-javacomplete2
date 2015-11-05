@@ -16,13 +16,16 @@ public class OutputClassPackages {
 
         StringBuilder builder = new StringBuilder("");
         if (classPackages != null && classPackages.containsKey(targetClass)) {
-            classPackages.get(targetClass).getPaths().forEach(scope -> {
-                builder
-                    .append("'")
-                    .append(scope).append(".").append(targetClass)
-                    .append("',")
-                    .append(Javavi.NEWLINE);
-            });
+            ClassMap cm = classPackages.get(targetClass);
+            if (cm.getType() == ClassMap.CLASS) {
+                cm.getSubpackages().forEach(scope -> {
+                    builder
+                        .append("'")
+                        .append(scope).append(".").append(targetClass)
+                        .append("',")
+                        .append(Javavi.NEWLINE);
+                });
+            }
         }
 
         return String.format("[%s]", builder);

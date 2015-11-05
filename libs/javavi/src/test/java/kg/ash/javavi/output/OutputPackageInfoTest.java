@@ -13,7 +13,7 @@ public class OutputPackageInfoTest {
 
     @Before
     public void Init() {
-        ClassMap classMap = new ClassMap(target);
+        ClassMap classMap = new ClassMap(target, ClassMap.CLASS);
         classMap.add("baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classMap.add("bax", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classMap.add("Bat", ClassMap.CLASSPATH, ClassMap.CLASS);
@@ -27,7 +27,7 @@ public class OutputPackageInfoTest {
         OutputPackageInfo opi = new OutputPackageInfo(classPackages);
         String result = opi.get(target);
 
-        Assert.assertEquals(String.format("{'%s':{'tag':'PACKAGE','subpackages':['baz','bax',],'classes':['Bat',]},}", target), result);
+        Assert.assertEquals(String.format("{'%s':{'tag':'PACKAGE','subpackages':['bax','baz',],'classes':['Bat',]},}", target), result);
     }
     
     @Test
