@@ -90,7 +90,9 @@ public class ClassNamesFetcher {
             TreeVisitor tv = new TreeVisitor() {
                 public void process(Node node) {
                     if (node instanceof ClassOrInterfaceType) {
-                        t.visit((ClassOrInterfaceType)node, arg);
+                        if (!node.toStringWithoutComments().contains(".")) {
+                            t.visit((ClassOrInterfaceType)node, arg);
+                        }
                     } else if (node instanceof NameExpr) {
                         resultList.add(((NameExpr) node).getName());
                     } else if (node instanceof MultiTypeParameter) {
