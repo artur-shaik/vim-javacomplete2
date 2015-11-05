@@ -5,11 +5,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -156,8 +158,10 @@ public class Reflection implements ClassReader {
             clazz.addConstructor(constructor);
         }
 
-        Field[] fields = cls.getDeclaredFields();
-        for (Field f : fields) {
+        Set<Field> fieldsSet = new HashSet<>();
+        fieldsSet.addAll(Arrays.asList(cls.getDeclaredFields()));
+        fieldsSet.addAll(Arrays.asList(cls.getFields()));
+        for (Field f : fieldsSet) {
             ClassField field = new ClassField();
             field.setName(f.getName());
             field.setModifiers(f.getModifiers());
@@ -171,8 +175,10 @@ public class Reflection implements ClassReader {
             clazz.addField(field);
         }
 
-        Method[] methods = cls.getDeclaredMethods();
-        for (Method m : methods) {
+        Set<Method> methodsSet = new HashSet<>();
+        methodsSet.addAll(Arrays.asList(cls.getDeclaredMethods()));
+        methodsSet.addAll(Arrays.asList(cls.getMethods()));
+        for (Method m : methodsSet) {
 
             // workaround for Iterable<T> that give us
             // another generic name in List::forEach method
