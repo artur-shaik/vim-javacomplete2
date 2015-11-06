@@ -131,6 +131,16 @@ To remove all missing imports with F6:
 
 `let g:JavaComplete_PomPath = /path/to/pom.xml` - set path to `pom.xml` explicitly. It will be set automatically, if `pom.xml` is in underlying path.
 
+For `Gradle` users: you can generate `.classpath` file, that will picked up by javacomplete2. For this add this to your `build.gradle`:
+
+```groovy
+allprojects {
+    apply plugin: 'eclipse'
+}
+```
+
+Than run `gradle eclipse`.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
