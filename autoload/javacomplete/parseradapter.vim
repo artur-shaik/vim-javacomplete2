@@ -26,7 +26,7 @@ function! javacomplete#parseradapter#Parse(...)
 
   if changed
     call java_parser#InitParser(lines)
-    call java_parser#SetLogLevel(2)
+    call java_parser#SetLogLevel(0)
     let props.unit = java_parser#compilationUnit()
 
     if &ft == 'jsp'
