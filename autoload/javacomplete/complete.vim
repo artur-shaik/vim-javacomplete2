@@ -1493,6 +1493,7 @@ endfunction
 function! s:DoGetMethodList(methods, kind, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : (a:1 == 2) ? ' = ' : ''
 
+  let abbrEnd = ''
   if b:context_type != s:CONTEXT_METHOD_REFERENCE 
     if a:0 == 0 || !a:1
       let abbrEnd = '()'
@@ -1535,8 +1536,8 @@ function! s:GenWord(method, kind, paren)
     return a:method.d . ' {'
   else
     if b:context_type != s:CONTEXT_METHOD_REFERENCE
-      if has_key(a:method, 'p')
-        return a:method.n . a:paren
+      if !empty(a:paren)
+        retjurn a:method.n . a:paren
       else
         return a:method.n . '()'
       endif
