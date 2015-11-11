@@ -174,26 +174,14 @@ function! javacomplete#complete#Complete(findstart, base)
 
   " Try to complete incomplete class name
   if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-    if a:base =~ g:RE_ANNOTATION || a:base == '@'
-      let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
-    else
-      let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
-    endif
-    if response =~ '^['
-      let result = eval(response)
-    endif
-    if !empty(result)
-      let g:ClassnameCompleted = 1
-      return result
-    endif
+    let result = s:CompleteSimilarClasses(a:base)
   elseif b:context_type == s:CONTEXT_COMPLETE_ON_OVERRIDE
     let result = s:CompleteAfterOverride()
-    if !empty(result)
-      return result
-    endif
   endif
 
-  " Return list of matches.
+  if !empty(result)
+    return result
+  endif
 
   if b:dotexpr =~ '^\s*$' && b:incomplete =~ '^\s*$'
     return []
@@ -370,6 +358,22 @@ function! s:CompleteAfterOverride()
   endfor
   let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
   return eval('[' . s . ']')
+endfunction
+
+function! s:CompleteSimilarClasses(base)
+  if a:base =~ g:RE_ANNOTATION || a:base == '@'
+    let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
+  else
+    let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
+  endif
+  if response =~ '^['
+    let result = eval(response)
+  endif
+  if !empty(result)
+    let g:ClassnameCompleted = 1
+    return result
+  endif
+  return []
 endfunction
 
 " Precondition:	expr must end with '.'
