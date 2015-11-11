@@ -12,9 +12,14 @@ let s:CONTEXT_NEED_TYPE		        = 7
 let s:CONTEXT_COMPLETE_CLASS	    = 8
 let s:CONTEXT_METHOD_REFERENCE      = 9
 let s:CONTEXT_ANNOTATION_FIELDS     = 10
+let s:CONTEXT_COMPLETE_ON_OVERRIDE  = 11
 let s:CONTEXT_OTHER 		        = 0
 
-let s:MODIFIER_ABSTRACT         = '10000000001'
+let s:MODIFIER_PUBLIC               = 1
+let s:MODIFIER_PROTECTED            = 3
+let s:MODIFIER_FINAL                = 5
+let s:MODIFIER_NATIVE               = 9
+let s:MODIFIER_ABSTRACT             = 11
 
 let b:context_type = s:CONTEXT_OTHER
 let b:dotexpr = ''
@@ -80,20 +85,23 @@ function! javacomplete#complete#Complete(findstart, base)
       elseif &ft == 'jsp' && statement =~# '.*page.*import.*'
         let b:context_type = s:CONTEXT_IMPORT
         let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
-      else
+      elseif matchend(statement, '^\s*' . g:RE_TYPE_DECL) != -1
         " type declaration
-        let idx_type = matchend(statement, '^\s*' . g:RE_TYPE_DECL)
-        if idx_type != -1
-          let b:dotexpr = strpart(statement, idx_type)
-          " return if not after extends or implements
-          if b:dotexpr !~ '^\(extends\|implements\)\s\+'
-            return -1
-          endif
-          let b:context_type = s:CONTEXT_NEED_TYPE
+        
+        let b:dotexpr = strpart(statement, idx_type)
+        " return if not after extends or implements
+        if b:dotexpr !~ '^\(extends\|implements\)\s\+'
+          return -1
         endif
-
-        let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
+        let b:context_type = s:CONTEXT_NEED_TYPE
+      else
+        let stat = javacomplete#util#Trim(statement)
+        if matchend(stat, '.*@Override$') >= 0
+          let b:context_type = s:CONTEXT_COMPLETE_ON_OVERRIDE
+        endif
       endif
+
+      let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
 
       " all cases: " java.ut|" or " java.util.|" or "ja|"
       let b:incomplete = strpart(b:dotexpr, strridx(b:dotexpr, '.')+1)
@@ -178,6 +186,11 @@ function! javacomplete#complete#Complete(findstart, base)
       let g:ClassnameCompleted = 1
       return result
     endif
+  elseif b:context_type == s:CONTEXT_COMPLETE_ON_OVERRIDE
+    let result = s:CompleteAfterOverride()
+    if !empty(result)
+      return result
+    endif
   endif
 
   " Return list of matches.
@@ -204,7 +217,7 @@ function! javacomplete#complete#Complete(findstart, base)
     " only need methods
     if b:context_type == s:CONTEXT_METHOD_PARAM
       let methods = s:SearchForName(b:incomplete, 0, 1)[1]
-      call extend(result, eval('[' . s:DoGetMethodList(methods) . ']'))
+      call extend(result, eval('[' . s:DoGetMethodList(methods, 0) . ']'))
 
     elseif b:context_type == s:CONTEXT_ANNOTATION_FIELDS
       let last = split(b:incomplete, '@')[-1]
@@ -215,11 +228,11 @@ function! javacomplete#complete#Complete(findstart, base)
         if has_key(ti, 'methods') 
           let methods = []
           for m in ti.methods
-            if m.m == s:MODIFIER_ABSTRACT && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+            if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
               call add(methods, m)
             endif
           endfor
-          call extend(result, eval('[' . s:DoGetMethodList(methods, 2) . ']'))
+          call extend(result, eval('[' . s:DoGetMethodList(methods, 0, 2) . ']'))
         endif
 
       endif
@@ -230,7 +243,6 @@ function! javacomplete#complete#Complete(findstart, base)
     " then no filter needed
     let b:incomplete = ''
   endif
-
 
   if len(result) > 0
     " filter according to b:incomplete
@@ -339,7 +351,7 @@ function! s:CompleteAfterWord(incomplete)
   if get(b:, 'context_type', '') == s:CONTEXT_AFTER_DOT
     let matches = s:SearchForName(a:incomplete, 0, 0)
     let result += sort(eval('[' . s:DoGetFieldList(matches[2]) . ']'))
-    let result += sort(eval('[' . s:DoGetMethodList(matches[1]) . ']'))
+    let result += sort(eval('[' . s:DoGetMethodList(matches[1], 0) . ']'))
   endif
   let result += sort(pkgs)
   let result += sort(types)
@@ -347,6 +359,18 @@ function! s:CompleteAfterWord(incomplete)
   return result
 endfunction
 
+
+function! s:CompleteAfterOverride()
+  let ti = s:DoGetClassInfo('this')
+  let result = []
+  let s = ''
+  for i in get(ti, 'extends', [])
+    let members = javacomplete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
+    let s .= s:DoGetMethodList(members[1], 14, 0)
+  endfor
+  let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
+  return eval('[' . s . ']')
+endfunction
 
 " Precondition:	expr must end with '.'
 " return members of the value of expression
@@ -864,7 +888,7 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
     let functionalMembers = s:DoGetClassInfo(a:type)
     if has_key(functionalMembers, 'methods')
       for m in functionalMembers.methods
-        if m.m == s:MODIFIER_ABSTRACT
+        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
           if a:argIdx < len(m.p)
             let pType = m.p[a:argIdx]
             break
@@ -951,6 +975,24 @@ function! s:GetDeclaredClassName(var, ...)
   endif
 
   return ''
+endfunction
+
+function! s:CheckModifier(modifier, condition)
+  if type(a:condition) == type([])
+    for condition in a:condition
+      if condition <= len(a:modifier)
+        if a:modifier[-condition : -condition] == '1'
+          return 1
+        endif
+      endif
+    endfor
+    return 0
+  else
+    if a:condition <= len(a:modifier)
+      return a:modifier[-a:condition : -a:condition] == '1'
+    endif
+    return 0
+  endif
 endfunction
 
 function! s:IsStatic(modifier)
@@ -1285,6 +1327,9 @@ function! s:Tree2ClassInfo(t)
   endif
 
   let extends = a:t.extends
+  if has_key(a:t, 'implements')
+    let extends += a:t.implements
+  endif
 
   let i = 0
   while i < len(extends)
@@ -1333,7 +1378,10 @@ endfunction
 " public for all              
 " protected for this or super 
 " private for this            
-function! s:CanAccess(mods, kind)
+function! s:CanAccess(mods, kind, memberkind)
+  if a:memberkind == 14
+    return s:CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, s:MODIFIER_FINAL)
+  endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
         \	|| (a:mods[-3:-3] && (a:kind == 1 || a:kind == 2))
@@ -1344,17 +1392,19 @@ function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAl
   let result = [[], [], [], []]
 
   if a:kind != 13
-    for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_fields', []) : [])
-      if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        if s:CanAccess(m.m, a:kind)
-          call add(result[2], m)
+    if a:memberkind != 14
+      for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_fields', []) : [])
+        if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
+          if s:CanAccess(m.m, a:kind, a:memberkind)
+            call add(result[2], m)
+          endif
         endif
-      endif
-    endfor
+      endfor
+    endif
 
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        if s:CanAccess(m.m, a:kind)
+        if s:CanAccess(m.m, a:kind, a:memberkind)
           call add(result[1], m)
         endif
       endif
@@ -1436,11 +1486,11 @@ function! s:DoGetFieldList(fields)
   return s
 endfunction
 
-function! s:DoGetMethodList(methods, ...)
+function! s:DoGetMethodList(methods, kind, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : (a:1 == 2) ? ' = ' : ''
-  let abbrEnd = ''
+
   if b:context_type != s:CONTEXT_METHOD_REFERENCE 
-    if a:0 == 0 || !a:1 
+    if a:0 == 0 || !a:1
       let abbrEnd = '()'
     endif
   endif
@@ -1451,10 +1501,45 @@ function! s:DoGetMethodList(methods, ...)
     if !useFQN
       let method.d = javacomplete#util#CleanFQN(method.d)
     endif
-    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . method.n . (b:context_type == s:CONTEXT_METHOD_REFERENCE ? "" : paren) . "','abbr':'" . method.n . abbrEnd. "','menu':'" . method.d . "','dup':'1'},"
+    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . s:GenWord(method, a:kind, paren) . "','abbr':'" . method.n . abbrEnd . "','menu':'" . method.d . "','dup':'1'},"
   endfor
 
   return s
+endfunction
+
+function! s:GenWord(method, kind, paren)
+  if a:kind == 14 
+    if has_key(a:method, 'p')
+      let match = matchlist(a:method.d, '^\(.*(\)')
+      if len(match) > 0
+        let d = match[1]
+        let ds = []
+        for p in a:method.p
+          if index(g:J_PRIMITIVE_TYPES, p) >= 0
+            let var = p[0]
+          else
+            let p = javacomplete#util#CleanFQN(p)
+            let var = tolower(p)
+          endif
+          let match = matchlist(var, '^\([a-z0-9]\+\)\A*')
+          call add(ds, p . ' ' . match[1])
+        endfor
+        let d .= join(ds, ', ') . ') {'
+        return d
+      endif
+    endif
+    return a:method.d . ' {'
+  else
+    if b:context_type != s:CONTEXT_METHOD_REFERENCE
+      if has_key(a:method, 'p')
+        return a:method.n . a:paren
+      else
+        return a:method.n . '()'
+      endif
+    endif
+
+    return a:method.n
+  endif
 endfunction
 
 function! s:UniqDeclaration(members)
@@ -1474,9 +1559,10 @@ endfunction
 "	11 - for type, with `class` and static member and nested types.
 "	12 - for import static, no lparen for static methods
 "	13 - for import or extends or implements, only nested types
+"   14 - for public, protected methods of extends/implements. abstract first.
 "	20 - for package
-function! s:DoGetMemberList(ci, kind)
-  let kind = a:kind
+function! s:DoGetMemberList(ci, memberkind)
+  let kind = a:memberkind
   if type(a:ci) != type({}) || a:ci == {}
     return []
   endif
@@ -1484,15 +1570,15 @@ function! s:DoGetMemberList(ci, kind)
   let s = ''
   if b:context_type == s:CONTEXT_METHOD_REFERENCE
     let kind = 0
-    if a:kind != 0
+    if a:memberkind != 0
       let s = "{'kind': 'M', 'word': 'new', 'menu': 'new'},"
     endif
   endif
 
-  let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
-
-  let members = javacomplete#complete#SearchMember(a:ci, '', 1, kind, 1, 0, kind == 2)
+  let members = javacomplete#complete#SearchMember(a:ci, '', 1, kind, 1, a:memberkind, kind == 2)
   let members[1] = s:UniqDeclaration(members[1])
+
+  let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
 
   " add accessible member types
   if kind / 10 != 0
@@ -1534,13 +1620,13 @@ function! s:DoGetMemberList(ci, kind)
 
     if kind / 10 == 0
       let s .= s:DoGetFieldList(fieldlist)
-      let s .= s:DoGetMethodList(methodlist)
+      let s .= s:DoGetMethodList(methodlist, a:memberkind)
     endif
     if b:context_type != s:CONTEXT_METHOD_REFERENCE
       let s .= s:DoGetFieldList(sfieldlist)
     endif
 
-    let s .= s:DoGetMethodList(smethodlist, kind == 12)
+    let s .= s:DoGetMethodList(smethodlist, a:memberkind, kind == 12)
     let s .= s:DoGetNestedList(members[3])
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
