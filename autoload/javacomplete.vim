@@ -130,8 +130,9 @@ function! s:ReadClassPathFile(classpath_file)
 endfunction
 
 function! s:FindClassPath() abort
+  let base = s:GetBase("classpath/")
+
   if executable('mvn') && g:JavaComplete_PomPath != ""
-    let base = s:GetBase("mvnclasspath/")
     let key = substitute(g:JavaComplete_PomPath, '[\\/:;]', '_', 'g')
     let path = base . key
 
@@ -140,7 +141,19 @@ function! s:FindClassPath() abort
         return join(readfile(path), '')
       endif
     endif
-    return s:GenerateClassPath(path, g:JavaComplete_PomPath)
+    return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
+  endif
+
+  if executable('gradle') && g:JavaComplete_GradlePath != ""
+    let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
+    let path = base . key
+
+    if filereadable(path)
+      if getftime(path) >= getftime(g:JavaComplete_GradlePath)
+        return join(readfile(path), '')
+      endif
+    endif
+    return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
   endif
 
   if has('python') || has('python3')
@@ -156,7 +169,7 @@ function! s:FindClassPath() abort
   return '.'
 endfunction
 
-function! s:GenerateClassPath(path, pom) abort
+function! s:GenerateMavenClassPath(path, pom) abort
   let lines = split(system('mvn --file ' . a:pom . ' dependency:build-classpath -DincludeScope=test'), "\n")
   for i in range(len(lines))
     if lines[i] =~ 'Dependencies classpath:'
@@ -165,6 +178,23 @@ function! s:GenerateClassPath(path, pom) abort
       return cp
     endif
   endfor
+  return '.'
+endfunction
+
+function! s:GenerateGradleClassPath(path, gradle) abort
+  try
+    let f = tempname()
+    call writefile(readfile(a:gradle) + ["println 'CLASSPATH:' + sourceSets['main']['compileClasspath'].collect { n -> n.absolutePath }.join(File.pathSeparator)"], f)
+    let ret = system('gradle -q -b ' . shellescape(f))
+    if v:shell_error == 0
+      let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
+      call writefile([cp], a:path)
+      return cp
+    endif
+  catch
+  finally
+    call delete(f)
+  endtry
   return '.'
 endfunction
 
@@ -260,6 +290,13 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
     let g:JavaComplete_PomPath = findfile('pom.xml', escape(expand('.'), '*[]?{}, ') . ';')
     if g:JavaComplete_PomPath != ""
       let g:JavaComplete_PomPath = fnamemodify(g:JavaComplete_PomPath, ':p')
+    endif
+  endif
+
+  if !exists('g:JavaComplete_GradlePath')
+    let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
+    if g:JavaComplete_GradlePath != ""
+      let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
     endif
   endif
 
