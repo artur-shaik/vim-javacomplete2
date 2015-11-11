@@ -206,24 +206,8 @@ function! javacomplete#complete#Complete(findstart, base)
     if b:context_type == s:CONTEXT_METHOD_PARAM
       let methods = s:SearchForName(b:incomplete, 0, 1)[1]
       call extend(result, eval('[' . s:DoGetMethodList(methods, 0) . ']'))
-
     elseif b:context_type == s:CONTEXT_ANNOTATION_FIELDS
-      let last = split(b:incomplete, '@')[-1]
-      let identList = matchlist(last, '\('. g:RE_IDENTIFIER. '\)\((\|$\)')
-      if !empty(identList)
-        let name = identList[1]
-        let ti = s:DoGetClassInfo(name)
-        if has_key(ti, 'methods') 
-          let methods = []
-          for m in ti.methods
-            if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
-              call add(methods, m)
-            endif
-          endfor
-          call extend(result, eval('[' . s:DoGetMethodList(methods, 0, 2) . ']'))
-        endif
-
-      endif
+      let result = s:CompleteAnnotationsParameters(b:incomplete)
     else
       let result = s:CompleteAfterWord(b:incomplete)
     endif
@@ -374,6 +358,28 @@ function! s:CompleteSimilarClasses(base)
     return result
   endif
   return []
+endfunction
+
+function! s:CompleteAnnotationsParameters(name)
+  let result = []
+  let last = split(a:name, '@')[-1]
+  let identList = matchlist(last, '\('. g:RE_IDENTIFIER. '\)\((\|$\)')
+  if !empty(identList)
+    let name = identList[1]
+    let ti = s:DoGetClassInfo(name)
+    if has_key(ti, 'methods') 
+      let methods = []
+      for m in ti.methods
+        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+          call add(methods, m)
+        endif
+      endfor
+      call extend(result, eval('[' . s:DoGetMethodList(methods, 0, 2) . ']'))
+    endif
+
+  endif
+
+  return result
 endfunction
 
 " Precondition:	expr must end with '.'
