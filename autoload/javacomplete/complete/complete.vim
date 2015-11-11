@@ -3,11 +3,11 @@
 "
 " This file contains everything related to completions
 
-let g:JC__MODIFIER_PUBLIC               = 1
-let g:JC__MODIFIER_PROTECTED            = 3
-let g:JC__MODIFIER_FINAL                = 5
-let g:JC__MODIFIER_NATIVE               = 9
-let g:JC__MODIFIER_ABSTRACT             = 11
+let s:MODIFIER_PUBLIC               = 1
+let s:MODIFIER_PROTECTED            = 3
+let s:MODIFIER_FINAL                = 5
+let s:MODIFIER_NATIVE               = 9
+let s:MODIFIER_ABSTRACT             = 11
 
 let b:dotexpr = ''
 let b:incomplete = ''
@@ -185,7 +185,7 @@ function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
     if has_key(ti, 'methods') 
       let methods = []
       for m in ti.methods
-        if s:CheckModifier(m.m, g:JC__MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
           call add(methods, m)
         endif
       endfor
@@ -717,7 +717,7 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
     let functionalMembers = s:DoGetClassInfo(a:type)
     if has_key(functionalMembers, 'methods')
       for m in functionalMembers.methods
-        if s:CheckModifier(m.m, g:JC__MODIFIER_ABSTRACT)
+        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
           if a:argIdx < len(m.p)
             let pType = m.p[a:argIdx]
             break
@@ -1209,7 +1209,7 @@ endfunction
 " private for this            
 function! s:CanAccess(mods, kind, memberkind)
   if a:memberkind == 14
-    return s:CheckModifier(a:mods, [g:JC__MODIFIER_PUBLIC, g:JC__MODIFIER_PROTECTED, g:JC__MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, g:JC__MODIFIER_FINAL)
+    return s:CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, s:MODIFIER_FINAL)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
