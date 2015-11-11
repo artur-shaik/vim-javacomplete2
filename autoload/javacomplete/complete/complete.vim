@@ -3,219 +3,32 @@
 "
 " This file contains everything related to completions
 
-let s:CONTEXT_AFTER_DOT		        = 1
-let s:CONTEXT_METHOD_PARAM	        = 2
-let s:CONTEXT_IMPORT		        = 3
-let s:CONTEXT_IMPORT_STATIC	        = 4
-let s:CONTEXT_PACKAGE_DECL	        = 6 
-let s:CONTEXT_NEED_TYPE		        = 7 
-let s:CONTEXT_COMPLETE_CLASS	    = 8
-let s:CONTEXT_METHOD_REFERENCE      = 9
-let s:CONTEXT_ANNOTATION_FIELDS     = 10
-let s:CONTEXT_COMPLETE_ON_OVERRIDE  = 11
-let s:CONTEXT_OTHER 		        = 0
+let g:JC__MODIFIER_PUBLIC               = 1
+let g:JC__MODIFIER_PROTECTED            = 3
+let g:JC__MODIFIER_FINAL                = 5
+let g:JC__MODIFIER_NATIVE               = 9
+let g:JC__MODIFIER_ABSTRACT             = 11
 
-let s:MODIFIER_PUBLIC               = 1
-let s:MODIFIER_PROTECTED            = 3
-let s:MODIFIER_FINAL                = 5
-let s:MODIFIER_NATIVE               = 9
-let s:MODIFIER_ABSTRACT             = 11
-
-let b:context_type = s:CONTEXT_OTHER
 let b:dotexpr = ''
 let b:incomplete = ''
 let b:errormsg = ''
 
-" This function is used for the 'omnifunc' option.		{{{1
-function! javacomplete#complete#Complete(findstart, base)
+function! s:Init()
   let g:ClassnameCompleted = 0
+  let b:dotexpr = ''
+  let b:incomplete = ''
+  let b:context_type = 0
+
+  let s:et_whole = reltime()
+endfunction
+
+function! javacomplete#complete#complete#Complete(findstart, base)
   if a:findstart
-    " reset enviroment
-    let b:dotexpr = ''
-    let b:incomplete = ''
-    let b:context_type = s:CONTEXT_OTHER
-
-    let statement = javacomplete#scanner#GetStatement()
-
-    let s:et_whole = reltime()
-    let start = col('.') - 1
-
-	if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-      let b:context_type = s:CONTEXT_COMPLETE_CLASS
-
-      let curline = getline(".")
-      let start = col('.') - 1
-
-      while start > 0 && curline[start - 1] =~ '[@A-Za-z0-9_]'
-        let start -= 1
-        if curline[start] == '@'
-          break
-        endif
-      endwhile
-
-      return start
-    elseif statement =~ '[.0-9A-Za-z_]\s*$'
-      let valid = 1
-      if statement =~ '\.\s*$'
-        let valid = statement =~ '[")0-9A-Za-z_\]]\s*\.\s*$' && statement !~ '\<\H\w\+\.\s*$' && statement !~ '\C\<\(abstract\|assert\|break\|case\|catch\|const\|continue\|default\|do\|else\|enum\|extends\|final\|finally\|for\|goto\|if\|implements\|import\|instanceof\|interface\|native\|new\|package\|private\|protected\|public\|return\|static\|strictfp\|switch\|synchronized\|throw\|throws\|transient\|try\|volatile\|while\|true\|false\|null\)\.\s*$'
-      endif
-      if !valid
-        return -1
-      endif
-
-      let b:context_type = s:CONTEXT_AFTER_DOT
-
-      " import or package declaration
-      if statement =~# '^\s*\(import\|package\)\s\+'
-        let statement = substitute(statement, '\s\+\.', '.', 'g')
-        let statement = substitute(statement, '\.\s\+', '.', 'g')
-        if statement =~ '^\s*import\s\+'
-          let b:context_type = statement =~# '\<static\s\+' ? s:CONTEXT_IMPORT_STATIC : s:CONTEXT_IMPORT
-          let b:dotexpr = substitute(statement, '^\s*import\s\+\(static\s\+\)\?', '', '')
-        else
-          let b:context_type = s:CONTEXT_PACKAGE_DECL
-          let b:dotexpr = substitute(statement, '\s*package\s\+', '', '')
-        endif
-
-        " String literal
-      elseif statement =~  '"\s*\.\s*$'
-        let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
-        return start - strlen(b:incomplete)
-
-      elseif &ft == 'jsp' && statement =~# '.*page.*import.*'
-        let b:context_type = s:CONTEXT_IMPORT
-        let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
-      elseif matchend(statement, '^\s*' . g:RE_TYPE_DECL) != -1
-        " type declaration
-        
-        let b:dotexpr = strpart(statement, idx_type)
-        " return if not after extends or implements
-        if b:dotexpr !~ '^\(extends\|implements\)\s\+'
-          return -1
-        endif
-        let b:context_type = s:CONTEXT_NEED_TYPE
-      else
-        let stat = javacomplete#util#Trim(statement)
-        if matchend(stat, '.*@Override$') >= 0
-          let b:context_type = s:CONTEXT_COMPLETE_ON_OVERRIDE
-        endif
-      endif
-
-      let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
-
-      " all cases: " java.ut|" or " java.util.|" or "ja|"
-      let b:incomplete = strpart(b:dotexpr, strridx(b:dotexpr, '.')+1)
-      let b:dotexpr = strpart(b:dotexpr, 0, strridx(b:dotexpr, '.')+1)
-      return start - strlen(b:incomplete)
-
-    elseif statement =~ '^@'. g:RE_IDENTIFIER
-      let b:context_type = s:CONTEXT_ANNOTATION_FIELDS
-      let b:incomplete = substitute(statement, '\s*(\s*$', '', '')
-
-      return start
-
-      " method parameters, treat methodname or 'new' as an incomplete word
-    elseif statement =~ '(\s*$'
-      " TODO: Need to exclude method declaration?
-      let b:context_type = s:CONTEXT_METHOD_PARAM
-      let pos = strridx(statement, '(')
-      let s:padding = strpart(statement, pos+1)
-      let start = start - (len(statement) - pos)
-
-      let statement = substitute(statement, '\s*(\s*$', '', '')
-
-      " new ClassName?
-      let str = matchstr(statement, '\<new\s\+' . g:RE_QUALID . '$')
-      if str != ''
-        let str = substitute(str, '^new\s\+', '', '')
-        if !s:IsKeyword(str)
-          let b:incomplete = '+'
-          let b:dotexpr = str
-          return start - len(b:dotexpr)
-        endif
-
-        " normal method invocations
-      else
-        let pos = match(statement, '\s*' . g:RE_IDENTIFIER . '$')
-        " case: "method(|)", "this(|)", "super(|)"
-        if pos == 0
-          let statement = substitute(statement, '^\s*', '', '')
-          " treat "this" or "super" as a type name.
-          if statement == 'this' || statement == 'super' 
-            let b:dotexpr = statement
-            let b:incomplete = '+'
-            return start - len(b:dotexpr)
-
-          elseif !s:IsKeyword(statement)
-            let b:incomplete = statement
-            return start - strlen(b:incomplete)
-          endif
-
-          " case: "expr.method(|)"
-        elseif statement[pos-1] == '.' && !s:IsKeyword(strpart(statement, pos))
-          let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(strpart(statement, 0, pos))
-          let b:incomplete = strpart(statement, pos)
-          return start - strlen(b:incomplete)
-        endif
-      endif
-
-    elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
-      let b:context_type = s:CONTEXT_METHOD_REFERENCE
-      let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
-      return start - strlen(b:incomplete)
-    endif
-
-    return -1
+    call s:Init()
+    return javacomplete#complete#context#FindContext()
   endif
 
-  call javacomplete#server#Start()
-
-  let result = []
-
-  " Try to complete incomplete class name
-  if b:context_type == s:CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-    let result = s:CompleteSimilarClasses(a:base)
-  elseif b:context_type == s:CONTEXT_COMPLETE_ON_OVERRIDE
-    let result = s:CompleteAfterOverride()
-  endif
-
-  if !empty(result)
-    return result
-  endif
-
-  if b:dotexpr =~ '^\s*$' && b:incomplete =~ '^\s*$'
-    return []
-  endif
-
-  if b:dotexpr !~ '^\s*$'
-    if b:context_type == s:CONTEXT_AFTER_DOT || b:context_type == s:CONTEXT_METHOD_REFERENCE
-      let result = s:CompleteAfterDot(b:dotexpr)
-    elseif b:context_type == s:CONTEXT_IMPORT || b:context_type == s:CONTEXT_IMPORT_STATIC || b:context_type == s:CONTEXT_PACKAGE_DECL || b:context_type == s:CONTEXT_NEED_TYPE
-      let result = s:GetMembers(b:dotexpr[:-2])
-    elseif b:context_type == s:CONTEXT_METHOD_PARAM
-      if b:incomplete == '+'
-        let result = s:GetConstructorList(b:dotexpr)
-      else
-        let result = s:CompleteAfterDot(b:dotexpr)
-      endif
-    endif
-
-    " only incomplete word
-  elseif b:incomplete !~ '^\s*$'
-    " only need methods
-    if b:context_type == s:CONTEXT_METHOD_PARAM
-      let methods = s:SearchForName(b:incomplete, 0, 1)[1]
-      call extend(result, eval('[' . s:DoGetMethodList(methods, 0) . ']'))
-    elseif b:context_type == s:CONTEXT_ANNOTATION_FIELDS
-      let result = s:CompleteAnnotationsParameters(b:incomplete)
-    else
-      let result = s:CompleteAfterWord(b:incomplete)
-    endif
-
-    " then no filter needed
-    let b:incomplete = ''
-  endif
-
+  let result = javacomplete#complete#context#ExecuteContext(a:base)
   if len(result) > 0
     " filter according to b:incomplete
     if len(b:incomplete) > 0 && b:incomplete != '+'
@@ -241,11 +54,13 @@ function! javacomplete#complete#Complete(findstart, base)
     echoerr 'javacomplete error: ' . b:errormsg
     let b:errormsg = ''
   endif
+
+  return []
 endfunction
 
 " Precondition:	incomplete must be a word without '.'.
 " return all the matched, variables, fields, methods, types, packages
-function! s:CompleteAfterWord(incomplete)
+function! javacomplete#complete#complete#CompleteAfterWord(incomplete)
   " packages in jar files
   if !exists('s:all_packages_in_jars_loaded')
     call s:DoGetInfoByReflection('-', '-P')
@@ -260,18 +75,18 @@ function! s:CompleteAfterWord(incomplete)
         call add(pkgs, {'kind': 'P', 'word': key})
 
         " filter out type info
-      elseif b:context_type != s:CONTEXT_PACKAGE_DECL && b:context_type != s:CONTEXT_IMPORT && b:context_type != s:CONTEXT_IMPORT_STATIC
+      elseif b:context_type != g:JC__CONTEXT_PACKAGE_DECL && b:context_type != g:JC__CONTEXT_IMPORT && b:context_type != g:JC__CONTEXT_IMPORT_STATIC
         call add(types, {'kind': 'C', 'word': key})
       endif
     endif
   endfor
 
-  let pkgs += s:DoGetPackageInfoInDirs(a:incomplete, b:context_type == s:CONTEXT_PACKAGE_DECL, 1)
+  let pkgs += s:DoGetPackageInfoInDirs(a:incomplete, b:context_type == g:JC__CONTEXT_PACKAGE_DECL, 1)
 
 
   " add accessible types which name beginning with the incomplete in source files
   " TODO: remove the inaccessible
-  if b:context_type != s:CONTEXT_PACKAGE_DECL
+  if b:context_type != g:JC__CONTEXT_PACKAGE_DECL
     " single type import
     for fqn in javacomplete#imports#GetImports('imports_fqn')
       let name = fqn[strridx(fqn, ".")+1:]
@@ -320,7 +135,7 @@ function! s:CompleteAfterWord(incomplete)
   let result = []
 
   " add variables and members in source files
-  if get(b:, 'context_type', '') == s:CONTEXT_AFTER_DOT
+  if get(b:, 'context_type', '') == g:JC__CONTEXT_AFTER_DOT
     let matches = s:SearchForName(a:incomplete, 0, 0)
     let result += sort(eval('[' . s:DoGetFieldList(matches[2]) . ']'))
     let result += sort(eval('[' . s:DoGetMethodList(matches[1], 0) . ']'))
@@ -332,19 +147,19 @@ function! s:CompleteAfterWord(incomplete)
 endfunction
 
 
-function! s:CompleteAfterOverride()
+function! javacomplete#complete#complete#CompleteAfterOverride()
   let ti = s:DoGetClassInfo('this')
   let result = []
   let s = ''
   for i in get(ti, 'extends', [])
-    let members = javacomplete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
+    let members = javacomplete#complete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
     let s .= s:DoGetMethodList(members[1], 14, 0)
   endfor
   let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
   return eval('[' . s . ']')
 endfunction
 
-function! s:CompleteSimilarClasses(base)
+function! javacomplete#complete#complete#CompleteSimilarClasses(base)
   if a:base =~ g:RE_ANNOTATION || a:base == '@'
     let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
   else
@@ -360,7 +175,7 @@ function! s:CompleteSimilarClasses(base)
   return []
 endfunction
 
-function! s:CompleteAnnotationsParameters(name)
+function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
   let result = []
   let last = split(a:name, '@')[-1]
   let identList = matchlist(last, '\('. g:RE_IDENTIFIER. '\)\((\|$\)')
@@ -370,7 +185,7 @@ function! s:CompleteAnnotationsParameters(name)
     if has_key(ti, 'methods') 
       let methods = []
       for m in ti.methods
-        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+        if s:CheckModifier(m.m, g:JC__MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
           call add(methods, m)
         endif
       endfor
@@ -384,7 +199,7 @@ endfunction
 
 " Precondition:	expr must end with '.'
 " return members of the value of expression
-function! s:CompleteAfterDot(expr)
+function! javacomplete#complete#complete#CompleteAfterDot(expr)
   let items = javacomplete#scanner#ParseExpr(a:expr)		" TODO: return a dict containing more than items
   if empty(items)
     return []
@@ -533,7 +348,7 @@ function! s:CompleteAfterDot(expr)
       if len(subs) == 1
         let ti = s:DoGetClassInfo(subs[0])
         if get(ti, 'tag', '') == 'CLASSDEF' && get(ti, 'name', '') != 'java.lang.Object'
-          let members = javacomplete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
+          let members = javacomplete#complete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
           return eval('['. s:DoGetNestedList(members[3]) . ']')
         endif
         return s:GetMembers(subs[0])	" may be a package
@@ -639,7 +454,7 @@ function! s:CompleteAfterDot(expr)
         elseif !s:IsKeyword(ident) && type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           " accessible static field
           call javacomplete#logger#Log("static fields: ". ident)
-          let members = javacomplete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
+          let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
             let ti = s:ArrayAccess(members[2][0].t, items[ii])
             let itemkind = 0
@@ -661,7 +476,7 @@ function! s:CompleteAfterDot(expr)
       elseif itemkind/10 == 0 && !s:IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           call javacomplete#logger#Log("instance members")
-          let members = javacomplete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
+          let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           let itemkind = 0
           if !empty(members[2])
             let ti = s:ArrayAccess(members[2][0].t, items[ii])
@@ -706,7 +521,7 @@ function! s:MethodInvocation(expr, ti, itemkind)
   if empty(a:ti)
     let methods = s:SearchForName(subs[0], 0, 1)[1]
   elseif type(a:ti) == type({}) && get(a:ti, 'tag', '') == 'CLASSDEF'
-    let methods = javacomplete#complete#SearchMember(a:ti, subs[0], 1, a:itemkind, 1, 0, a:itemkind == 2)[1]
+    let methods = javacomplete#complete#complete#SearchMember(a:ti, subs[0], 1, a:itemkind, 1, 0, a:itemkind == 2)[1]
   else
     let methods = []
   endif
@@ -746,6 +561,10 @@ endfunction
 " first		return at once if found one.
 " fullmatch	1 - equal, 0 - match beginning
 " return [types, methods, fields, vars]
+function! javacomplete#complete#complete#SearchForName(name, first, fullmatch)
+  return s:SearchForName(a:name, a:first, a:fullmatch)
+endfunction
+
 function! s:SearchForName(name, first, fullmatch)
   let result = [[], [], [], []]
   if s:IsKeyword(a:name)
@@ -775,7 +594,7 @@ function! s:SearchForName(name, first, fullmatch)
   " Accessible inherited members
   let type = get(javacomplete#parseradapter#SearchTypeAt(unit, targetPos), -1, {})
   if !empty(type)
-    let members = javacomplete#complete#SearchMember(type, a:name, a:fullmatch, 2, 1, 0, 1)
+    let members = javacomplete#complete#complete#SearchMember(type, a:name, a:fullmatch, 2, 1, 0, 1)
     let result[0] += members[0]
     let result[1] += members[1]
     let result[2] += members[2]
@@ -898,7 +717,7 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
     let functionalMembers = s:DoGetClassInfo(a:type)
     if has_key(functionalMembers, 'methods')
       for m in functionalMembers.methods
-        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
+        if s:CheckModifier(m.m, g:JC__MODIFIER_ABSTRACT)
           if a:argIdx < len(m.p)
             let pType = m.p[a:argIdx]
             break
@@ -1055,7 +874,7 @@ function! s:GetClassDirs()
   return dirs
 endfunction
 
-function! javacomplete#complete#GetPackageName()
+function! javacomplete#complete#complete#GetPackageName()
   return s:GetPackageName()
 endfunction
 
@@ -1390,7 +1209,7 @@ endfunction
 " private for this            
 function! s:CanAccess(mods, kind, memberkind)
   if a:memberkind == 14
-    return s:CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, s:MODIFIER_FINAL)
+    return s:CheckModifier(a:mods, [g:JC__MODIFIER_PUBLIC, g:JC__MODIFIER_PROTECTED, g:JC__MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, g:JC__MODIFIER_FINAL)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
@@ -1398,7 +1217,7 @@ function! s:CanAccess(mods, kind, memberkind)
         \	|| (a:mods[-2:-2] && a:kind == 1))
 endfunction
 
-function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
+function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
   let result = [[], [], [], []]
 
   if a:kind != 13
@@ -1444,7 +1263,7 @@ function! javacomplete#complete#SearchMember(ci, name, fullmatch, kind, returnAl
       if type(ci) == type([])
         let ci = ci[0]
       endif
-      let members = javacomplete#complete#SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, a:memberkind)
+      let members = javacomplete#complete#complete#SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, a:memberkind)
       let result[0] += members[0]
       let result[1] += members[1]
       let result[2] += members[2]
@@ -1496,11 +1315,15 @@ function! s:DoGetFieldList(fields)
   return s
 endfunction
 
+function! javacomplete#complete#complete#DoGetMethodList(methods, kind, ...)
+  return s:DoGetMethodList(a:methods, a:kind, a:000)
+endfunction
+
 function! s:DoGetMethodList(methods, kind, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : (a:1 == 2) ? ' = ' : ''
 
   let abbrEnd = ''
-  if b:context_type != s:CONTEXT_METHOD_REFERENCE 
+  if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE 
     if a:0 == 0 || !a:1
       let abbrEnd = '()'
     endif
@@ -1541,9 +1364,9 @@ function! s:GenWord(method, kind, paren)
     endif
     return a:method.d . ' {'
   else
-    if b:context_type != s:CONTEXT_METHOD_REFERENCE
+    if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       if !empty(a:paren)
-        retjurn a:method.n . a:paren
+        return a:method.n . a:paren
       else
         return a:method.n . '()'
       endif
@@ -1579,14 +1402,14 @@ function! s:DoGetMemberList(ci, memberkind)
   endif
 
   let s = ''
-  if b:context_type == s:CONTEXT_METHOD_REFERENCE
+  if b:context_type == g:JC__CONTEXT_METHOD_REFERENCE
     let kind = 0
     if a:memberkind != 0
       let s = "{'kind': 'M', 'word': 'new', 'menu': 'new'},"
     endif
   endif
 
-  let members = javacomplete#complete#SearchMember(a:ci, '', 1, kind, 1, a:memberkind, kind == 2)
+  let members = javacomplete#complete#complete#SearchMember(a:ci, '', 1, kind, 1, a:memberkind, kind == 2)
   let members[1] = s:UniqDeclaration(members[1])
 
   let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
@@ -1633,7 +1456,7 @@ function! s:DoGetMemberList(ci, memberkind)
       let s .= s:DoGetFieldList(fieldlist)
       let s .= s:DoGetMethodList(methodlist, a:memberkind)
     endif
-    if b:context_type != s:CONTEXT_METHOD_REFERENCE
+    if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       let s .= s:DoGetFieldList(sfieldlist)
     endif
 
@@ -1674,11 +1497,15 @@ endfunction
 
 " Name can be a (simple or qualified) package name, or a (simple or qualified)
 " type name.
+function! javacomplete#complete#complete#GetMembers(fqn, ...)
+  return s:GetMembers(a:fqn, a:000)
+endfunction
+
 function! s:GetMembers(fqn, ...)
   let list = []
   let isClass = 0
 
-  if b:context_type == s:CONTEXT_IMPORT_STATIC
+  if b:context_type == g:JC__CONTEXT_IMPORT_STATIC
     let res = javacomplete#server#Communicate('-E', a:fqn, 's:GetMembers for static')
     if res =~ "^{'"
       let dict = eval(res)
@@ -1693,10 +1520,10 @@ function! s:GetMembers(fqn, ...)
     let list = v
   elseif type(v) == type({}) && v != {}
     if get(v, 'tag', '') == 'PACKAGE'
-      if b:context_type == s:CONTEXT_IMPORT_STATIC || b:context_type == s:CONTEXT_IMPORT
+      if b:context_type == g:JC__CONTEXT_IMPORT_STATIC || b:context_type == g:JC__CONTEXT_IMPORT
         call add(list, {'kind': 'P', 'word': '*;'})
       endif
-      if b:context_type != s:CONTEXT_PACKAGE_DECL
+      if b:context_type != g:JC__CONTEXT_PACKAGE_DECL
         for c in sort(get(v, 'classes', []))
           call add(list, {'kind': 'C', 'word': c})
         endfor
@@ -1706,12 +1533,12 @@ function! s:GetMembers(fqn, ...)
       endfor
     else
       let isClass = 1
-      let list += s:DoGetMemberList(v, b:context_type == s:CONTEXT_IMPORT || b:context_type == s:CONTEXT_NEED_TYPE ? 13 : b:context_type == s:CONTEXT_IMPORT_STATIC ? 12 : 11)
+      let list += s:DoGetMemberList(v, b:context_type == g:JC__CONTEXT_IMPORT || b:context_type == g:JC__CONTEXT_NEED_TYPE ? 13 : b:context_type == g:JC__CONTEXT_IMPORT_STATIC ? 12 : 11)
     endif
   endif
 
   if !isClass
-    let list += s:DoGetPackageInfoInDirs(a:fqn, b:context_type == s:CONTEXT_PACKAGE_DECL)
+    let list += s:DoGetPackageInfoInDirs(a:fqn, b:context_type == g:JC__CONTEXT_PACKAGE_DECL)
   endif
 
   return list

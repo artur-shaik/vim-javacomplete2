@@ -108,7 +108,7 @@ function! javacomplete#ClearCache()
 endfunction
 
 function! javacomplete#Complete(findstart, base)
-  return javacomplete#complete#Complete(a:findstart, a:base)
+  return javacomplete#complete#complete#Complete(a:findstart, a:base)
 endfunction
 
 function! s:GetBase(extra)
@@ -241,7 +241,7 @@ function! javacomplete#UseFQN()
 endfunction
 
 function! s:RemoveCurrentFromCache()
-  let package = javacomplete#complete#GetPackageName()
+  let package = javacomplete#complete#complete#GetPackageName()
   let classname = split(expand('%:t'), '\.')[0]
   let fqn = package. '.'. classname
   if has_key(g:JavaComplete_Cache, fqn)
