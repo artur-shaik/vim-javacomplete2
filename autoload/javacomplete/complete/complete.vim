@@ -14,7 +14,7 @@ let b:incomplete = ''
 let b:errormsg = ''
 
 function! s:Init()
-  let g:ClassnameCompleted = 0
+  let g:JC_ClassnameCompletedFlag = 0
   let b:dotexpr = ''
   let b:incomplete = ''
   let b:context_type = 0
@@ -149,14 +149,17 @@ endfunction
 
 function! javacomplete#complete#complete#CompleteAfterOverride()
   let ti = s:DoGetClassInfo('this')
-  let result = []
   let s = ''
   for i in get(ti, 'extends', [])
     let members = javacomplete#complete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
     let s .= s:DoGetMethodList(members[1], 14, 0)
   endfor
   let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
-  return eval('[' . s . ']')
+  let result = eval('[' . s . ']')
+  if !empty(result)
+    let g:JC_DeclarationCompletedFlag = 1
+  endif
+  return result
 endfunction
 
 function! javacomplete#complete#complete#CompleteSimilarClasses(base)
@@ -169,7 +172,7 @@ function! javacomplete#complete#complete#CompleteSimilarClasses(base)
     let result = eval(response)
   endif
   if !empty(result)
-    let g:ClassnameCompleted = 1
+    let g:JC_ClassnameCompletedFlag = 1
     return result
   endif
   return []

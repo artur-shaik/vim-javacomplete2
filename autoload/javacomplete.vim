@@ -226,12 +226,26 @@ function! s:SetCurrentFileKey()
 endfunction
 call s:SetCurrentFileKey()
 
-function! s:CheckForExistCompletedClassName()
-  if exists('g:ClassnameCompleted') && g:ClassnameCompleted
+function! s:HandleTextChangedI()
+  if exists('g:JC_ClassnameCompletedFlag') && g:JC_ClassnameCompletedFlag
+    let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
-    let g:ClassnameCompleted = 0
   endif
-endfu
+
+  if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
+    let g:JC_DeclarationCompletedFlag = 0
+    execute "normal! i\r}\eO "
+  endif
+endfunction
+
+function! s:HandleInsertLeave()
+  if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
+    let g:JC_DeclarationCompletedFlag = 0
+  endif
+  if exists('g:JC_ClassnameCompletedFlag') && g:JC_ClassnameCompletedFlag
+    let g:JC_ClassnameCompletedFlag = 0
+  endif
+endfunction
 
 function! javacomplete#UseFQN() 
   if exists('g:JavaComplete_UseFQN') && g:JavaComplete_UseFQN
@@ -257,8 +271,9 @@ augroup javacomplete
   autocmd VimLeave * call javacomplete#server#Terminate()
 
   if has("patch-7.3.867")
-    autocmd TextChangedI *.java,*.jsp call s:CheckForExistCompletedClassName()
+    autocmd TextChangedI *.java,*.jsp call s:HandleTextChangedI()
   endif
+  autocmd InsertLeave *.java,*.jsp call s:HandleInsertLeave()
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
