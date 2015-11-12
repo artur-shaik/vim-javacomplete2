@@ -672,8 +672,9 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     endwhile
 
     if has_key(ti, 'methods')
+      let itemName = split(items[-1], '(')[0]
       for m in ti.methods
-        if m.n == split(items[-1], '(')[0]
+        if m.n == itemName
           call add(methods, m)
         endif
       endfor
@@ -703,7 +704,7 @@ function! s:DetermineLambdaArguments(unit, ti, name)
       let type = method.p[a:ti.idx]
     endif
     let res = s:GetLambdaParameterType(type, a:name, argIdx, argPos)
-    if !has_key(res, 'tag')
+    if has_key(res, 'tag')
       return res
     endif
   endfor
