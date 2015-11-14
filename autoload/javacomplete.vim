@@ -237,7 +237,7 @@ function! s:HandleTextChangedI()
     if empty(javacomplete#util#Trim(getline('.')))
       execute "normal! i}\eO "
     else
-      execute "normal! i\r}\eO "
+      execute "normal! i\b\r}\eO "
     endif
   endif
 endfunction
