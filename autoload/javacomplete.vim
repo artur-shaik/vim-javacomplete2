@@ -130,6 +130,16 @@ function! s:ReadClassPathFile(classpath_file)
 endfunction
 
 function! s:FindClassPath() abort
+  if has('python') || has('python3')
+    let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
+    if !empty(classpath_file) && filereadable(classpath_file)
+      let cp = s:ReadClassPathFile(classpath_file)
+      if !empty(cp)
+        return cp
+      endif
+    endif
+  endif
+
   let base = s:GetBase("classpath/")
 
   if executable('mvn') && g:JavaComplete_PomPath != ""
@@ -154,16 +164,6 @@ function! s:FindClassPath() abort
       endif
     endif
     return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
-  endif
-
-  if has('python') || has('python3')
-    let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
-    if !empty(classpath_file) && filereadable(classpath_file)
-      let cp = s:ReadClassPathFile(classpath_file)
-      if !empty(cp)
-        return cp
-      endif
-    endif
   endif
 
   return '.'
