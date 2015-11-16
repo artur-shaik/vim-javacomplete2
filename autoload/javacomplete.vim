@@ -184,8 +184,8 @@ endfunction
 function! s:GenerateGradleClassPath(path, gradle) abort
   try
     let f = tempname()
-    call writefile(readfile(a:gradle) + ["println 'CLASSPATH:' + sourceSets['main']['compileClasspath'].collect { n -> n.absolutePath }.join(File.pathSeparator)"], f)
-    let ret = system('gradle -q -b ' . shellescape(f))
+    call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . "/classpath.gradle'}"], f)
+    let ret = system('gradle -q -i ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
       call writefile([cp], a:path)
@@ -313,7 +313,7 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_GradlePath')
-    let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
+    let g:JavaComplete_GradlePath = findfile('build.gradle', escape(getcwd(), '*[]?{}, ') . ';')
     if g:JavaComplete_GradlePath != ""
       let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
     endif
