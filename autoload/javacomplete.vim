@@ -144,16 +144,18 @@ function! s:FindClassPath() abort
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
   endif
 
-  if executable('gradle') && g:JavaComplete_GradlePath != ""
-    let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
-    let path = base . key
+  if executable('gradle') || executable('gradlew')
+    if g:JavaComplete_GradlePath != ""
+      let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
+      let path = base . key
 
-    if filereadable(path)
-      if getftime(path) >= getftime(g:JavaComplete_GradlePath)
-        return join(readfile(path), '')
+      if filereadable(path)
+        if getftime(path) >= getftime(g:JavaComplete_GradlePath)
+          return join(readfile(path), '')
+        endif
       endif
+      return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
-    return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
   endif
 
   if has('python') || has('python3')
@@ -184,8 +186,18 @@ endfunction
 function! s:GenerateGradleClassPath(path, gradle) abort
   try
     let f = tempname()
-    call writefile(readfile(a:gradle) + ["println 'CLASSPATH:' + sourceSets['main']['compileClasspath'].collect { n -> n.absolutePath }.join(File.pathSeparator)"], f)
-    let ret = system('gradle -q -b ' . shellescape(f))
+    let gradle = ''
+    if executable('./gradlew')
+      if has("win32") || has("win16")
+        let gradle = 'gradle.bat'
+      else
+        let gradle = './gradlew'
+      endif
+    else
+      let gradle = 'gradle'
+    endif
+    call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . "/classpath.gradle'}"], f)
+    let ret = system(gradle . ' -q -i ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
       call writefile([cp], a:path)
@@ -313,7 +325,11 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_GradlePath')
-    let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
+    if filereadable(getcwd() . "/build.gradle")
+      let g:JavaComplete_GradlePath = getcwd() . "/build.gradle"
+    else
+      let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
+    endif
     if g:JavaComplete_GradlePath != ""
       let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
     endif
