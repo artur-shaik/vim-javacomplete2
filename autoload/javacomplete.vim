@@ -247,9 +247,9 @@ function! s:HandleTextChangedI()
   if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
     let g:JC_DeclarationCompletedFlag = 0
     if empty(javacomplete#util#Trim(getline('.')))
-      execute "normal! i}\eO "
+      execute "normal! i}\eO  "
     else
-      execute "normal! i\b\r}\eO "
+      execute "normal! i\b\r}\eO  "
     endif
   endif
 endfunction
