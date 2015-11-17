@@ -325,7 +325,11 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_GradlePath')
-    let g:JavaComplete_GradlePath = findfile('build.gradle', escape(getcwd(), '*[]?{}, ') . ';')
+    if filereadable(getcwd() . "/build.gradle")
+      let g:JavaComplete_GradlePath = getcwd() . "/build.gradle"
+    else
+      let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
+    endif
     if g:JavaComplete_GradlePath != ""
       let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
     endif
