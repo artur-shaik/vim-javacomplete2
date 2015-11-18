@@ -130,13 +130,12 @@ function! s:ReadClassPathFile(classpath_file)
 endfunction
 
 function! s:FindClassPath() abort
+  let cp = '.'
+
   if has('python') || has('python3')
     let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
     if !empty(classpath_file) && filereadable(classpath_file)
-      let cp = s:ReadClassPathFile(classpath_file)
-      if !empty(cp)
-        return cp
-      endif
+      let cp .= g:PATH_SEP . s:ReadClassPathFile(classpath_file)
     endif
   endif
 
@@ -148,7 +147,7 @@ function! s:FindClassPath() abort
 
     if filereadable(path)
       if getftime(path) >= getftime(g:JavaComplete_PomPath)
-        return join(readfile(path), '')
+        return cp . g:PATH_SEP . join(readfile(path), '')
       endif
     endif
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
@@ -161,14 +160,14 @@ function! s:FindClassPath() abort
 
       if filereadable(path)
         if getftime(path) >= getftime(g:JavaComplete_GradlePath)
-          return join(readfile(path), '')
+          return cp . g:PATH_SEP . join(readfile(path), '')
         endif
       endif
-      return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
+      return cp . g:PATH_SEP . s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
   endif
 
-  return '.'
+  return cp
 endfunction
 
 function! s:GenerateMavenClassPath(path, pom) abort
