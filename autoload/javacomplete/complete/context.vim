@@ -77,6 +77,12 @@ function! javacomplete#complete#context#FindContext()
     endif
 
     let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
+    if b:dotexpr =~ '.*::.*'
+      let b:context_type = g:JC__CONTEXT_METHOD_REFERENCE
+      let b:incomplete = strpart(b:dotexpr, stridx(b:dotexpr, ':') + 2)
+      let b:dotexpr = strpart(b:dotexpr, 0, strridx(b:dotexpr, ':') + 1)
+      return start - strlen(b:incomplete)
+    endif
 
     " all cases: " java.ut|" or " java.util.|" or "ja|"
     let b:incomplete = strpart(b:dotexpr, strridx(b:dotexpr, '.')+1)
@@ -134,7 +140,7 @@ function! javacomplete#complete#context#FindContext()
       endif
     endif
 
-  elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
+  elseif statement =~ '[.0-9A-Za-z_\<\>]*::[A-Za-z0-9_]*$'
     let b:context_type = g:JC__CONTEXT_METHOD_REFERENCE
     let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
     return start - strlen(b:incomplete)

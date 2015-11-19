@@ -135,7 +135,7 @@ function! javacomplete#util#GetClassNameWithScope(...)
   let curline = getline('.')
   let word_l = offset - 1
   let word_r = offset - 2
-  while curline[word_l - 1] =~ '[\.@A-Za-z0-9_]'
+  while curline[word_l - 1] =~ '[\.:@A-Za-z0-9_]'
     let word_l -= 1
     if curline[word_l] == '@'
       break
