@@ -140,7 +140,7 @@ function! javacomplete#complete#context#FindContext()
       endif
     endif
 
-  elseif statement =~ '[.0-9A-Za-z_\<\>]*::[A-Za-z0-9_]*$'
+  elseif statement =~ '[.0-9A-Za-z_\<\>]*::$'
     let b:context_type = g:JC__CONTEXT_METHOD_REFERENCE
     let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
     return start - strlen(b:incomplete)
