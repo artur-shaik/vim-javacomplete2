@@ -145,6 +145,14 @@ endfunction
 
 function! javacomplete#complete#context#ExecuteContext(base)
   let result = []
+
+  call javacomplete#logger#Log("Context: ". b:context_type)
+  if len(b:incomplete) > 0
+    call javacomplete#logger#Log("Incomplete: ". b:incomplete)
+  endif
+  if len(b:dotexpr) > 0
+    call javacomplete#logger#Log("DotExpr: ". b:dotexpr)
+  endif
   
   " Try to complete incomplete class name
   if b:context_type == g:JC__CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
