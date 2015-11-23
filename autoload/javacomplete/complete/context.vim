@@ -4,7 +4,7 @@ let g:JC__CONTEXT_IMPORT		        = 3
 let g:JC__CONTEXT_IMPORT_STATIC	        = 4
 let g:JC__CONTEXT_PACKAGE_DECL	        = 6 
 let g:JC__CONTEXT_NEED_TYPE		        = 7 
-let g:JC__CONTEXT_COMPLETE_CLASS	    = 8
+let g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS	    = 8
 let g:JC__CONTEXT_METHOD_REFERENCE      = 9
 let g:JC__CONTEXT_ANNOTATION_FIELDS     = 10
 let g:JC__CONTEXT_COMPLETE_ON_OVERRIDE  = 11
@@ -16,7 +16,7 @@ function! javacomplete#complete#context#FindContext()
   let start = col('.') - 1
 
   if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-    let b:context_type = g:JC__CONTEXT_COMPLETE_CLASS
+    let b:context_type = g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS
 
     let curline = getline(".")
     let start = col('.') - 1
@@ -161,10 +161,8 @@ function! javacomplete#complete#context#ExecuteContext(base)
   endif
   
   " Try to complete incomplete class name
-  if b:context_type == g:JC__CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-    let b:incomplete = a:base
-    let result = javacomplete#complete#complete#CompleteAfterDot('super')
-    call extend(result, javacomplete#complete#complete#CompleteSimilarClasses(a:base))
+  if b:context_type == g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
+    let result = javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(a:base)
   elseif b:context_type == g:JC__CONTEXT_COMPLETE_ON_OVERRIDE
     let result = javacomplete#complete#complete#CompleteAfterOverride()
   endif

@@ -162,20 +162,23 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
   return result
 endfunction
 
-function! javacomplete#complete#complete#CompleteSimilarClasses(base)
+function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(base)
+  let result = []
   if a:base =~ g:RE_ANNOTATION || a:base == '@'
     let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
   else
+    let b:incomplete = a:base
+    let result = s:DoGetMemberList(s:DoGetClassInfo('this'), 7)
+    
     let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
   endif
   if response =~ '^['
-    let result = eval(response)
+    call extend(result, eval(response))
   endif
   if !empty(result)
     let g:JC_ClassnameCompletedFlag = 1
-    return result
   endif
-  return []
+  return result
 endfunction
 
 function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
@@ -1217,8 +1220,8 @@ function! s:CanAccess(mods, kind, memberkind)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
-        \	|| (a:mods[-3:-3] && (a:kind == 1 || a:kind == 2))
-        \	|| (a:mods[-2:-2] && a:kind == 1))
+        \	|| (a:mods[-3:-3] && (a:kind == 1 || a:kind == 2 || a:kind == 7))
+        \	|| (a:mods[-2:-2] && (a:kind == 1 || a:kind == 7)))
 endfunction
 
 function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
@@ -1226,7 +1229,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
 
   if a:kind != 13
     if a:memberkind != 14
-      for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_fields', []) : [])
+      for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_fields', []) : [])
         if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
           if s:CanAccess(m.m, a:kind, a:memberkind)
             call add(result[2], m)
@@ -1235,7 +1238,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
       endfor
     endif
 
-    for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2) ? get(a:ci, 'declared_methods', []) : [])
+    for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
         if s:CanAccess(m.m, a:kind, a:memberkind)
           call add(result[1], m)
@@ -1393,7 +1396,7 @@ function! s:UniqDeclaration(members)
 endfunction
 
 " kind:
-"	0 - for instance, 1 - this, 2 - super, 3 - class, 4 - array, 5 - method result, 6 - primitive type
+"	0 - for instance, 1 - this, 2 - super, 3 - class, 4 - array, 5 - method result, 6 - primitive type, 7 - local fields
 "	11 - for type, with `class` and static member and nested types.
 "	12 - for import static, no lparen for static methods
 "	13 - for import or extends or implements, only nested types
