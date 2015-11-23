@@ -162,7 +162,9 @@ function! javacomplete#complete#context#ExecuteContext(base)
   
   " Try to complete incomplete class name
   if b:context_type == g:JC__CONTEXT_COMPLETE_CLASS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
-    let result = javacomplete#complete#complete#CompleteSimilarClasses(a:base)
+    let b:incomplete = a:base
+    let result = javacomplete#complete#complete#CompleteAfterDot('super')
+    call extend(result, javacomplete#complete#complete#CompleteSimilarClasses(a:base))
   elseif b:context_type == g:JC__CONTEXT_COMPLETE_ON_OVERRIDE
     let result = javacomplete#complete#complete#CompleteAfterOverride()
   endif
