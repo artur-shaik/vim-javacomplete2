@@ -153,7 +153,7 @@ function! s:FindClassPath() abort
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
   endif
 
-  if executable('gradle') || executable('./gradlew')
+  if executable('gradle') || executable('./gradlew') || executable('.\gradlew.bat')
     if g:JavaComplete_GradlePath != ""
       let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
       let path = base . key
@@ -186,9 +186,9 @@ function! s:GenerateGradleClassPath(path, gradle) abort
   try
     let f = tempname()
     let gradle = ''
-    if executable('./gradlew')||executable('./gradlew.bat')
+    if executable('./gradlew') || executable('./gradlew.bat')
       if has("win32") || has("win16")
-        let gradle = './gradle.bat'
+        let gradle = '.\gradlew.bat'
       else
         let gradle = './gradlew'
       endif
