@@ -186,7 +186,7 @@ function! s:GenerateGradleClassPath(path, gradle) abort
   try
     let f = tempname()
     let gradle = ''
-    if executable('./gradlew') || executable('./gradlew.bat')
+    if executable('./gradlew') || executable('.\gradlew.bat')
       if has("win32") || has("win16")
         let gradle = '.\gradlew.bat'
       else
