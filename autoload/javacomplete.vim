@@ -307,6 +307,14 @@ for src in s:sources
   endif
 endfor
 unlet s:sources
+
+if filereadable(getcwd() . "/build.gradle")
+  let rjava = s:GlobPathList(getcwd(), '**/build/generated/source/**/debug', 0)
+  for r in rjava
+    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.r
+  endfor
+endif
+
 call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
 
 if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepositoryDisable
