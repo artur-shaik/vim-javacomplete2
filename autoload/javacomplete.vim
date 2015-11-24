@@ -196,7 +196,7 @@ function! s:GenerateGradleClassPath(path, gradle) abort
       let gradle = 'gradle'
     endif
     call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . "/classpath.gradle'}"], f)
-    let ret = system(gradle . ' -q -i ' . shellescape(f) . ' classpath' )
+    let ret = system(gradle . ' -q -I ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
       call writefile([cp], a:path)
