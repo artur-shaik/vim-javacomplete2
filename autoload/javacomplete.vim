@@ -153,7 +153,7 @@ function! s:FindClassPath() abort
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
   endif
 
-  if executable('gradle') || executable('gradlew')
+  if executable('gradle') || executable('./gradlew')
     if g:JavaComplete_GradlePath != ""
       let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
       let path = base . key
