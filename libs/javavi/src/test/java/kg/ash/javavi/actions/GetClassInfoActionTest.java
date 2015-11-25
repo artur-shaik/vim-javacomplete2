@@ -1,12 +1,14 @@
 package kg.ash.javavi.actions;
 
 import kg.ash.javavi.Javavi;
-import org.junit.Assert;
-import org.junit.Test;
 import org.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 public class GetClassInfoActionTest {
     
+    @Ignore
     @Test
     public void testCorrect() {
         Javavi.system.put("sources", "");
