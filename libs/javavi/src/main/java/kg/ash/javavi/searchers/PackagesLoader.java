@@ -29,7 +29,10 @@ public class PackagesLoader {
 
     private void appendEntry(String name, int source) {
         if (isClassFile(name)) {
-            int seppos = name.replace('\\', '/').lastIndexOf('/');
+            int seppos = name.lastIndexOf('$');
+            if (seppos < 0) {
+                seppos = name.replace('\\', '/').lastIndexOf('/');
+            }
             if (seppos != -1) {
                 processClass(name, seppos, source);
             }
@@ -40,15 +43,23 @@ public class PackagesLoader {
         String parent = name.substring(0, seppos);
         String child  = name.substring(seppos + 1, name.length() - 6);
 
+        boolean nested = false;
         String parentDots = makeDots(parent);
+        if (name.contains("$")) {
+            nested = true;
+            parentDots += "$";
+        }
+
         putClassPath(parentDots, child, source, ClassMap.CLASS, ClassMap.SUBPACKAGE);
-        putClassPath(child, parentDots, source, ClassMap.SUBPACKAGE, ClassMap.CLASS);
+        if (!nested) {
+            putClassPath(child, parentDots, source, ClassMap.SUBPACKAGE, ClassMap.CLASS);
+        }
 
         addToParent(parent, source);
     }
 
     private boolean isClassFile(String name) {
-        return name.endsWith(".class") && name.indexOf('$') == -1;
+        return name.endsWith(".class");
     }
 
     private void addToParent(String name, int source) {

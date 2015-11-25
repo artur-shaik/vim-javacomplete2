@@ -10,14 +10,14 @@ public class GetUnusedImportsAction extends ImportsAction {
     public String action() {
         StringBuilder result = new StringBuilder("[");
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-            if (importDeclaration.isAsterisk() || importDeclaration.isStatic()) continue;
+            if (importDeclaration.isAsterisk()) continue;
 
             ClassImport classImport =
                 new ClassImport(importDeclaration.getName().toStringWithoutComments(), importDeclaration.isStatic(), importDeclaration.isAsterisk());
 
             String classname = classImport.getTail();
             if (!classnames.contains(classname)) {
-                result.append("'").append(importDeclaration.getName().toStringWithoutComments().replace("\n", "")).append("',");
+                result.append("'").append(classImport.getHead()).append(classImport.isStatic() ? "$" : ".").append(classname).append("',");
             }
         }
         return result.append("]").toString();

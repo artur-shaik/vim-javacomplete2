@@ -18,10 +18,10 @@ public class OutputClassPackages {
         if (classPackages != null && classPackages.containsKey(targetClass)) {
             ClassMap cm = classPackages.get(targetClass);
             if (cm.getType() == ClassMap.CLASS) {
-                cm.getSubpackages().forEach(scope -> {
+                cm.getSubpackages().forEach((String scope) -> {
                     builder
                         .append("'")
-                        .append(scope).append(".").append(targetClass)
+                        .append(scope).append(scope.endsWith("$") ? "" : ".").append(targetClass)
                         .append("',")
                         .append(Javavi.NEWLINE);
                 });

@@ -90,7 +90,13 @@ function! javacomplete#imports#GetImports(kind, ...)
     if !empty(subs)
       let qid = substitute(subs[2] , '\s', '', 'g')
       if !empty(subs[1])
-        call add(props.imports_static, qid)
+        if qid[-1:] == '*'
+          call add(props.imports_static, qid[:-2])
+        else
+          call add(props.imports_static, qid)
+          let pos = strridx(qid, ".")
+          call add(props.imports_fqn, qid[0:pos - 1]. '$'. qid[pos + 1:])
+        endif
       elseif qid[-1:] == '*'
         call add(props.imports_star, qid[:-2])
       else
@@ -189,32 +195,41 @@ function! s:SortImports()
 endfunction
 
 function! s:AddImport(import)
-  let imports_fqn = javacomplete#imports#GetImports('imports_fqn')
-  for import in imports_fqn
-    if import == a:import
+  let isStaticImport = stridx(a:import, '$') != -1 ? 1 : 0
+  if !isStaticImport
+    let import = a:import
+
+    let importsFqn = javacomplete#imports#GetImports('imports_fqn')
+    let importsStar = javacomplete#imports#GetImports('imports_star')
+  else
+    let import = substitute(a:import, "\\$", ".", "")
+    let importsStar = javacomplete#imports#GetImports('imports_static')
+    let importsFqn = importsStar
+  endif
+
+  for imp in importsFqn
+    if imp == import
       echo 'JavaComplete: import already exists'
       return
     endif
   endfor
 
-  let imports_star = javacomplete#imports#GetImports('imports_star')
-
-  let splittedImport = split(a:import, '\.')
+  let splittedImport = split(import, '\.')
   let className = splittedImport[-1]
+  call remove(splittedImport, len(splittedImport) - 1)
+  let importPath = join(splittedImport, '.')
+  for imp in importsStar
+    if imp == importPath. '.'
+      echo 'JavaComplete: import already exists'
+      return
+    endif
+  endfor
+
   if className != '*'
     if has_key(g:JavaComplete_Cache, className)
       call remove(g:JavaComplete_Cache, className)
     endif
   endif
-
-  call remove(splittedImport, len(splittedImport) - 1)
-  let imp = join(splittedImport, '.')
-  for import in imports_star
-    if import == imp. '.'
-      echo 'JavaComplete: import already exists'
-      return
-    endif
-  endfor
 
   let imports = javacomplete#imports#GetImports('imports')
   if empty(imports)
@@ -233,19 +248,25 @@ function! s:AddImport(import)
     endwhile
     call setpos('.', saveCursor)
 
-    if &ft == 'jsp'
-      call append(insertline - 1, '<%@ page import = "'. a:import. '" %>')
-    else
-      call append(insertline - 1, 'import '. a:import. ';')
-    endif
-    call append(insertline, '')
+    let insertline = insertline - 1
+    let newline = 1
   else
-    let lastLine = imports[len(imports) - 1][1]
-    if &ft == 'jsp'
-      call append(lastLine, '<%@ page import = "'. a:import. '" %>')
+    let insertline = imports[len(imports) - 1][1]
+    let newline = 0
+  endif
+
+  if &ft == 'jsp'
+    call append(insertline, '<%@ page import = "'. import. '" %>')
+  else
+    if isStaticImport
+      call append(insertline, 'import static '. import. ';')
     else
-      call append(lastLine, 'import '. a:import. ';')
+      call append(insertline, 'import '. import. ';')
     endif
+  endif
+
+  if newline
+    call append(insertline, '')
   endif
 
 endfunction
@@ -322,6 +343,9 @@ function! javacomplete#imports#RemoveUnused()
     let unused = eval(response)
     for unusedImport in unused
       let imports = javacomplete#imports#GetImports('imports')
+      if stridx(unusedImport, '$') != -1
+        let unusedImport = 'static '. substitute(unusedImport, "\\$", ".", "")
+      endif
       for import in imports
         if import[0] == unusedImport
           silent execute import[1]. 'delete _'

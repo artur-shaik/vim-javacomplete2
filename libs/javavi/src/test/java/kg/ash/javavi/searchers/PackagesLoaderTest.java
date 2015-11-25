@@ -76,4 +76,23 @@ public class PackagesLoaderTest {
         Assert.assertTrue(result.isEmpty());
     }
 
+    @Test
+    public void testNestedClasses() {
+        PackageSeacherIFace searcher = () -> {
+            List<PackageEntry> entries = new ArrayList<>();
+            entries.add(new PackageEntry("java/util/HashMap$KeySet.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("java/util/HashMap$TreeNode.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("foo/bar/TreeNode.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("java/util/ArrayList.class", ClassMap.CLASSPATH));
+            return entries;
+        };
+
+        searchers.add(searcher);
+        ps.collectPackages(result);
+
+        Assert.assertTrue(result.get("KeySet").contains("java.util.HashMap$"));
+        Assert.assertTrue(result.get("TreeNode").contains("java.util.HashMap$"));
+        Assert.assertTrue(result.get("TreeNode").contains("foo.bar"));
+    }
+
 }
