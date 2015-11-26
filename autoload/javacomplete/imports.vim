@@ -270,7 +270,7 @@ function! s:AddImport(import)
   endif
 
   if newline
-    call append(insertline, '')
+    call append(insertline + 1, '')
   endif
 
 endfunction
