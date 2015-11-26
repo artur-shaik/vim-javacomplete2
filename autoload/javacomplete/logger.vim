@@ -15,7 +15,10 @@ endfunction
 
 function! javacomplete#logger#GetContent()
     new
+    set modifiable
     put =s:log
+    set nomodifiable
+    set nomodified
 endfunction
 
 function! javacomplete#logger#Log(key)
