@@ -199,14 +199,12 @@ function! s:SortImports()
 endfunction
 
 function! s:AddImport(import)
-  let isStaticImport = stridx(a:import, '$') != -1 ? 1 : 0
+  let isStaticImport = a:import =~ "^static.*" ? 1 : 0
+  let import = substitute(a:import, "\\$", ".", "g")
   if !isStaticImport
-    let import = a:import
-
     let importsFqn = javacomplete#imports#GetImports('imports_fqn')
     let importsStar = javacomplete#imports#GetImports('imports_star')
   else
-    let import = substitute(a:import, "\\$", ".", "")
     let importsStar = javacomplete#imports#GetImports('imports_static')
     let importsFqn = importsStar
   endif

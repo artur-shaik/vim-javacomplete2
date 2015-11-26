@@ -911,9 +911,9 @@ function! s:FetchClassInfo(fqn)
     for key in keys(dict)
       if !has_key(g:JavaComplete_Cache, key)
         if type(dict[key]) == type({})
-          let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
+          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
         elseif type(dict[key]) == type([])
-          let g:JavaComplete_Cache[key] = sort(dict[key])
+          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = sort(dict[key])
         endif
       endif
     endfor
@@ -1193,10 +1193,10 @@ function! s:DoGetInfoByReflection(class, option)
   if res =~ '^[{\[]'
     let v = eval(res)
     if type(v) == type([])
-      let g:JavaComplete_Cache[a:class] = sort(v)
+      let g:JavaComplete_Cache[substitute(a:class, '\$', '.', '')] = sort(v)
     elseif type(v) == type({})
       if get(v, 'tag', '') =~# '^\(PACKAGE\|CLASSDEF\)$'
-        let g:JavaComplete_Cache[a:class] = v
+        let g:JavaComplete_Cache[substitute(a:class, '\$', '.', '')] = v
       else
         call extend(g:JavaComplete_Cache, v, 'force')
       endif
@@ -1245,22 +1245,27 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
         endif
       endif
     endfor
+  endif
 
-    for c in get(a:ci, 'nested', [])
-      if has_key(g:JavaComplete_Cache, c)
-        let nestedClass = g:JavaComplete_Cache[c]
-        if a:kind == 12
-          if s:IsStatic(nestedClass.flags)
-            call add(result[3], {'n': split(c, '\$')[1], 'm':c})
-          endif
-        else
-          call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+  for c in get(a:ci, 'nested', [])
+    let _c = substitute(c, '\$', '.', '')
+    if has_key(g:JavaComplete_Cache, _c)
+      let nestedClass = g:JavaComplete_Cache[_c]
+      if a:kind == 12
+        if s:IsStatic(nestedClass.flags)
+          call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
+        endif
+      elseif a:kind == 13
+        if !s:IsStatic(nestedClass.flags)
+          call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
         endif
       else
-        call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+        call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
       endif
-    endfor
-  endif
+    else
+      call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
+    endif
+  endfor
 
   if a:kind/10 != 0
     let types = get(a:ci, 'classes', [])
@@ -1483,6 +1488,8 @@ function! s:DoGetMemberList(ci, memberkind)
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
     let s = substitute(s, '\<\(public\|static\|synchronized\|transient\|volatile\|final\|strictfp\|serializable\|native\)\s\+', '', 'g')
+  else
+    let s .= s:DoGetNestedList(members[3])
   endif
   return eval('[' . s . ']')
 endfunction
@@ -1523,18 +1530,17 @@ function! s:GetMembers(fqn, ...)
   let list = []
   let isClass = 0
 
-  if b:context_type == g:JC__CONTEXT_IMPORT_STATIC
+  if b:context_type == g:JC__CONTEXT_IMPORT_STATIC || b:context_type == g:JC__CONTEXT_IMPORT
     let res = javacomplete#server#Communicate('-E', a:fqn, 's:GetMembers for static')
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
-        let g:JavaComplete_Cache[key] = javacomplete#util#Sort(dict[key])
+        let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
       endfor
     endif
   endif
 
   let v = s:DoGetInfoByReflection(a:fqn, '-p')
-  call javacomplete#logger#Log(v)
   if type(v) == type([])
     let list = v
   elseif type(v) == type({}) && v != {}
