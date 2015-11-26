@@ -1247,7 +1247,18 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
     endfor
 
     for c in get(a:ci, 'nested', [])
+      if has_key(g:JavaComplete_Cache, c)
+        let nestedClass = g:JavaComplete_Cache[c]
+        if a:kind == 12
+          if s:IsStatic(nestedClass.flags)
+            call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+          endif
+        else
+          call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+        endif
+      else
         call add(result[3], {'n': split(c, '\$')[1], 'm':c})
+      endif
     endfor
   endif
 
@@ -1523,6 +1534,7 @@ function! s:GetMembers(fqn, ...)
   endif
 
   let v = s:DoGetInfoByReflection(a:fqn, '-p')
+  call javacomplete#logger#Log(v)
   if type(v) == type([])
     let list = v
   elseif type(v) == type({}) && v != {}
