@@ -99,6 +99,7 @@ let g:JavaComplete_Cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffe
 let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
 let g:Javacomplete_pom_properties={}   "maven project properties
+let g:Javacomplete_pom_tags = ['build', 'properties']
 
 fu! SScope()
   return s:
@@ -144,7 +145,7 @@ function! s:FindClassPath() abort
   let base = s:GetBase("classpath/")
 
   if executable('mvn') && g:JavaComplete_PomPath != ""
-    let key = substitute(g:JavaComplete_PomPath, '[\\/:;]', '_', 'g')
+    let key = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
     let path = base . key
 
     if filereadable(path)
@@ -157,7 +158,7 @@ function! s:FindClassPath() abort
 
   if executable('gradle') || executable('./gradlew') || executable('.\gradlew.bat')
     if g:JavaComplete_GradlePath != ""
-      let key = substitute(g:JavaComplete_GradlePath, '[\\/:;]', '_', 'g')
+      let key = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
       let path = base . key
 
       if filereadable(path)
@@ -179,7 +180,7 @@ function! s:GenerateMavenClassPath(path, pom) abort
         let cp = mvn_properties['project.dependencybuildclasspath']
     endif
     if has_key(mvn_properties,'project.build.outputDirectory')
-        let cp .= g:PATH_SET.mvn_properties['project.build.outputDirectory']
+        let cp .= g:PATH_SEP.mvn_properties['project.build.outputDirectory']
     endif
     if cp !='.'
         call writefile([cp], a:path)
@@ -190,7 +191,7 @@ endfunction
 function! s:GetMavenProperties(pom) " {{{2
     let mvn_properties = {}
     if !has_key(g:Javacomplete_pom_properties, a:pom)
-        let mvn_cmd = 'mvn --file '.a:pom. 'help:effective-pom dependency:build-classpath -DincludeScope=test'
+        let mvn_cmd = 'mvn --file '.a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
         let mvn_is_managed_tag = 1
         let mvn_settings_output = split(system(mvn_cmd), "\n")
         let current_path = 'project'
