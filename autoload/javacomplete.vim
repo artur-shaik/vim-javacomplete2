@@ -173,7 +173,7 @@ function! s:FindClassPath() abort
 endfunction
 
 function! s:GenerateMavenClassPath(path, pom) abort
-    let mvn_properties = s:GetMavenProperties(pom)
+    let mvn_properties = s:GetMavenProperties(a:pom)
     let cp ='.'
     if has_key(mvn_properties,'project.dependencybuildclasspath')
         let cp = mvn_properties['project.dependencybuildclasspath']
