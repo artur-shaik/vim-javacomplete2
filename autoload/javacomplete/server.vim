@@ -55,7 +55,7 @@ function! javacomplete#server#Start()
     let classpath = javacomplete#server#GetClassPath()
     let sources = ''
     if exists('g:JavaComplete_SourcesPath')
-      let sources = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '" '
+      let sources = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '"'
     endif
 
     let args = ' kg.ash.javavi.Javavi '. sources
@@ -63,6 +63,8 @@ function! javacomplete#server#Start()
       let args .= ' -t '. g:JavaComplete_ServerAutoShutdownTime
     endif
     let args .= ' -D '
+    call javacomplete#logger#Log("Server classpath: -cp ". classpath)
+    call javacomplete#logger#Log("Server arguments:". args)
 
     let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
     execute "JavacompletePyfile ". file
