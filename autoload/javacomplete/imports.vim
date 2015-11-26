@@ -97,8 +97,7 @@ function! javacomplete#imports#GetImports(kind, ...)
           call add(props.imports_static, qid[:-2])
         else
           call add(props.imports_static, qid)
-          let pos = strridx(qid, ".")
-          call add(props.imports_fqn, qid[0:pos - 1]. '$'. qid[pos + 1:])
+          call add(props.imports_fqn, qid)
         endif
       elseif qid[-1:] == '*'
         call add(props.imports_star, qid[:-2])

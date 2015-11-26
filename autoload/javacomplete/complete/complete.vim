@@ -475,6 +475,14 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
             let ii += 1
             continue
           endif
+
+          if !empty(members[3])
+            if len(members[3]) > 0 && has_key(members[3][0], 'm')
+              let ti = s:DoGetClassInfo(members[3][0].m)
+              let ii += 1
+              continue
+            endif
+          endif
         endif
 
 
@@ -1185,8 +1193,8 @@ endfunction
 " package information							{{{2
 
 function! s:DoGetInfoByReflection(class, option)
-  if has_key(g:JavaComplete_Cache, a:class)
-    return g:JavaComplete_Cache[a:class]
+  if has_key(g:JavaComplete_Cache, substitute(a:class, '\$', '.', 'g'))
+    return g:JavaComplete_Cache[substitute(a:class, '\$', '.', 'g')]
   endif
 
   let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
@@ -1531,7 +1539,7 @@ function! s:GetMembers(fqn, ...)
     if res =~ "^{'"
       let dict = eval(res)
       for key in keys(dict)
-        let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
+        let g:JavaComplete_Cache[substitute(key, '\$', '.', 'g')] = javacomplete#util#Sort(dict[key])
       endfor
     endif
   endif
