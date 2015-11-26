@@ -1255,10 +1255,6 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
         if s:IsStatic(nestedClass.flags)
           call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
         endif
-      elseif a:kind == 13
-        if !s:IsStatic(nestedClass.flags)
-          call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
-        endif
       else
         call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
       endif
