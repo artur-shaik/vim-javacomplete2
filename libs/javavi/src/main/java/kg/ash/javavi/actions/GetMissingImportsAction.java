@@ -58,7 +58,6 @@ public class GetMissingImportsAction extends ImportsAction {
                 }
             }
         }
-        System.out.println(result);
         return result.append("]").toString();
     }
 
