@@ -175,24 +175,24 @@ endfunction
 
 function! s:GenerateMavenClassPath(path, pom) abort
     let mvn_properties = s:GetMavenProperties(a:pom)
-    let cp = get(mvn_properties,'project.dependencybuildclasspath','.')
-    let cp .= g:PATH_SEP . get(mvn_properties,'project.build.outputDirectory',join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
-    if cp !='.'
+    let cp = get(mvn_properties, 'project.dependencybuildclasspath', '.')
+    let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.outputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
+    if cp != '.'
         call writefile([cp], a:path)
     endif
     return cp
 endfunction
 
-function! s:GetMavenProperties(pom) " {{{2
+function! s:GetMavenProperties(pom)
     let mvn_properties = {}
     if !has_key(g:Javacomplete_pom_properties, a:pom)
-        let mvn_cmd = 'mvn --file '.a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
+        let mvn_cmd = 'mvn --file '. a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
         let mvn_is_managed_tag = 1
         let mvn_settings_output = split(system(mvn_cmd), "\n")
         let current_path = 'project'
         for i in range(len(mvn_settings_output))
             if mvn_settings_output[i] =~ 'Dependencies classpath:'
-                let mvn_properties['project.dependencybuildclasspath'] = mvn_settings_output[i+1]
+                let mvn_properties['project.dependencybuildclasspath'] = mvn_settings_output[i + 1]
             endif
             let matches = matchlist(mvn_settings_output[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
             if mvn_is_managed_tag && !empty(matches)
@@ -214,19 +214,17 @@ function! s:GetMavenProperties(pom) " {{{2
         let g:Javacomplete_pom_properties[a:pom] = mvn_properties
     endif
     return g:Javacomplete_pom_properties[a:pom]
-endfunction " }}}2
+endfunction
 
 function! s:GenerateGradleClassPath(path, gradle) abort
   try
     let f = tempname()
-    let gradle = ''
-    if executable('./gradlew') || executable('.\gradlew.bat')
-      if has("win32") || has("win16")
-        let gradle = '.\gradlew.bat'
-      else
-        let gradle = './gradlew'
-      endif
+    if has("win32") || has("win16")
+      let gradle = '.\gradlew.bat'
     else
+      let gradle = './gradlew'
+    endif
+    if !executable(gradle)
       let gradle = 'gradle'
     endif
     call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . "/classpath.gradle'}"], f)
