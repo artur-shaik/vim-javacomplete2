@@ -4,19 +4,20 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.function.Predicate;
 import java.util.zip.ZipFile;
 import kg.ash.javavi.Javavi;
+import kg.ash.javavi.readers.Reflection;
 import kg.ash.javavi.searchers.ClassMap;
 
 public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
     private ByExtensionVisitor finder 
-        = new ByExtensionVisitor(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP"));
+        = new ByExtensionVisitor(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class"));
     
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
@@ -26,16 +27,36 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                 || path.toLowerCase().endsWith(".zip");
         };
 
+        Reflection reflection = new Reflection("");
         collectClassPath().stream()
-            .filter(isArchive)
             .forEach(path -> {
-                try {
-                    for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
-                        String entry = entries.nextElement().toString();
-                        result.add(new PackageEntry(entry, ClassMap.CLASSPATH));
+                if (path.toLowerCase().endsWith(".class")) {
+                    String[] split = path.split(File.separator);
+                    int j = split.length - 2;
+                    while (j > 0) {
+                        path = "";
+                        for (int i = j; i <= split.length - 2; i++) {
+                            path += split[i] + ".";
+                        }
+                        String fileName = split[split.length - 1];
+                        path += fileName.substring(0, fileName.length() - 6);
+                        try {
+                            Class clazz = Class.forName(path);
+                            result.add(new PackageEntry(clazz.getPackage().getName() + "." + fileName, ClassMap.CLASSPATH));
+                            break;
+                        } catch (ClassNotFoundException ex) {
+                            j--;
+                        }
                     }
-                } catch (IOException e) {
-                    Javavi.debug(e);
+                } else {
+                    try {
+                        for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
+                            String entry = entries.nextElement().toString();
+                            result.add(new PackageEntry(entry, ClassMap.CLASSPATH));
+                        }
+                    } catch (IOException e) {
+                        Javavi.debug(e);
+                    }
                 }
             });
 

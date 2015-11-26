@@ -12,7 +12,17 @@ public class GetClassInfoAction extends ActionWithTarget {
         String target = parseTarget(args);
 
         ClassSearcher seacher = new ClassSearcher();
-        if (seacher.find(target, sources)) {
+        boolean found = true;
+        while (!seacher.find(target, sources)) {
+            if (!target.contains(".")) {
+                found = false;
+                break;
+            }
+
+            target = target.substring(0, target.lastIndexOf("."));
+        }
+
+        if (found) {
             ClassReader reader = seacher.getReader();
             reader.setTypeArguments(targetParser.getTypeArguments());
             SourceClass clazz = reader.read(target);
