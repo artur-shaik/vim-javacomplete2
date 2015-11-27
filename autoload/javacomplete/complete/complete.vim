@@ -213,7 +213,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
 
   " 0. String literal
-  if items[-1] =~  '"$'
+  if items[-1] =~  '\("\|"\.\)$'
     call javacomplete#logger#Log('P1. "str".|')
     return s:GetMemberList("java.lang.String")
   endif

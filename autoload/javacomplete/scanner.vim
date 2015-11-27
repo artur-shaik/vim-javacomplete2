@@ -38,7 +38,7 @@ function! javacomplete#scanner#GetStatement()
 endfunction
 
 function! s:SkipBlock()
-  let pos = line('.')
+  let pos = line('.') + 1
   let clbracket = 0
   let quoteFlag = 0
   while pos > 0
@@ -66,20 +66,20 @@ function! s:SkipBlock()
 
       if line[cursor] == '}'
         let clbracket += 1
+      elseif line[cursor] == '(' && clbracket == 0
+        call cursor(pos, cursor)
+        break
       elseif line[cursor] == '{' 
         if clbracket > 0
           let clbracket -= 1
         else
           break
         endif
-      elseif line[cursor] == '(' && clbracket == 0
-        call cursor(pos, cursor)
-        break
       endif
       let cursor -= 1
     endwhile
-    if clbracket > 0
-      continue
+    if clbracket == 0
+      break
     endif
   endwhile
 endfunction

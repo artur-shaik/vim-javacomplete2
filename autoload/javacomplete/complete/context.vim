@@ -38,6 +38,22 @@ function! javacomplete#complete#context#FindContext()
       return -1
     endif
 
+    let i = len(statement)
+    let quoteParity = 1
+    while i >= 0
+      let ch = statement[i]
+      if ch == '"'
+        let quoteParity = !quoteParity
+      endif
+
+      let i -= 1
+    endwhile
+
+    if !quoteParity
+      let b:context_type = g:JC__CONTEXT_OTHER
+      return -1
+    endif
+
     let b:context_type = g:JC__CONTEXT_AFTER_DOT
 
     " import or package declaration
