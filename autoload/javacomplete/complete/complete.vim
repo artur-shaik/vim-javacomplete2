@@ -477,10 +477,19 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           endif
 
           if !empty(members[3])
-            if len(members[3]) > 0 && has_key(members[3][0], 'm')
-              let ti = s:DoGetClassInfo(members[3][0].m)
-              let ii += 1
-              continue
+            if len(members[3]) > 0
+              let fount = 0
+              for entry in members[3]
+                if has_key(entry, 'n') && entry.n == ident && has_key(entry, 'm')
+                  let ti = s:DoGetClassInfo(entry.m)
+                  let ii += 1
+                  let found = 1
+                  break
+                endif
+              endfor
+              if found
+                continue
+              endif
             endif
           endif
         endif
