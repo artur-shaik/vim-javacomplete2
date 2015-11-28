@@ -206,6 +206,7 @@ function! s:AddImport(import)
   else
     let importsStar = javacomplete#imports#GetImports('imports_static')
     let importsFqn = importsStar
+    let import = import[stridx(import, " ") + 1:]
   endif
 
   for imp in importsFqn
