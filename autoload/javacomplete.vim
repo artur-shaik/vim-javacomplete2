@@ -177,6 +177,7 @@ function! s:GenerateMavenClassPath(path, pom) abort
     let mvn_properties = s:GetMavenProperties(a:pom)
     let cp = get(mvn_properties, 'project.dependencybuildclasspath', '.')
     let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.outputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
+    let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.testOutputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'test-classes'], g:FILE_SEP))
     if cp != '.'
         call writefile([cp], a:path)
     endif
