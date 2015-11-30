@@ -30,7 +30,7 @@ public class OutputClassPackages {
                         if (seacher.find(target, sources)) {
                             ClassReader reader = seacher.getReader();
                             SourceClass clazz = reader.read(target);
-                            if (Modifier.isStatic(clazz.getModifiers())) {
+                            if (clazz != null && Modifier.isStatic(clazz.getModifiers())) {
                                 scope = "static " + scope;
                             }
                         }
