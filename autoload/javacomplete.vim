@@ -166,7 +166,7 @@ function! s:FindClassPath() abort
           return cp . g:PATH_SEP . join(readfile(path), '')
         endif
       endif
-      return cp . g:PATH_SEP . s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
+      return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
   endif
 
