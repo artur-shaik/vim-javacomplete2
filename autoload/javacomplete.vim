@@ -233,6 +233,12 @@ function! s:GenerateGradleClassPath(path, gradle) abort
     let ret = system(gradle . ' -q -I ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
+      if filereadable(getcwd() . "/build.gradle")
+          let out_putdir = s:GlobPathList(getcwd(), '**/build/intermediates/classes/debug', 0)
+          for classes in out_putdir
+              let cp .= g:PATH_SEP.classes
+          endfor
+      endif
       call writefile([cp], a:path)
       return cp
     endif
