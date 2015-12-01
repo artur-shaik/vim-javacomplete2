@@ -1,8 +1,8 @@
 source autoload/javacomplete.vim
-source autoload/javacomplete/complete.vim
+source autoload/javacomplete/complete/complete.vim
 source t/javacomplete.vim
 
-call vspec#hint({'sid': 'g:SID("complete")', 'scope': 'SScope()'})
+call vspec#hint({'sid': 'g:SID("complete/complete")', 'scope': 'SScope()'})
 
 describe 'javacomplete-test'
     it 'CollectFQNs test'
