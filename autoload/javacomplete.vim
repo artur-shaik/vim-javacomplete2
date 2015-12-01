@@ -139,6 +139,7 @@ function! s:FindClassPath() abort
     let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
     if !empty(classpath_file) && filereadable(classpath_file)
       let cp .= g:PATH_SEP . s:ReadClassPathFile(classpath_file)
+      return cp
     endif
   endif
 
