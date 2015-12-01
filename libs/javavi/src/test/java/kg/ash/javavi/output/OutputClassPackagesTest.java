@@ -1,6 +1,7 @@
 package kg.ash.javavi.output;
 
 import java.util.HashMap;
+import kg.ash.javavi.Javavi;
 import kg.ash.javavi.searchers.ClassMap;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +14,7 @@ public class OutputClassPackagesTest {
 
     @Before
     public void Init() {
+        Javavi.system.put("sources", "");
         ClassMap classMap = new ClassMap(target, ClassMap.CLASS);
         classMap.add("bar.baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
         classMap.add("foo.bar", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
