@@ -164,7 +164,7 @@ function! s:FindClassPath() abort
 
       if filereadable(path)
         if getftime(path) >= getftime(g:JavaComplete_GradlePath)
-          return cp . g:PATH_SEP . join(readfile(path), '')
+          return join(readfile(path), '')
         endif
       endif
       return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
