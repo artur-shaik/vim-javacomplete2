@@ -62,7 +62,9 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_ServerAutoShutdownTime')
       let args .= ' -t '. g:JavaComplete_ServerAutoShutdownTime
     endif
-    let args .= ' -D '
+    if exists('g:JavaComplete_JavaviDebug') && g:JavaComplete_JavaviDebug
+      let args .= ' -d'
+    endif
     call javacomplete#logger#Log("Server classpath: -cp ". classpath)
     call javacomplete#logger#Log("Server arguments:". args)
 
@@ -138,7 +140,7 @@ fu! s:GetJavaviClassPath()
   if !empty(javacomplete#GlobPathList(javaviDir. 'target/classes', '**/*.class', 1))
     return javaviDir. "target/classes"
   else
-    echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK7+ installed?"
+    echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK8+ installed?"
   endif
 endfu
 

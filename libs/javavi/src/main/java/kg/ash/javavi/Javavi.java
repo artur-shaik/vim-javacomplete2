@@ -71,6 +71,9 @@ public class Javavi {
                 case "-sources":
                     system.put("sources", args[++i]);
                     break;
+                case "-n":
+                    NEWLINE = "\n";
+                    break;
                 case "-d":
                     Javavi.debugMode = true;
                     break;
@@ -84,8 +87,6 @@ public class Javavi {
                 break;
             }
         }
-
-        if (debugMode) NEWLINE = "\n";
 
         String result = "";
         if (action != null) {
