@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.zip.ZipFile;
 import kg.ash.javavi.Javavi;
-import kg.ash.javavi.readers.Reflection;
 import kg.ash.javavi.searchers.ClassMap;
 
 public class ClasspathPackageSearcher implements PackageSeacherIFace {
@@ -27,7 +26,6 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                 || path.toLowerCase().endsWith(".zip");
         };
 
-        Reflection reflection = new Reflection("");
         collectClassPath().stream()
             .forEach(path -> {
                 if (path.toLowerCase().endsWith(".class")) {
@@ -44,7 +42,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                             Class clazz = Class.forName(path);
                             result.add(new PackageEntry(clazz.getPackage().getName() + "." + fileName, ClassMap.CLASSPATH));
                             break;
-                        } catch (ClassNotFoundException ex) {
+                        } catch (ClassNotFoundException | NoClassDefFoundError ex) {
                             j--;
                         }
                     }
