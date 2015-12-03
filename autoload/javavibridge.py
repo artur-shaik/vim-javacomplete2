@@ -29,6 +29,7 @@ class JavaviBridge():
 
     sock = None
     popen = None
+    logfile = None
 
     def setupServer(self, javabin, args, classpath):
         environ = os.environ.copy()
@@ -37,15 +38,21 @@ class JavaviBridge():
         else:
             environ['CLASSPATH'] = classpath
 
+        if vim.eval('exists("g:JavaComplete_JavaviLogfileDirectory")') == "1":
+            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + "/javavi_" + str(SERVER[1]) + ".log", "w")
+            output = self.logfile
+        else:
+            output = subprocess.PIPE
+
         is_win = sys.platform == 'win32'
         shell = is_win == False
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
             info.wShowWindow = 7
-            self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=shell, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE, startupinfo = info)
+            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE, startupinfo = info)
         else:
-            self.popen = SafePopen(javabin + ' ' + args + ' ' + str(SERVER[1]), shell=shell, env=environ, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE)
 
     def pid(self):
         return self.popen.pid
@@ -58,6 +65,9 @@ class JavaviBridge():
 
     def terminateServer(self):
         self.popen.terminate()
+
+        if self.logfile:
+            self.logfile.close()
 
     def makeSocket(self):
         try:
