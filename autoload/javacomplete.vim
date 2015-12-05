@@ -139,6 +139,7 @@ function! s:FindClassPath() abort
     let classpath_file = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
     if !empty(classpath_file) && filereadable(classpath_file)
       let cp .= g:PATH_SEP . s:ReadClassPathFile(classpath_file)
+      return cp
     endif
   endif
 
@@ -163,10 +164,10 @@ function! s:FindClassPath() abort
 
       if filereadable(path)
         if getftime(path) >= getftime(g:JavaComplete_GradlePath)
-          return cp . g:PATH_SEP . join(readfile(path), '')
+          return join(readfile(path), '')
         endif
       endif
-      return cp . g:PATH_SEP . s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
+      return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
   endif
 
@@ -232,6 +233,12 @@ function! s:GenerateGradleClassPath(path, gradle) abort
     let ret = system(gradle . ' -q -I ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
+      if filereadable(getcwd() . "/build.gradle")
+          let out_putdir = s:GlobPathList(getcwd(), '**/build/intermediates/classes/debug', 0)
+          for classes in out_putdir
+              let cp .= g:PATH_SEP.classes
+          endfor
+      endif
       call writefile([cp], a:path)
       return cp
     endif
