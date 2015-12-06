@@ -21,14 +21,14 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
 
-        List<String> knownPathes = new ArrayList<>();
+        List<String> knownPaths = new ArrayList<>();
         collectClassPath().stream()
             .forEach(path -> {
                 if (path.toLowerCase().endsWith(".class")) {
                     path = path.substring(0, path.length() - 6).replaceAll(File.separator, ".");
                     String newPath = path.substring(0, path.lastIndexOf("."));
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
-                    Optional<String> knownPath = knownPathes.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
+                    Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
                     if (knownPath.isPresent()) {
                         result.add(new PackageEntry(knownPath.get() + "." + fileName, ClassMap.CLASSPATH));
                         return;
@@ -43,7 +43,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                         String pkg = getPackageByFile(path + fileName);
                         if (pkg != null) {
                             result.add(new PackageEntry(pkg + "." + fileName, ClassMap.CLASSPATH));
-                            knownPathes.add(pkg);
+                            knownPaths.add(pkg);
                             break;
                         } else {
                             j--;
