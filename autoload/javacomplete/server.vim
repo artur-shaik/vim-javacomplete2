@@ -125,7 +125,7 @@ function! javacomplete#server#Compile()
     exe '!'. 'mvn -f "'. javaviDir . g:FILE_SEP . 'pom.xml" compile'
   else
     call mkdir(javaviDir . join(['target','classes'],g:FILE_SEP) , "p")
-    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target'.g:FILE_SEP.'classes -classpath '. javaviDir. 'target'.g:FILE_SEP.'classes'.g:PATH_SEP. g:JavaComplete_Home. g:FILE_SEP .'libs'.g:FILE_SEP.'javaparser.jar'. g:PATH_SEP .' -sourcepath '. javaviDir. 'src'.g:FILE_SEP.'main'.g:FILE_SEP.'java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. join(['src','main','java','kg','ash','javavi','Javavi.java'],g:FILE_SEP)
+    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target'.g:FILE_SEP.'classes -classpath '. javaviDir. 'target'.g:FILE_SEP.'classes'.g:PATH_SEP. g:JavaComplete_Home. g:FILE_SEP .'libs'.g:FILE_SEP.'javaparser.jar'. g:PATH_SEP .' -sourcepath '. javaviDir. 'src'.g:FILE_SEP.'main'.g:FILE_SEP.'java -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. join(['src','main','java','kg','ash','javavi','Javavi.java'],g:FILE_SEP)
   endif
 endfunction
 
