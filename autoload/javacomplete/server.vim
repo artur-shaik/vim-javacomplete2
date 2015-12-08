@@ -68,7 +68,7 @@ function! javacomplete#server#Start()
     call javacomplete#logger#Log("Server classpath: -cp ". classpath)
     call javacomplete#logger#Log("Server arguments:". args)
 
-    let file = g:JavaComplete_Home. "/autoload/javavibridge.py"
+    let file = g:JavaComplete_Home. g:FILE_SEP . "autoload" . g:FILE_SEP ."javavibridge.py"
     execute "JavacompletePyfile ". file
 
     JavacompletePy import vim
@@ -198,7 +198,7 @@ function! javacomplete#server#GetClassPath()
         endif
       endfor
     endif
-    return path. g:JAVA_HOME. '/lib'
+    return path. g:JAVA_HOME. g:FILE_SEP .'lib'
   endif
 
   return path . $CLASSPATH
