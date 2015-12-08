@@ -112,20 +112,20 @@ endfunction
 function! javacomplete#server#Compile()
   call javacomplete#server#Terminate()
 
-  let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
-  if isdirectory(javaviDir. "target/classes") 
+  let javaviDir = g:JavaComplete_Home . g:FILE_SEP . join(['libs','javavi'],g:FILE_SEP) . g:FILE_SEP
+  if isdirectory(javaviDir. join(['target','classes'],g:FILE_SEP)) 
     if g:IS_WINDOWS
-      silent exe '!rmdir \s "'. javaviDir. "target/classes"
+      silent exe '!rmdir \s "'. javaviDir.join(['target','classes'],g:FILE_SEP)
     else
-      silent exe '!rm -r '. javaviDir. "target/classes"
+      silent exe '!rm -r '. javaviDir.join(['target','classes'],g:FILE_SEP)
     endif
   endif
 
   if executable('mvn')
-    exe '!'. 'mvn -f "'. javaviDir. '/pom.xml" compile'
+    exe '!'. 'mvn -f "'. javaviDir . g:FILE_SEP . 'pom.xml" compile'
   else
-    call mkdir(javaviDir. "target/classes", "p")
-    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target/classes -classpath '. javaviDir. 'target/classes:'. g:JavaComplete_Home. '/libs/javaparser.jar'. g:PATH_SEP .' -sourcepath '. javaviDir. 'src/main/java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. 'src/main/java/kg/ash/javavi/Javavi.java'
+    call mkdir(javaviDir . join(['target','classes'],g:FILE_SEP) , "p")
+    exe '!'. javacomplete#server#GetCompiler(). ' -d '. javaviDir. 'target'.g:FILE_SEP.'classes -classpath '. javaviDir. 'target'.g:FILE_SEP.'classes:'. g:JavaComplete_Home. g:FILE_SEP .'libs'.g:FILE_SEP.'javaparser.jar'. g:PATH_SEP .' -sourcepath '. javaviDir. 'src'.g:FILE_SEP.'main'.g:FILE_SEP.'java: -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 '. javaviDir. join(['src','main','java','kg','ash','javavi','Javavi.java'],g:FILE_SEP)
   endif
 endfunction
 
