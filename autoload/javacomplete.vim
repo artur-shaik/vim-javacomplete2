@@ -324,7 +324,7 @@ augroup javacomplete
   autocmd InsertLeave *.java,*.jsp call s:HandleInsertLeave()
 augroup END
 
-let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
+let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'.g:FILE_SEP.'?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['','libs','javaparser.jar'],g:FILE_SEP), "p")
 
 call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
