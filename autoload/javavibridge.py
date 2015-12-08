@@ -39,7 +39,7 @@ class JavaviBridge():
             environ['CLASSPATH'] = classpath
 
         if vim.eval('exists("g:JavaComplete_JavaviLogfileDirectory")') == "1":
-            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + "/javavi_" + str(SERVER[1]) + ".log", "w")
+            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + ('\\' if sys.platform == 'win32' else '/') + "javavi_" + str(SERVER[1]) + ".log", "w")
             output = self.logfile
         else:
             output = subprocess.PIPE
