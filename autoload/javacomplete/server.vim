@@ -132,13 +132,13 @@ endfunction
 " Check if Javavi classes exists and return classpath directory.
 " If not found, build Javavi library classes with maven or javac.
 fu! s:GetJavaviClassPath()
-  let javaviDir = g:JavaComplete_Home. "/libs/javavi/"
-  if !isdirectory(javaviDir. "target/classes")
+  let javaviDir = g:JavaComplete_Home . join(['','libs','javavi',''],g:FILE_SEP)
+  if !isdirectory(javaviDir. "target". g:FILE_SEP ."classes")
     call javacomplete#server#Compile()
   endif
 
-  if !empty(javacomplete#GlobPathList(javaviDir. 'target/classes', '**/*.class', 1))
-    return javaviDir. "target/classes"
+  if !empty(javacomplete#GlobPathList(javaviDir. 'target'.g:FILE_SEP.'classes', '**'.g:FILE_SEP.'*.class', 1))
+    return javaviDir. "target". g:FILE_SEP ."classes"
   else
     echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK8+ installed?"
   endif

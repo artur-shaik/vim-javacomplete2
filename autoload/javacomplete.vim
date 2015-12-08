@@ -115,7 +115,7 @@ function! javacomplete#Complete(findstart, base)
 endfunction
 
 function! s:GetBase(extra)
-  let base = expand("~/.javacomplete2/". a:extra)
+  let base = expand("~" . g:FILE_SEP . ".javacomplete2" . g:FILE_SEP . a:extra)
   if !isdirectory(base)
     call mkdir(base, "p")
   endif
@@ -125,7 +125,7 @@ endfunction
 
 function! s:ReadClassPathFile(classpath_file)
   let cp = ''
-  let file = g:JavaComplete_Home. "/autoload/classpath.py"
+  let file = g:JavaComplete_Home. join(['','autoload','classpath.py'],g:FILE_SEP)
   execute "JavacompletePyfile" file
   JavacompletePy import vim
   JavacompletePy vim.command("let cp = '%s'" % os.pathsep.join(ReadClasspathFile(vim.eval('a:classpath_file'))).replace('\\', '/'))
@@ -142,7 +142,7 @@ function! s:FindClassPath() abort
     endif
   endif
 
-  let base = s:GetBase("classpath/")
+  let base = s:GetBase("classpath" . g:FILE_SEP)
 
   if executable('mvn') && g:JavaComplete_PomPath != ""
     let key = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
@@ -228,7 +228,7 @@ function! s:GenerateGradleClassPath(path, gradle) abort
     if !executable(gradle)
       let gradle = 'gradle'
     endif
-    call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . "/classpath.gradle'}"], f)
+    call writefile(["allprojects{apply from: '" . g:JavaComplete_Home . g:FILE_SEP ."classpath.gradle'}"], f)
     let ret = system(gradle . ' -q -I ' . shellescape(f) . ' classpath' )
     if v:shell_error == 0
       let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
@@ -325,14 +325,14 @@ augroup javacomplete
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?/?')
-let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. "/libs/javaparser.jar", "p")
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['','libs','javaparser.jar'],g:FILE_SEP), "p")
 
 call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', '')
 let s:sources = s:GlobPathList(getcwd(), 'src', 0)
 for i in ['*/', '*/*/', '*/*/*/']
-  call extend(s:sources, s:GlobPathList(getcwd(), i. '/src', 0))
+  call extend(s:sources, s:GlobPathList(getcwd(), i. g:FILE_SEP.'src', 0))
 endfor
 for src in s:sources
   if match(src, '.*build.*') < 0
@@ -341,8 +341,8 @@ for src in s:sources
 endfor
 unlet s:sources
 
-if filereadable(getcwd() . "/build.gradle")
-  let rjava = s:GlobPathList(getcwd(), '**/build/generated/source/**/debug', 0)
+if filereadable(getcwd() . g:FILE_SEP ."build.gradle")
+  let rjava = s:GlobPathList(getcwd(), join(['**','build','generated','source','**','debug'],g:FILE_SEP), 0)
   for r in rjava
     let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.r
   endfor
@@ -365,8 +365,8 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
   endif
 
   if !exists('g:JavaComplete_GradlePath')
-    if filereadable(getcwd() . "/build.gradle")
-      let g:JavaComplete_GradlePath = getcwd() . "/build.gradle"
+    if filereadable(getcwd() . g:FILE_SEP ."build.gradle")
+      let g:JavaComplete_GradlePath = getcwd() . g:FILE_SEP ."build.gradle"
     else
       let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, ') . ';')
     endif
