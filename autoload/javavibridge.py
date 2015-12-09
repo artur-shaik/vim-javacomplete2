@@ -32,19 +32,20 @@ class JavaviBridge():
     logfile = None
 
     def setupServer(self, javabin, args, classpath):
+        is_win = sys.platform == 'win32'
+
         environ = os.environ.copy()
         if 'CLASSPATH' in environ:
-            environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if sys.platform == 'win32' else ':') + classpath
+            environ['CLASSPATH'] = environ['CLASSPATH'] + (';' if is_win else ':') + classpath
         else:
             environ['CLASSPATH'] = classpath
 
         if vim.eval('exists("g:JavaComplete_JavaviLogfileDirectory")') == "1":
-            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + "/javavi_" + str(SERVER[1]) + ".log", "w")
+            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + ('\\' if is_win else '/') + "javavi_" + str(SERVER[1]) + ".log", "w")
             output = self.logfile
         else:
             output = subprocess.PIPE
 
-        is_win = sys.platform == 'win32'
         shell = is_win == False
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
