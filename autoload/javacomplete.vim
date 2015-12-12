@@ -174,47 +174,47 @@ function! s:FindClassPath() abort
 endfunction
 
 function! s:GenerateMavenClassPath(path, pom) abort
-    let mvn_properties = s:GetMavenProperties(a:pom)
-    let cp = get(mvn_properties, 'project.dependencybuildclasspath', '.')
-    let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.outputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
-    let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.testOutputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'test-classes'], g:FILE_SEP))
-    if cp != '.'
-        call writefile([cp], a:path)
-    endif
-    return cp
+  let mvn_properties = s:GetMavenProperties(a:pom)
+  let cp = get(mvn_properties, 'project.dependencybuildclasspath', '.')
+  let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.outputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
+  let cp .= g:PATH_SEP . get(mvn_properties, 'project.build.testOutputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'test-classes'], g:FILE_SEP))
+  if cp != '.'
+    call writefile([cp], a:path)
+  endif
+  return cp
 endfunction
 
 function! s:GetMavenProperties(pom)
-    let mvn_properties = {}
-    if !has_key(g:Javacomplete_pom_properties, a:pom)
-        let mvn_cmd = 'mvn --file '. a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
-        let mvn_is_managed_tag = 1
-        let mvn_settings_output = split(system(mvn_cmd), "\n")
-        let current_path = 'project'
-        for i in range(len(mvn_settings_output))
-            if mvn_settings_output[i] =~ 'Dependencies classpath:'
-                let mvn_properties['project.dependencybuildclasspath'] = mvn_settings_output[i + 1]
-            endif
-            let matches = matchlist(mvn_settings_output[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
-            if mvn_is_managed_tag && !empty(matches)
-                let mvn_is_managed_tag = index(g:Javacomplete_pom_tags, matches[1]) >= 0
-                let current_path .= '.' . matches[1]
-            else
-                let matches = matchlist(mvn_settings_output[i], '\m^\s*</\([a-zA-Z0-9\-\.]\+\)>\s*$')
-                if !empty(matches)
-                    let mvn_is_managed_tag = index(g:Javacomplete_pom_tags, matches[1]) < 0
-                    let current_path  = substitute(current_path, '\m\.' . matches[1] . '$', '', '')
-                else
-                    let matches = matchlist(mvn_settings_output[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\(.\+\)</[a-zA-Z0-9\-\.]\+>\s*$')
-                    if mvn_is_managed_tag && !empty(matches)
-                        let mvn_properties[current_path . '.' . matches[1]] = matches[2]
-                    endif
-                endif
-            endif
-        endfor
-        let g:Javacomplete_pom_properties[a:pom] = mvn_properties
-    endif
-    return g:Javacomplete_pom_properties[a:pom]
+  let mvn_properties = {}
+  if !has_key(g:Javacomplete_pom_properties, a:pom)
+    let mvn_cmd = 'mvn --file '. a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
+    let mvn_is_managed_tag = 1
+    let mvn_settings_output = split(system(mvn_cmd), "\n")
+    let current_path = 'project'
+    for i in range(len(mvn_settings_output))
+      if mvn_settings_output[i] =~ 'Dependencies classpath:'
+        let mvn_properties['project.dependencybuildclasspath'] = mvn_settings_output[i + 1]
+      endif
+      let matches = matchlist(mvn_settings_output[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
+      if mvn_is_managed_tag && !empty(matches)
+        let mvn_is_managed_tag = index(g:Javacomplete_pom_tags, matches[1]) >= 0
+        let current_path .= '.' . matches[1]
+      else
+        let matches = matchlist(mvn_settings_output[i], '\m^\s*</\([a-zA-Z0-9\-\.]\+\)>\s*$')
+        if !empty(matches)
+          let mvn_is_managed_tag = index(g:Javacomplete_pom_tags, matches[1]) < 0
+          let current_path  = substitute(current_path, '\m\.' . matches[1] . '$', '', '')
+        else
+          let matches = matchlist(mvn_settings_output[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\(.\+\)</[a-zA-Z0-9\-\.]\+>\s*$')
+          if mvn_is_managed_tag && !empty(matches)
+            let mvn_properties[current_path . '.' . matches[1]] = matches[2]
+          endif
+        endif
+      endif
+    endfor
+    let g:Javacomplete_pom_properties[a:pom] = mvn_properties
+  endif
+  return g:Javacomplete_pom_properties[a:pom]
 endfunction
 
 function! s:GenerateGradleClassPath(path, gradle) abort
