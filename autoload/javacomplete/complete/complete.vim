@@ -1232,9 +1232,12 @@ endfunction
 " public for all              
 " protected for this or super 
 " private for this            
-function! s:CanAccess(mods, kind, memberkind)
-  if a:memberkind == 14
+function! s:CanAccess(mods, kind, outputkind)
+  if a:outputkind == 14
     return s:CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, s:MODIFIER_FINAL)
+  endif
+  if a:outputkind == 15
+    return s:IsStatic(a:mods)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
@@ -1242,14 +1245,14 @@ function! s:CanAccess(mods, kind, memberkind)
         \	|| (a:mods[-2:-2] && (a:kind == 1 || a:kind == 7)))
 endfunction
 
-function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, memberkind, ...)
+function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, outputkind, ...)
   let result = [[], [], [], []]
 
   if a:kind != 13
-    if a:memberkind != 14
+    if a:outputkind != 14
       for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_fields', []) : [])
         if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-          if s:CanAccess(m.m, a:kind, a:memberkind)
+          if s:CanAccess(m.m, a:kind, a:outputkind)
             call add(result[2], m)
           endif
         endif
@@ -1258,7 +1261,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
 
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        if s:CanAccess(m.m, a:kind, a:memberkind)
+        if s:CanAccess(m.m, a:kind, a:outputkind)
           call add(result[1], m)
         endif
       endif
@@ -1300,7 +1303,12 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
       if type(ci) == type([])
         let ci = ci[0]
       endif
-      let members = javacomplete#complete#complete#SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, a:memberkind)
+      if a:outputkind == 15
+        let outputkind = 11
+      else
+        let outputkind = a:outputkind
+      endif
+      let members = javacomplete#complete#complete#SearchMember(ci, a:name, a:fullmatch, a:kind == 1 ? 2 : a:kind, a:returnAll, outputkind)
       let result[0] += members[0]
       let result[1] += members[1]
       let result[2] += members[2]
@@ -1432,8 +1440,9 @@ endfunction
 "	13 - for import or extends or implements, only nested types
 "   14 - for public, protected methods of extends/implements. abstract first.
 "	20 - for package
-function! s:DoGetMemberList(ci, memberkind)
-  let kind = a:memberkind
+function! s:DoGetMemberList(ci, outputkind)
+  let kind = a:outputkind
+  let outputkind = a:outputkind
   if type(a:ci) != type({}) || a:ci == {}
     return []
   endif
@@ -1441,12 +1450,19 @@ function! s:DoGetMemberList(ci, memberkind)
   let s = ''
   if b:context_type == g:JC__CONTEXT_METHOD_REFERENCE
     let kind = 0
-    if a:memberkind != 0
+    if outputkind != 0
       let s = "{'kind': 'M', 'word': 'new', 'menu': 'new'},"
     endif
   endif
 
-  let members = javacomplete#complete#complete#SearchMember(a:ci, '', 1, kind, 1, a:memberkind, kind == 2)
+  if kind == 11
+    let tmp = s:DoGetClassInfo('this')
+    if tmp.name == a:ci.name
+      let outputkind = 15
+    endif
+  endif
+
+  let members = javacomplete#complete#complete#SearchMember(a:ci, '', 1, kind, 1, outputkind, kind == 2)
   let members[1] = s:UniqDeclaration(members[1])
 
   let s .= kind == 11 ? "{'kind': 'C', 'word': 'class', 'menu': 'Class'}," : ''
@@ -1491,13 +1507,13 @@ function! s:DoGetMemberList(ci, memberkind)
 
     if kind / 10 == 0
       let s .= s:DoGetFieldList(fieldlist)
-      let s .= s:DoGetMethodList(methodlist, a:memberkind)
+      let s .= s:DoGetMethodList(methodlist, outputkind)
     endif
     if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       let s .= s:DoGetFieldList(sfieldlist)
     endif
 
-    let s .= s:DoGetMethodList(smethodlist, a:memberkind, kind == 12)
+    let s .= s:DoGetMethodList(smethodlist, outputkind, kind == 12)
     let s .= s:DoGetNestedList(members[3])
 
     let s = substitute(s, '\<' . a:ci.name . '\.', '', 'g')
