@@ -155,6 +155,7 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
     let s .= s:DoGetMethodList(members[1], 14, 0)
   endfor
   let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
+  let s = javacomplete#util#CleanFQN(s)
   let result = eval('[' . s . ']')
   if !empty(result)
     let g:JC_DeclarationCompletedFlag = 1
