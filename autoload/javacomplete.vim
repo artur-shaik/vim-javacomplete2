@@ -278,10 +278,14 @@ function! s:HandleTextChangedI()
 
   if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
     let g:JC_DeclarationCompletedFlag = 0
-    if empty(javacomplete#util#Trim(getline('.')))
+    if !exists('g:JavaComplete_ClosingBrace')
+      let g:JavaComplete_ClosingBrace = 1
+    endif
+    if !empty(javacomplete#util#Trim(getline('.')))
+      call feedkeys("\b\r", "n")
+    endif
+    if g:JavaComplete_ClosingBrace
       call feedkeys("}\eO", "n")
-    else
-      call feedkeys("\b\r}\eO", "n")
     endif
   endif
 endfunction
