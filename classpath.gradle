@@ -17,11 +17,7 @@ task classpath << {
     def rjava = proj.getBuildDir().absolutePath + File.separator + "intermediates" + File.separator + "classes" + File.separator + "debug"
     def rFiles = new File(rjava)
     if (rFiles.exists()) {
-      rFiles.eachFileRecurse(){ file ->
-        if (file.name.endsWith("class")){
-          classpathFiles += file
-        }
-      }
+      classpathFiles += rFiles
     }
 
     for (conf in proj.configurations) {
