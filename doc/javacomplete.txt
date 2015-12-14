@@ -18,7 +18,7 @@
    3.1 Sample					|javacomplete-sample|
 4. FAQ						|javacomplete-faq|
 5. Limitations					|javacomplete-limitations|
-6. History					
+6. History
    6.1 javacomplete				|javacomplete-history|
 7. Todo						|javacomplete-todo|
 8. Thanks					|javacomplete-thanks|
@@ -46,6 +46,7 @@ javaparser library and javacomplete.txt.
 - Search class files automatically;
 - Complete class name;
 - Add import statement for a given class name.
+- Supports for popular IDE project
 
 1.2 Requirements				*javacomplete-requirements*
 
@@ -64,15 +65,11 @@ You can download the lastest version from this url:
     " Java completion plugin.
     Plugin 'artur-shaik/vim-javacomplete2'
 
+    also you can using [neobundle](https://github.com/Shougo/neobundle.vim) which provide better func of manager plugins
+
 2. Set 'omnifunc' option. e.g. >
 
     autocmd Filetype java setlocal omnifunc=javacomplete#Complete
-
-You can enable importing R.java for an Android project by using the maven-android-plugin by adding the following to your vimrc:
-
-    if filereadable("AndroidManifest.xml")
-        let g:JavaComplete_SourcesPath = "target/generated-sources/r"
-    endif
 
 3. Map keys you prefer:
 For insert class import with <F4>:
@@ -91,14 +88,14 @@ For remove all missing imports with <F6>:
     imap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)
 
 4. Javavi library will be automatcally compiled when you
-use first time. 
+use first time.
 If no lib/javavi/target is generated, check that you have the write permission
 and jdk installed.
 
 ==============================================================================
 2. Usage    					*javacomplete-usage*
 
-You can use it like other omni-completion script. Many samples of input context 
+You can use it like other omni-completion script. Many samples of input context
 are gived in the following section.
 
 See FAQ in time if some problem occurs. When meeting other problems not
@@ -126,7 +123,7 @@ Samples of input contexts are as following: (Note that '|' indicates cursor)
     - java.lang.String[].|
     - new int[].|	members of the new array instance
     - new java.lang.String[i=1][].|
-    - new Type().|	members of the new class instance 
+    - new Type().|	members of the new class instance
     - Type.class.|	class literal, return members of java.lang.Class
     - void.class.| or int.class.|
     - ((Type)var).|	cast var as Type, return members of Type.
@@ -194,42 +191,35 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
     Set classpath using the following variable: >
 
-        g:JavaComplete_LibsPath - path of you jar files. This path will 
-        always appended with '~/.m2/repository' directory. Here you can 
-        add your glassfish libs directory or your project libs. It will 
+        g:JavaComplete_LibsPath - path of you jar files. This path will
+        always appended with '~/.m2/repository' directory. Here you can
+        add your glassfish libs directory or your project libs. It will
         be automatically appended with you jre home path.
 <
     Set sourcepath using the following variable: >
 
-        g:JavaComplete_SourcesPath - path of your sources. Don't try to 
-        add all sources you have, this will slow down parsing process. 
-        Add you project sources and necessery library sources. If you 
-        have compiled classes add them to previous config instead. By 
-        default plugin will search `src` directory and add it 
+        g:JavaComplete_SourcesPath - path of your sources. Don't try to
+        add all sources you have, this will slow down parsing process.
+        Add you project sources and necessery library sources. If you
+        have compiled classes add them to previous config instead. By
+        default plugin will search `src` directory and add it
         automatically.
 
     Disable maven repository:
 
-        let g:JavaComplete_MavenRepositoryDisable = 1 
+        let g:JavaComplete_MavenRepositoryDisable = 1
         By default this option is disabled (0).
 
     Use fully qualified name in description:
 
         let g:JavaComplete_UseFQN = 1
         By default this option is disabled (0).
-        
+
     Set pom.xml path explicitly:
 
         let g:JavaComplete_PomPath = /path/to/pom.xml
         It will be set automatically, if pom.xml is in underlying path.
 
-    For `Gradle` users: you can generate `.classpath` file, that will be picked up by javacomplete2. Add this configuration to your `build.gradle`:
-
-    allprojects {
-        apply plugin: 'eclipse'
-    }
-
-    Than run `gradle eclipse`.
 
 2.4 Commands					*javacomplete-commands*
 
@@ -237,28 +227,28 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCimportsRemoveUnused - remove all unsused 'imports';
     JCimportAdd - add 'import' for classname that is under cursor, or before it;
     JCimportAddI - the same, but enable insert mode after 'import' was added;
-    
+
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
     JCserverStart - start server manually;
     JCserverTerminate - stop server manually;
     JCserverCompile - compile server manually;
-    
+
     JCdebugSetLogLevel - enable logs;
     JCdebugGetLogContent - get debug logs;
-    
+
     JCcacheClear - clear cache manually.
 
-    
+
 
 ==============================================================================
 3. Java parser in Vim    			*javacomplete-parser*
 
 3.1 Sample Codes					*javacomplete-sample*
-This parser can be a good candidate for anyone who needs a java parser to get 
+This parser can be a good candidate for anyone who needs a java parser to get
 a abstract syntax tree for many use. The following are sample codes: >
 
-  " NOTE: The script contains a single parser instance. You cannot create 
+  " NOTE: The script contains a single parser instance. You cannot create
   " another parser! The only way to parse another JAVA code is reset the
   " parser by calling java_parser#InitParser().
 
@@ -279,19 +269,19 @@ a abstract syntax tree for many use. The following are sample codes: >
 
   " 3. Use the tree as you like
 
-  " 4. The default scan strategy is scanning only sklenton. 
+  " 4. The default scan strategy is scanning only sklenton.
   " You can change it by set the option 'scanStrategy'.
   " The values for 'scanStrategy' option are:
-  "	0 - only class members when parse full file; 
-  "	1 - keep statement as a whole string; 
-  "	2 - all 
+  "	0 - only class members when parse full file;
+  "	1 - keep statement as a whole string;
+  "	2 - all
   call java_parser#InitParser(getline('^', '$'), {'scanStrategy': 2})
 
-  " 5. I recommend that keeping scanStrategy as default. 
+  " 5. I recommend that keeping scanStrategy as default.
   " If you want to parse a code snippet such as a method body of the whole
-  " file, you can call java_parser#GotoPosition() to go to what you are going 
+  " file, you can call java_parser#GotoPosition() to go to what you are going
   " to start parsing.
-  " Then, call java_parser#block(), java_parser#statement() or 
+  " Then, call java_parser#block(), java_parser#statement() or
   " java_parser#expression() to parse the smaller snippet.
   " NOTE: This way will keep the result tree reserved.
   call java_parser#GotoPosition(def.body.pos)
@@ -300,13 +290,26 @@ a abstract syntax tree for many use. The following are sample codes: >
 ==============================================================================
 4. FAQ						*javacomplete-faq*
 
+4.1 why can not complete in gradle project?
+
+    please check if 'gradle'or './gradlew' is runnable in you command line,if
+    your os is windows,you should use '.\gradlew.bat' in the root directory of
+    you project.
+
+4.2 I have installed gradle , but why can not complete R.class?
+
+    In android project,many of the class contains a ton of
+    innerclass,javacomplete2 could works better by reflection,so you need to
+    compile you project,after use `./gradlew build` ,R,java will be
+    automatically generated and automatcally compiled.
+
 ==============================================================================
 5. Limitations					*javacomplete-limitations*
 
 The embedded parser works a bit slower than expected.
 
 ==============================================================================
-6. History					
+6. History
 
 6.1 javacomplete				*javacomplete-history*
 
@@ -335,7 +338,7 @@ v2.2
     2015-07-08  Lambda expressions parsing.
 
 v2.1
-    2015-06-12  Generics completion. Bug fixes. 
+    2015-06-12  Generics completion. Bug fixes.
                 Added g:JavaComplete_MavenRepositoryDisable option.
 
 v2.0
@@ -348,7 +351,7 @@ v0.77.1.2
     2011-01-30	Fixed to adapt globpath() (vim < 7.2). Patched by Sam Lidder.
 
 v0.77.1.1
-    2010-11-12	Fixed to ignore the 'suffixes' and 'wildignore' options which 
+    2010-11-12	Fixed to ignore the 'suffixes' and 'wildignore' options which
     		make Reflection.class can not be found.
 
 v0.77.1
@@ -398,7 +401,7 @@ v0.76.6
 
 v0.76.5
     2007-08-21
-    -	Fixed bug: "foo().|", "getFoo().foo().|", 
+    -	Fixed bug: "foo().|", "getFoo().foo().|",
 	"for (Enumeration entries = ; entries.|; )".
     -	Supported input contexts: "((Object)o).|", "((Object)o).getClass().|",
 	"new ZipFile(path).|", "(new String().)|".
@@ -428,7 +431,7 @@ v0.76.2
     2007-08-08
     -	Fix failing to list members of nested class.
     -	Combine members of local packages and loadable packages.
-    -	Add quick recognition of package or import. 
+    -	Add quick recognition of package or import.
     2007-08-06	Add inherited fields and methods to local class.
 
 v0.76.1
@@ -445,7 +448,7 @@ v0.76 2007-08-04
     -	Improve for 'this' or 'super'.
     -	Support searching toplevel class in sourcepath.
     -	Clean
-    2007-08-02  
+    2007-08-02
     -	Improve the process of checking a class in one of packages.
     2007-08-01
     -	Add Searchdecl() using java_parser.vim to provide quick information.
