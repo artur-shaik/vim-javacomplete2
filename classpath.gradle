@@ -14,6 +14,12 @@ task classpath << {
       }
     }
 
+    def rjava = proj.getBuildDir().absolutePath + File.separator + "intermediates" + File.separator + "classes" + File.separator + "debug"
+    def rFiles = new File(rjava)
+    if (rFiles.exists()) {
+      classpathFiles += rFiles
+    }
+
     for (conf in proj.configurations) {
         for (dependency in conf) {
             if (dependency.name.endsWith("aar")){
