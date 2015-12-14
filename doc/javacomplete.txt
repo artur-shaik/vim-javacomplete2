@@ -1,4 +1,4 @@
-*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-09-18
+*javacomplete.txt*	For Vim version 7.4 and above. Last change: 2015-12-14
 
 		    JAVACOMPLETE2 REFERENCE MANUAL	by artur shaik~
 		    					ashaihullin@gmail.com~
@@ -45,6 +45,7 @@ javaparser library and javacomplete.txt.
 - Search class files automatically;
 - Complete class name;
 - Add import statement for a given class name;
+- Complete methods declaration after '@Override';
 - Support for maven, gradle and Eclipse's '.classpath'.
 
 1.2 Requirements				*javacomplete-requirements*
@@ -186,14 +187,14 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
 2.3 Options					*javacomplete-options*
 
-    Set classpath using the following variable: >
+    Set classpath using the following variable:
 
         g:JavaComplete_LibsPath - path of you jar files. This path will 
         always appended with '~/.m2/repository' directory. Here you can 
         add your glassfish libs directory or your project libs. It will 
         be automatically appended with you jre home path.
-<
-    Set sourcepath using the following variable: >
+
+    Set sourcepath using the following variable:
 
         g:JavaComplete_SourcesPath - path of your sources. Don't try to 
         add all sources you have, this will slow down parsing process. 
@@ -217,6 +218,18 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_PomPath = /path/to/pom.xml
         It will be set automatically, if pom.xml is in underlying path.
 
+    Close brace on method declaration completion:
+
+        let g:JavaComplete_ClosingBrace = 1 
+        Add close brace automatically, when complete method declaration. Disable if it conflicts with another plugins.
+
+    Where to write server logs:
+
+        let g:JavaComplete_JavaviLogfileDirectory = ''
+
+    Enables server side logging:
+
+        let g:JavaComplete_JavaviDebug = 1
 
 2.4 Commands					*javacomplete-commands*
 
@@ -308,6 +321,11 @@ The embedded parser works a bit slower than expected.
 6. History					
 
 6.1 javacomplete				*javacomplete-history*
+
+v2.3.4
+    2015-12-14  Use maven, gradle, or Eclipse's 'classpath` file to generate
+    classpath
+                Complete methods declaration on '@Override'.
 
 v2.3.3
     2015-10-08  Jsp files support, no taglibs yet.

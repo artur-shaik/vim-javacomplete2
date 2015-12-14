@@ -9,7 +9,7 @@ import kg.ash.javavi.searchers.ClassMap;
 
 public class Javavi {
 
-    static final String VERSION	= "2.3.3";
+    static final String VERSION	= "2.3.4";
 
     public static String NEWLINE = "";
 
