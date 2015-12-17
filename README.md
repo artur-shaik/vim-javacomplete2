@@ -92,7 +92,7 @@ Plug 'artur-shaik/vim-javacomplete2'
 
 Add this to your `.vimrc` file:
 
-`autocmd FileType java set omnifunc=javacomplete#Complete`
+`autocmd FileType java setlocal omnifunc=javacomplete#Complete`
 
 To enable inserting class imports with F4, add:
 
