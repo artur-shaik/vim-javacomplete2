@@ -153,6 +153,7 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
   for i in get(ti, 'extends', [])
     let members = javacomplete#complete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
     let s .= s:DoGetMethodList(members[1], 14, 0)
+    unlet i
   endfor
   let s = substitute(s, '\<\(abstract\|default\|native\)\s\+', '', 'g')
   let s = javacomplete#util#CleanFQN(s)
@@ -941,14 +942,20 @@ endfunction
 " a:1	filepath
 " a:2	package name
 function! s:DoGetClassInfo(class, ...)
-  if has_key(g:JavaComplete_Cache, a:class)
-    return g:JavaComplete_Cache[a:class]
+  if type(a:class) == type({})
+    let class = a:class.name
+  else
+    let class = a:class
   endif
 
-  call javacomplete#logger#Log("DoGetClassInfo: ". a:class)
+  if has_key(g:JavaComplete_Cache, class)
+    return g:JavaComplete_Cache[class]
+  endif
+
+  call javacomplete#logger#Log("DoGetClassInfo: ". class)
 
   " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
-  if a:class[-1:] == ']' || a:class[0] == '['
+  if class[-1:] == ']' || class[0] == '['
     return g:J_ARRAY_TYPE_INFO
   endif
 
@@ -957,10 +964,10 @@ function! s:DoGetClassInfo(class, ...)
 
   " either this or super is not qualified
   let t = get(javacomplete#parseradapter#SearchTypeAt(javacomplete#parseradapter#Parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
-  if a:class == 'this' || a:class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename.'.'.a:class)
+  if class == 'this' || class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename. '.'. class)
     if &ft == 'jsp'
       let ci = s:FetchClassInfo('javax.servlet.jsp.HttpJspPage')
-      if a:class == 'this'
+      if class == 'this'
         " TODO: search methods defined in <%! [declarations] %>
         "	search methods defined in other jsp files included
         "	avoid including self directly or indirectly
@@ -968,7 +975,7 @@ function! s:DoGetClassInfo(class, ...)
       return ci
     endif
 
-    call javacomplete#logger#Log('A0. ' . a:class)
+    call javacomplete#logger#Log('A0. ' . class)
     " this can be a local class or anonymous class as well as static type
     if !empty(t)
       " What will be returned for super?
@@ -981,7 +988,7 @@ function! s:DoGetClassInfo(class, ...)
     endif
   endif
 
-  let typename = a:class
+  let typename = class
 
   let typeArguments = ''
   let splittedType = s:SplitTypeArguments(typename)
@@ -1312,6 +1319,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
       let result[0] += members[0]
       let result[1] += members[1]
       let result[2] += members[2]
+      unlet i
     endfor
   endif
   return result
