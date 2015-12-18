@@ -277,11 +277,21 @@ function! s:HandleTextChangedI()
   endif
 
   if get(g:, 'JC_DeclarationCompletedFlag', 0)
-    if getline('.')[col('.') - 2] != ' ' 
+    let line = getline('.')
+    if line[col('.') - 2] != ' ' 
       return
     endif
 
     let g:JC_DeclarationCompletedFlag = 0
+
+    if line !~ '.*@Override.*'
+      let line = getline(line('.') - 1)
+    endif
+
+    if line =~ '.*@Override\s\+\(\S\+\|\)\(\s\+\|\)$'
+      return
+    endif
+
     if !empty(javacomplete#util#Trim(getline('.')))
       call feedkeys("\b\r", "n")
     endif
