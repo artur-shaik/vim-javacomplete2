@@ -271,20 +271,21 @@ endfunction
 call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI()
-  if exists('g:JC_ClassnameCompletedFlag') && g:JC_ClassnameCompletedFlag
+  if get(g:, 'JC_ClassnameCompletedFlag', 0)
     let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
   endif
 
-  if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
-    let g:JC_DeclarationCompletedFlag = 0
-    if !exists('g:JavaComplete_ClosingBrace')
-      let g:JavaComplete_ClosingBrace = 1
+  if get(g:, 'JC_DeclarationCompletedFlag', 0)
+    if getline('.')[col('.') - 2] != ' ' 
+      return
     endif
+
+    let g:JC_DeclarationCompletedFlag = 0
     if !empty(javacomplete#util#Trim(getline('.')))
       call feedkeys("\b\r", "n")
     endif
-    if g:JavaComplete_ClosingBrace
+    if get(g:, 'JavaComplete_ClosingBrace', 1)
       call feedkeys("}\eO", "n")
     endif
   endif
