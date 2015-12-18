@@ -292,19 +292,16 @@ function! s:HandleTextChangedI()
 endfunction
 
 function! s:HandleInsertLeave()
-  if exists('g:JC_DeclarationCompletedFlag') && g:JC_DeclarationCompletedFlag
+  if get(g:, 'JC_DeclarationCompletedFlag', 0)
     let g:JC_DeclarationCompletedFlag = 0
   endif
-  if exists('g:JC_ClassnameCompletedFlag') && g:JC_ClassnameCompletedFlag
+  if get(g:, 'JC_ClassnameCompletedFlag', 0)
     let g:JC_ClassnameCompletedFlag = 0
   endif
 endfunction
 
 function! javacomplete#UseFQN() 
-  if exists('g:JavaComplete_UseFQN') && g:JavaComplete_UseFQN
-    return 1
-  endif
-  return 0
+  return get(g:, 'JavaComplete_UseFQN', 0)
 endfunction
 
 function! s:RemoveCurrentFromCache()
