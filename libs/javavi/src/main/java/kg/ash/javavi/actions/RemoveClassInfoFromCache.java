@@ -1,14 +1,14 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 
 public class RemoveClassInfoFromCache extends ActionWithTarget {
     
     @Override
     public String perform(String[] args) {
         String target = parseTarget(args);
-        if (Javavi.cachedClasses.containsKey(target)) {
-            Javavi.cachedClasses.remove(target);
+        if (Cache.cachedClasses.containsKey(target)) {
+            Cache.cachedClasses.remove(target);
         }
 
         return null;

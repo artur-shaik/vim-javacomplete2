@@ -2,17 +2,17 @@ package kg.ash.javavi.actions;
 
 import kg.ash.javavi.output.OutputClassPackages;
 import kg.ash.javavi.searchers.PackagesLoader;
-import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 
 public class GetClassPackagesAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        if (Javavi.cachedClassPackages.isEmpty()) {
+        if (Cache.cachedClassPackages.isEmpty()) {
             new PackagesLoader(sources)
-                .collectPackages(Javavi.cachedClassPackages);
+                .collectPackages(Cache.cachedClassPackages);
         }
-        return new OutputClassPackages(Javavi.cachedClassPackages)
+        return new OutputClassPackages(Cache.cachedClassPackages)
             .get(parseTarget(args));
     }
     

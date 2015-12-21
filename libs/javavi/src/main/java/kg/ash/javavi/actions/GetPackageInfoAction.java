@@ -1,6 +1,6 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.PackagesLoader;
 import kg.ash.javavi.output.OutputPackageInfo;
 
@@ -8,12 +8,12 @@ public class GetPackageInfoAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        if (Javavi.cachedClassPackages.isEmpty()) {
+        if (Cache.cachedClassPackages.isEmpty()) {
             new PackagesLoader(sources)
-                .collectPackages(Javavi.cachedClassPackages);
+                .collectPackages(Cache.cachedClassPackages);
         }
 
-        return new OutputPackageInfo(Javavi.cachedClassPackages)
+        return new OutputPackageInfo(Cache.cachedClassPackages)
             .get(parseTarget(args));
     }
     
