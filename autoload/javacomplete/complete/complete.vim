@@ -722,8 +722,6 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     endif
   endif
 
-  " type should be FunctionInterface, and it contains only one abstract method
-
   for method in methods
     if a:ti.idx < len(method.p)
       let type = method.p[a:ti.idx]
@@ -737,22 +735,32 @@ function! s:DetermineLambdaArguments(unit, ti, name)
   return s:GetLambdaParameterType(type, a:name, argIdx, argPos)
 endfunction
 
+" type should be FunctionInterface, and it contains only one abstract method
 function! s:GetLambdaParameterType(type, name, argIdx, argPos)
   let pType = ''
   if !empty(a:type)
-    let functionalMembers = s:DoGetClassInfo(a:type)
-    if has_key(functionalMembers, 'methods')
-      for m in functionalMembers.methods
-        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
-          if a:argIdx < len(m.p)
-            let pType = m.p[a:argIdx]
-            break
+    let matches = matchlist(a:type, '^java.util.function.Function<\(.*\)>')
+    if len(matches) > 0
+      let types = split(matches[1], ',')
+      if !empty(types)
+        let type = javacomplete#scanner#ExtractCleanExpr(types[0])
+        return {'tag': 'VARDEF', 'name': type, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': a:argPos}, 'pos': a:argPos}
+      endif
+    else
+      let functionalMembers = s:DoGetClassInfo(a:type)
+      if has_key(functionalMembers, 'methods')
+        for m in functionalMembers.methods
+          if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
+            if a:argIdx < len(m.p)
+              let pType = m.p[a:argIdx]
+              break
+            endif
           endif
-        endif
-      endfor
+        endfor
 
-      if !empty(pType)
-        return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': a:argPos}, 'pos': a:argPos}
+        if !empty(pType)
+          return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': a:argPos}, 'pos': a:argPos}
+        endif
       endif
     endif
   endif

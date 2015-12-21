@@ -26,6 +26,7 @@ describe 'javacomplete scanner test'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'List<String>::') == 'List<String>::'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'import ="java.util') == 'java.util'
         Expect Call('javacomplete#scanner#ExtractCleanExpr', 'import = "java.util') == 'java.util'
+        Expect Call('javacomplete#scanner#ExtractCleanExpr', '? super java.lang.String') == 'java.lang.String'
     end
 
 end
