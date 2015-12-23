@@ -6,7 +6,7 @@ import java.util.List;
 
 public class PackagesLoader {
 
-    private HashMap<String,ClassMap> classesMap = new HashMap<>();
+    private HashMap<String, ClassMap> classPackages;
     private List<PackageSeacherIFace> searchers = new ArrayList<>();
 
     public PackagesLoader(String sourceDirectories) {
@@ -14,8 +14,8 @@ public class PackagesLoader {
         searchers.add(new SourcePackageSearcher(sourceDirectories));
     }
 
-    public void collectPackages(HashMap<String,ClassMap> classesMap) {
-        this.classesMap = classesMap;
+    public void collectPackages(HashMap<String, ClassMap> classPackages) {
+        this.classPackages = classPackages;
 
         List<PackageEntry> entries = new ArrayList<>();
         searchers.parallelStream().forEach(s -> entries.addAll(s.loadEntries()));
@@ -81,11 +81,11 @@ public class PackagesLoader {
             return;
         }
 
-        if (!classesMap.containsKey(child)) {
-            classesMap.put(child, new ClassMap(child, classMapType));
+        if (!classPackages.containsKey(child)) {
+            classPackages.put(child, new ClassMap(child, classMapType));
         }
 
-        classesMap.get(child).add(parent, source, type);
+        classPackages.get(child).add(parent, source, type);
     }
 
     private String makeDots(String name) {

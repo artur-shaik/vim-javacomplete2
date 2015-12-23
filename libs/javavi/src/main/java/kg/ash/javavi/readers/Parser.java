@@ -50,8 +50,9 @@ public class Parser implements ClassReader {
         if (targetClass.contains("$")) {
             targetClass = targetClass.split("\\$")[0];
         }
-        if (Cache.cachedClasses.containsKey(targetClass)) {
-            return Cache.cachedClasses.get(targetClass);
+
+        if (Cache.getInstance().getClasses().containsKey(targetClass)) {
+            return Cache.getInstance().getClasses().get(targetClass);
         }
 
         CompilationUnit cu = CompilationUnitCreator.createFromFile(sourceFile);
@@ -60,7 +61,7 @@ public class Parser implements ClassReader {
         }
 
         SourceClass clazz = new SourceClass();
-        Cache.cachedClasses.put(targetClass, clazz);
+        Cache.getInstance().getClasses().put(targetClass, clazz);
 
         clazz.setPackage(cu.getPackage().getName().toString());
 
@@ -257,7 +258,7 @@ public class Parser implements ClassReader {
             this.clazz.addNestedClass(clazz.getName());
             this.clazz.addLinkedClass(clazz);
 
-            Cache.cachedClasses.put(clazz.getName(), clazz);
+            Cache.getInstance().getClasses().put(clazz.getName(), clazz);
         }
 
     }

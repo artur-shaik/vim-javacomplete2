@@ -8,11 +8,7 @@ public class FilterSimilarAnnotationsAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        if (Cache.cachedClassPackages.isEmpty()) {
-            new PackagesLoader(sources)
-                .collectPackages(Cache.cachedClassPackages);
-        }
-        return new OutputSimilarAnnotations(Cache.cachedClassPackages)
+        return new OutputSimilarAnnotations(Cache.getInstance().getClassPackages())
             .get(parseTarget(args));
     }
     

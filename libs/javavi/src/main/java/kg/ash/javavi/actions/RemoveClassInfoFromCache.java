@@ -7,8 +7,8 @@ public class RemoveClassInfoFromCache extends ActionWithTarget {
     @Override
     public String perform(String[] args) {
         String target = parseTarget(args);
-        if (Cache.cachedClasses.containsKey(target)) {
-            Cache.cachedClasses.remove(target);
+        if (Cache.getInstance().getClasses().containsKey(target)) {
+            Cache.getInstance().getClasses().remove(target);
         }
 
         return null;

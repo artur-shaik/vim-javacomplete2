@@ -8,11 +8,7 @@ public class GetClassPackagesAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        if (Cache.cachedClassPackages.isEmpty()) {
-            new PackagesLoader(sources)
-                .collectPackages(Cache.cachedClassPackages);
-        }
-        return new OutputClassPackages(Cache.cachedClassPackages)
+        return new OutputClassPackages(Cache.getInstance().getClassPackages())
             .get(parseTarget(args));
     }
     
