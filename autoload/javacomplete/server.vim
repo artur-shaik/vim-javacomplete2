@@ -158,6 +158,12 @@ function! javacomplete#server#Communicate(option, args, log)
 JavacompletePy << EOPC
 vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
 EOPC
+
+    if result =~ '^message:'
+      echom result
+      return "[]"
+    endif
+
     return result
   endif
 

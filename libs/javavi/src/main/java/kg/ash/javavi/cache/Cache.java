@@ -8,6 +8,8 @@ import kg.ash.javavi.searchers.PackagesLoader;
 
 public class Cache {
 
+    public static String PACKAGES_EMPTY_ERROR = "message: packages still empty, try later. indexing...";
+
     private static Cache instance;
 
     public static Cache getInstance() {
@@ -20,10 +22,22 @@ public class Cache {
     private HashMap<String, SourceClass> classes = new HashMap<>();
     private HashMap<String, ClassMap> classPackages = new HashMap<>();
 
-    public HashMap<String, ClassMap> getClassPackages() {
-        if (classPackages.isEmpty()) {
+    private boolean collectIsRunning = false;
+
+    public synchronized void collectPackages() {
+        if (collectIsRunning) return;
+
+        collectIsRunning = true;
+        new Thread(() -> {
             String sources = Javavi.system.get("sources").replace('\\', '/');
             new PackagesLoader(sources).collectPackages(classPackages);
+            collectIsRunning = false;
+        }).start();
+    }
+
+    public HashMap<String, ClassMap> getClassPackages() {
+        if (classPackages.isEmpty()) {
+            collectPackages();
         }
         return classPackages;
     }

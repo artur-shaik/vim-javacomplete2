@@ -36,7 +36,9 @@ public class GetMissingImportsAction extends ImportsAction {
                 GetClassPackagesAction getPackagesAction = new GetClassPackagesAction();
                 String packages = getPackagesAction.perform(new String[] {classname});
 
-                if (packages.length() == 2) {
+                if (packages.startsWith("message:")) {
+                    return packages;
+                } else if (packages.length() == 2) {
                     continue;
                 }
 

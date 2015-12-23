@@ -1,10 +1,11 @@
 package kg.ash.javavi.output;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassMap;
-import java.util.HashMap;
 
 public abstract class OutputSimilar {
 
@@ -13,11 +14,15 @@ public abstract class OutputSimilar {
     protected HashMap<String,ClassMap> classPackages;
 
     public OutputSimilar(HashMap<String,ClassMap> classPackages) {
-        this.classPackages = classPackages == null ? new HashMap<>() : classPackages;
+        this.classPackages = classPackages;
     }
 
     public String get(String target) {
         if (target == null) target = "";
+
+        if (classPackages.isEmpty()) {
+            return Cache.PACKAGES_EMPTY_ERROR;
+        }
 
         List<String> keys = sort(getKeys(target));
 

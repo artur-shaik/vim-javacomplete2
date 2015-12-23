@@ -13,6 +13,10 @@ public class OutputPackageInfo {
     }
 
     public String get(String targetPackage) {
+        if (classPackages.isEmpty()) {
+            return Cache.PACKAGES_EMPTY_ERROR;
+        }
+
         StringBuilder sb = new StringBuilder();
         if (classPackages.containsKey(targetPackage)) {
             ClassMap classMap = classPackages.get(targetPackage);

@@ -3,6 +3,7 @@ package kg.ash.javavi.output;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassMap;
@@ -18,9 +19,12 @@ public class OutputClassPackages {
     }
 
     public String get(String targetClass) {
+        if (classPackages.isEmpty()) {
+            return Cache.PACKAGES_EMPTY_ERROR;
+        }
 
         StringBuilder builder = new StringBuilder("");
-        if (classPackages != null && classPackages.containsKey(targetClass)) {
+        if (classPackages.containsKey(targetClass)) {
             ClassMap cm = classPackages.get(targetClass);
             if (cm.getType() == ClassMap.CLASS) {
                 cm.getSubpackages().forEach((String scope) -> {
