@@ -382,7 +382,7 @@ v0.77
     2007-09-10
     -	Improved FoundClassDeclaration()
     -	Fixed bug calling cursor(0, 0)
-    2007-09-09	Rewrote DoGetClassInfo(), GetFQN() and IsFQN()¡£
+    2007-09-09	Rewrote DoGetClassInfo(), GetFQN() and IsFQN()
     2007-09-08	Fixed a bug when merging superclass's members
     2007-09-05 -- 07
     -	Improved s:MergeLines() and s:ExtractCleanExpr().
