@@ -1,12 +1,13 @@
 package kg.ash.javavi.searchers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
-public class ClassMap {
+public class ClassMap implements Serializable {
 
     public static final int CLASSPATH = 0;
     public static final int SOURCES = 1;

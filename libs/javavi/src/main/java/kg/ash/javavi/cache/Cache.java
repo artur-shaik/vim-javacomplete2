@@ -1,5 +1,6 @@
 package kg.ash.javavi.cache;
 
+import java.io.File;
 import java.util.HashMap;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.clazz.SourceClass;
@@ -22,6 +23,8 @@ public class Cache {
     private HashMap<String, SourceClass> classes = new HashMap<>();
     private HashMap<String, ClassMap> classPackages = new HashMap<>();
 
+    private CacheSerializator serializator = new CacheSerializator();
+
     private boolean collectIsRunning = false;
 
     public synchronized void collectPackages() {
@@ -29,8 +32,18 @@ public class Cache {
 
         collectIsRunning = true;
         new Thread(() -> {
-            String sources = Javavi.system.get("sources").replace('\\', '/');
-            new PackagesLoader(sources).collectPackages(classPackages);
+            Object o;
+            if ((o = serializator.loadCache("class_packages")) != null) {
+                classPackages = (HashMap<String, ClassMap>) o;
+            } else {
+                HashMap<String, ClassMap> classPackagesTemp = new HashMap<>();
+                new PackagesLoader(Javavi.system.get("sources").replace('\\', '/'))
+                    .collectPackages(classPackagesTemp);
+                classPackages.putAll(classPackagesTemp);
+
+                serializator.saveCache("class_packages", classPackages);
+            }
+
             collectIsRunning = false;
         }).start();
     }

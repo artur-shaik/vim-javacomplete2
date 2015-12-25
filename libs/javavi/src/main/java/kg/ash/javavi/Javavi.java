@@ -73,6 +73,12 @@ public class Javavi {
                 case "-d":
                     Javavi.debugMode = true;
                     break;
+                case "-base":
+                    system.put("base", args[++i]);
+                    break;
+                case "-project":
+                    system.put("project", args[++i]);
+                    break;
                 default:
                     if (action == null) {
                         action = ActionFactory.get(arg);
