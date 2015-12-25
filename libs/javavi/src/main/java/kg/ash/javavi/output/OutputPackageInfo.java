@@ -1,20 +1,24 @@
 package kg.ash.javavi.output;
 
-import kg.ash.javavi.searchers.ClassMap;
 import java.util.HashMap;
+import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.searchers.ClassMap;
 
 public class OutputPackageInfo {
 
-    private HashMap<String,ClassMap> classPackages;
+    private HashMap<String, ClassMap> classPackages;
 
-    public OutputPackageInfo(HashMap<String,ClassMap> classPackages) {
+    public OutputPackageInfo(HashMap<String, ClassMap> classPackages) {
         this.classPackages = classPackages;
     }
-    
+
     public String get(String targetPackage) {
+        if (classPackages.isEmpty()) {
+            return Cache.PACKAGES_EMPTY_ERROR;
+        }
 
         StringBuilder sb = new StringBuilder();
-        if (classPackages != null && classPackages.containsKey(targetPackage)) {
+        if (classPackages.containsKey(targetPackage)) {
             ClassMap classMap = classPackages.get(targetPackage);
 
             sb.append("'").append(targetPackage).append("':")

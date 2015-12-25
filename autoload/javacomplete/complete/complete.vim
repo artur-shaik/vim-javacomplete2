@@ -1225,7 +1225,7 @@ function! s:DoGetInfoByReflection(class, option)
   let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
   if res =~ '^[{\[]'
     let v = eval(res)
-    if type(v) == type([])
+    if type(v) == type([]) && !empty(v)
       let g:JavaComplete_Cache[substitute(a:class, '\$', '.', '')] = sort(v)
     elseif type(v) == type({})
       if get(v, 'tag', '') =~# '^\(PACKAGE\|CLASSDEF\)$'

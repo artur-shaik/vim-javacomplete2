@@ -13,10 +13,6 @@ public class Javavi {
 
     public static String NEWLINE = "";
 
-    public static HashMap<String,SourceClass> cachedClasses = new HashMap<>();
-    public static HashMap<String,StringBuilder[]> cachedPackages = new HashMap<>();
-    public static HashMap<String,ClassMap> cachedClassPackages = new HashMap<>();
-
     static boolean debugMode = false;
 
     public static void debug(Object s) {
@@ -76,6 +72,12 @@ public class Javavi {
                     break;
                 case "-d":
                     Javavi.debugMode = true;
+                    break;
+                case "-base":
+                    system.put("base", args[++i]);
+                    break;
+                case "-project":
+                    system.put("project", args[++i]);
                     break;
                 default:
                     if (action == null) {

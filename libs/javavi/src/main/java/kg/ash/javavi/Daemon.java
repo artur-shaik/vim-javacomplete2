@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import kg.ash.javavi.cache.Cache;
 
 public class Daemon extends Thread {
 
@@ -24,6 +25,8 @@ public class Daemon extends Thread {
     }
 
     public void run() {
+        Cache.getInstance().collectPackages();
+
         ServerSocket echoServer = null;
 
         while (true) {

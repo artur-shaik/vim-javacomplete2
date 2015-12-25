@@ -65,6 +65,10 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_JavaviDebug') && g:JavaComplete_JavaviDebug
       let args .= ' -d'
     endif
+    let args .= ' -base '. javacomplete#GetBase('')
+    if !empty(b:projectKey)
+      let args .= ' -project '. b:projectKey
+    endif
     call javacomplete#logger#Log("Server classpath: -cp ". classpath)
     call javacomplete#logger#Log("Server arguments:". args)
 
@@ -114,11 +118,7 @@ function! javacomplete#server#Compile()
 
   let javaviDir = g:JavaComplete_Home. g:FILE_SEP. join(['libs', 'javavi'], g:FILE_SEP). g:FILE_SEP
   if isdirectory(javaviDir. join(['target', 'classes'], g:FILE_SEP)) 
-    if g:IS_WINDOWS
-      silent exe '!rmdir \s "'. javaviDir.join(['target', 'classes'], g:FILE_SEP)
-    else
-      silent exe '!rm -r '. javaviDir.join(['target', 'classes'], g:FILE_SEP)
-    endif
+    call javacomplete#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
   endif
 
   if executable('mvn')
@@ -158,6 +158,13 @@ function! javacomplete#server#Communicate(option, args, log)
 JavacompletePy << EOPC
 vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
 EOPC
+
+    call javacomplete#logger#Log(result)
+    if result =~ '^message:'
+      echom result
+      return "[]"
+    endif
+
     return result
   endif
 

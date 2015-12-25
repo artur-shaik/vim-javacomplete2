@@ -15,7 +15,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
-import kg.ash.javavi.Javavi;
+import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassImport;
@@ -50,8 +50,9 @@ public class Parser implements ClassReader {
         if (targetClass.contains("$")) {
             targetClass = targetClass.split("\\$")[0];
         }
-        if (Javavi.cachedClasses.containsKey(targetClass)) {
-            return Javavi.cachedClasses.get(targetClass);
+
+        if (Cache.getInstance().getClasses().containsKey(targetClass)) {
+            return Cache.getInstance().getClasses().get(targetClass);
         }
 
         CompilationUnit cu = CompilationUnitCreator.createFromFile(sourceFile);
@@ -60,7 +61,7 @@ public class Parser implements ClassReader {
         }
 
         SourceClass clazz = new SourceClass();
-        Javavi.cachedClasses.put(targetClass, clazz);
+        Cache.getInstance().getClasses().put(targetClass, clazz);
 
         clazz.setPackage(cu.getPackage().getName().toString());
 
@@ -257,7 +258,7 @@ public class Parser implements ClassReader {
             this.clazz.addNestedClass(clazz.getName());
             this.clazz.addLinkedClass(clazz);
 
-            Javavi.cachedClasses.put(clazz.getName(), clazz);
+            Cache.getInstance().getClasses().put(clazz.getName(), clazz);
         }
 
     }

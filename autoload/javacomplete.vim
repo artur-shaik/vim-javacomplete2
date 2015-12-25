@@ -101,6 +101,8 @@ let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {
 let g:Javacomplete_pom_properties={}   "maven project properties
 let g:Javacomplete_pom_tags = ['build', 'properties']
 
+let b:projectKey = ''
+
 fu! SScope()
   return s:
 endfu
@@ -112,6 +114,10 @@ endfunction
 
 function! javacomplete#Complete(findstart, base)
   return javacomplete#complete#complete#Complete(a:findstart, a:base)
+endfunction
+
+function! javacomplete#GetBase(extra)
+  return s:GetBase(a:extra)
 endfunction
 
 function! s:GetBase(extra)
@@ -132,6 +138,18 @@ function! s:ReadClassPathFile(classpath_file)
   return cp
 endfunction
 
+function! javacomplete#RemoveFile(file)
+  call s:RemoveFile(a:file)
+endfunction
+
+function! s:RemoveFile(file)
+  if g:IS_WINDOWS
+    silent exe '!rmdir \s "'. a:file
+  else
+    silent exe '!rm -r '. a:file
+  endif
+endfunction
+
 function! s:FindClassPath() abort
   let cp = '.'
 
@@ -145,26 +163,28 @@ function! s:FindClassPath() abort
   let base = s:GetBase("classpath". g:FILE_SEP)
 
   if executable('mvn') && g:JavaComplete_PomPath != ""
-    let key = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
-    let path = base . key
+    let b:projectKey = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
+    let path = base . b:projectKey
 
     if filereadable(path)
       if getftime(path) >= getftime(g:JavaComplete_PomPath)
         return join(readfile(path), '')
       endif
+      call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. b:projectKey. '.dat')
     endif
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
   endif
 
   if executable('gradle') || executable('./gradlew') || executable('.\gradlew.bat')
     if g:JavaComplete_GradlePath != ""
-      let key = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
-      let path = base . key
+      let b:projectKey = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
+      let path = base . b:projectKey
 
       if filereadable(path)
         if getftime(path) >= getftime(g:JavaComplete_GradlePath)
           return join(readfile(path), '')
         endif
+        call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. b:projectKey. '.dat')
       endif
       return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
