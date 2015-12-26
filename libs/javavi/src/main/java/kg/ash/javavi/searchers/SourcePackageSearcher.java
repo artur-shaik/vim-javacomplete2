@@ -32,7 +32,7 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
                     String packagePath = fetchPackagePath(path);
                     if (packagePath != null) {
                         packagePath = packagePath.substring(0, packagePath.length() - 4) + "class";
-                        result.add(new PackageEntry(packagePath, ClassMap.SOURCES));
+                        result.add(new PackageEntry(packagePath, ClassMap.SOURCES, path, PackageEntry.FILETYPE_JAVA));
                     }
                 }
             } catch (IOException ex) {

@@ -101,7 +101,7 @@ let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {
 let g:Javacomplete_pom_properties={}   "maven project properties
 let g:Javacomplete_pom_tags = ['build', 'properties']
 
-let b:projectKey = ''
+let g:JavaComplete_ProjectKey = ''
 
 fu! SScope()
   return s:
@@ -163,28 +163,28 @@ function! s:FindClassPath() abort
   let base = s:GetBase("classpath". g:FILE_SEP)
 
   if executable('mvn') && g:JavaComplete_PomPath != ""
-    let b:projectKey = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
-    let path = base . b:projectKey
+    let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
+    let path = base . g:JavaComplete_ProjectKey
 
     if filereadable(path)
       if getftime(path) >= getftime(g:JavaComplete_PomPath)
         return join(readfile(path), '')
       endif
-      call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. b:projectKey. '.dat')
+      call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
     endif
     return s:GenerateMavenClassPath(path, g:JavaComplete_PomPath)
   endif
 
   if executable('gradle') || executable('./gradlew') || executable('.\gradlew.bat')
     if g:JavaComplete_GradlePath != ""
-      let b:projectKey = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
-      let path = base . b:projectKey
+      let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
+      let path = base . g:JavaComplete_ProjectKey
 
       if filereadable(path)
         if getftime(path) >= getftime(g:JavaComplete_GradlePath)
           return join(readfile(path), '')
         endif
-        call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. b:projectKey. '.dat')
+        call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
       endif
       return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
     endif
@@ -347,7 +347,7 @@ endfunction
 augroup javacomplete
   autocmd!
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
-  autocmd BufWrite *.java call s:RemoveCurrentFromCache()
+  autocmd BufWritePost *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
 
   if has("patch-7.3.867")

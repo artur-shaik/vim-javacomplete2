@@ -23,14 +23,14 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
         List<String> knownPaths = new ArrayList<>();
         collectClassPath().stream()
-            .forEach(path -> {
-                if (path.toLowerCase().endsWith(".class")) {
-                    path = path.substring(0, path.length() - 6).replaceAll(File.separator, ".");
+            .forEach(filePath -> {
+                if (filePath.toLowerCase().endsWith(".class")) {
+                    String path = filePath.substring(0, filePath.length() - 6).replaceAll(File.separator, ".");
                     String newPath = path.substring(0, path.lastIndexOf("."));
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
                     Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
                     if (knownPath.isPresent()) {
-                        result.add(new PackageEntry(knownPath.get() + "." + fileName, ClassMap.CLASSPATH));
+                        result.add(new PackageEntry(knownPath.get().replaceAll("\\.", "/") + "/" + fileName + ".class", ClassMap.CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                         return;
                     }
                     String[] split = path.split("\\.");
@@ -42,7 +42,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                         }
                         String pkg = getPackageByFile(path + fileName);
                         if (pkg != null) {
-                            result.add(new PackageEntry(pkg + "." + fileName, ClassMap.CLASSPATH));
+                            result.add(new PackageEntry(pkg.replaceAll("\\.", "/") + "/" + fileName + ".class", ClassMap.CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                             knownPaths.add(pkg);
                             break;
                         } else {
@@ -51,7 +51,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     }
                 } else {
                     try {
-                        for (Enumeration entries = new ZipFile(path).entries(); entries.hasMoreElements(); ) {
+                        for (Enumeration entries = new ZipFile(filePath).entries(); entries.hasMoreElements(); ) {
                             String entry = entries.nextElement().toString();
                             result.add(new PackageEntry(entry, ClassMap.CLASSPATH));
                         }

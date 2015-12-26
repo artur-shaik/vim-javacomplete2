@@ -13,11 +13,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import kg.ash.javavi.TargetParser;
+import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.readers.FileClassLoader;
+import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.ClassSearcher;
 
 public class Reflection implements ClassReader {
@@ -46,6 +49,23 @@ public class Reflection implements ClassReader {
 
     @Override
     public SourceClass read(String name) {
+        if (Cache.getInstance().getClasses().containsKey(name)) {
+            return Cache.getInstance().getClasses().get(name);
+        }
+
+        String[] splitted = name.split("\\.");
+        ClassNameMap classMap = (ClassNameMap) Cache.getInstance().getClassPackages().get(splitted[splitted.length - 1]);
+        if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
+            ClassLoader parentClassLoader = FileClassLoader.class.getClassLoader();
+            FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader, classMap.getClassFile());
+            Class clazz = fileClassLoader.loadClass(name);
+            if (clazz != null) {
+                try {
+                    return getSourceClass(clazz);
+                } catch (Throwable t) {}
+            }
+        }
+
         try {
             Class clazz = Class.forName(name);
             return getSourceClass(clazz);
@@ -221,6 +241,7 @@ public class Reflection implements ClassReader {
 
         }
 
+        Cache.getInstance().getClasses().put(cls.getName(), clazz);
         return clazz;
     }
 

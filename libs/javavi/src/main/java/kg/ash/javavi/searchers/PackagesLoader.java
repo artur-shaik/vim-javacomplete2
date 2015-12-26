@@ -70,8 +70,14 @@ public class PackagesLoader {
 
         int source = entry.getSource();
 
-        getClassMap(child, JavaClassMap.TYPE_CLASS)
-            .add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
+        ClassNameMap classMap = (ClassNameMap) getClassMap(child, JavaClassMap.TYPE_CLASS);
+        classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
+        if (entry.getJavaFile() != null) {
+            classMap.setJavaFile(entry.getJavaFile());
+        } 
+        if (entry.getClassFile() != null) {
+            classMap.setClassFile(entry.getClassFile());
+        }
 
         if (!nested) {
             getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)

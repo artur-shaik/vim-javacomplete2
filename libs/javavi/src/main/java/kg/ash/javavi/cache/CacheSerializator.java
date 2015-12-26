@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import kg.ash.javavi.Javavi;
-import kg.ash.javavi.searchers.ClassMap;
 
 public class CacheSerializator {
 

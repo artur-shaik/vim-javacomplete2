@@ -61,6 +61,7 @@ public class Daemon extends Thread {
                         break;
                     }
                 } catch (Throwable e) {
+                    e.printStackTrace();
                     Javavi.debug(e);
                 }
             } catch (IOException e) {

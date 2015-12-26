@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.clazz.SourceClass;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import kg.ash.javavi.searchers.PackagesLoader;
 
 public class Cache {
@@ -21,7 +21,7 @@ public class Cache {
     }
     
     private HashMap<String, SourceClass> classes = new HashMap<>();
-    private HashMap<String, ClassMap> classPackages = new HashMap<>();
+    private HashMap<String, JavaClassMap> classPackages = new HashMap<>();
 
     private CacheSerializator serializator = new CacheSerializator();
 
@@ -34,9 +34,9 @@ public class Cache {
         new Thread(() -> {
             Object o;
             if ((o = serializator.loadCache("class_packages")) != null) {
-                classPackages = (HashMap<String, ClassMap>) o;
+                classPackages = (HashMap<String, JavaClassMap>) o;
             } else {
-                HashMap<String, ClassMap> classPackagesTemp = new HashMap<>();
+                HashMap<String, JavaClassMap> classPackagesTemp = new HashMap<>();
                 new PackagesLoader(Javavi.system.get("sources").replace('\\', '/'))
                     .collectPackages(classPackagesTemp);
                 classPackages.putAll(classPackagesTemp);
@@ -48,7 +48,7 @@ public class Cache {
         }).start();
     }
 
-    public HashMap<String, ClassMap> getClassPackages() {
+    public HashMap<String, JavaClassMap> getClassPackages() {
         if (classPackages.isEmpty()) {
             collectPackages();
         }

@@ -66,8 +66,9 @@ function! javacomplete#server#Start()
       let args .= ' -d'
     endif
     let args .= ' -base '. javacomplete#GetBase('')
-    if !empty(b:projectKey)
-      let args .= ' -project '. b:projectKey
+    let args .= ' -compiler '. javacomplete#server#GetCompiler()
+    if !empty(g:JavaComplete_ProjectKey)
+      let args .= ' -project '. g:JavaComplete_ProjectKey
     endif
     call javacomplete#logger#Log("Server classpath: -cp ". classpath)
     call javacomplete#logger#Log("Server arguments:". args)

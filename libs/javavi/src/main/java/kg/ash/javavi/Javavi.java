@@ -79,6 +79,9 @@ public class Javavi {
                 case "-project":
                     system.put("project", args[++i]);
                     break;
+                case "-compiler":
+                    system.put("compiler", args[++i]);
+                    break;
                 default:
                     if (action == null) {
                         action = ActionFactory.get(arg);
