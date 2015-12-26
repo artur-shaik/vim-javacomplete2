@@ -8,7 +8,7 @@ import kg.ash.javavi.clazz.SourceClass;
 
 public class Javavi {
 
-    static final String VERSION	= "2.3.4";
+    static final String VERSION	= "2.3.4.1";
 
     public static String NEWLINE = "";
 
