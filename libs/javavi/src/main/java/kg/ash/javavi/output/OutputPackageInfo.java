@@ -2,13 +2,13 @@ package kg.ash.javavi.output;
 
 import java.util.HashMap;
 import kg.ash.javavi.cache.Cache;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 
 public class OutputPackageInfo {
 
-    private HashMap<String, ClassMap> classPackages;
+    private HashMap<String, JavaClassMap> classPackages;
 
-    public OutputPackageInfo(HashMap<String, ClassMap> classPackages) {
+    public OutputPackageInfo(HashMap<String, JavaClassMap> classPackages) {
         this.classPackages = classPackages;
     }
 
@@ -19,7 +19,7 @@ public class OutputPackageInfo {
 
         StringBuilder sb = new StringBuilder();
         if (classPackages.containsKey(targetPackage)) {
-            ClassMap classMap = classPackages.get(targetPackage);
+            JavaClassMap classMap = classPackages.get(targetPackage);
 
             sb.append("'").append(targetPackage).append("':")
                 .append("{'tag':'PACKAGE'")

@@ -3,12 +3,12 @@ package kg.ash.javavi.output;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Predicate;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import java.util.List;
 
 public class OutputSimilarAnnotations extends OutputSimilar {
     
-    public OutputSimilarAnnotations(HashMap<String,ClassMap> classPackages) {
+    public OutputSimilarAnnotations(HashMap<String, JavaClassMap> classPackages) {
         super(classPackages);
         wordPrefix = "@";
     }
@@ -39,7 +39,7 @@ public class OutputSimilarAnnotations extends OutputSimilar {
         } catch (NoClassDefFoundError | ClassNotFoundException ex) {}
     }
 
-    private Predicate<String> isFromClasspath(ClassMap map) {
-        return s -> map.getSource(s) == ClassMap.CLASSPATH;
+    private Predicate<String> isFromClasspath(JavaClassMap map) {
+        return s -> map.getSourceType(s) == JavaClassMap.SOURCETYPE_CLASSPATH;
     }
 }

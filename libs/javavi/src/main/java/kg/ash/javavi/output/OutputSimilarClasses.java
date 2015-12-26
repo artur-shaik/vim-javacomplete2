@@ -3,12 +3,12 @@ package kg.ash.javavi.output;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import java.util.List;
 
 public class OutputSimilarClasses extends OutputSimilar {
 
-    public OutputSimilarClasses(HashMap<String,ClassMap> classPackages) {
+    public OutputSimilarClasses(HashMap<String, JavaClassMap> classPackages) {
         super(classPackages);
     }
 

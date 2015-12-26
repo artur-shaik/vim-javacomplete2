@@ -6,7 +6,7 @@ import java.util.List;
 
 public class PackagesLoader {
 
-    private HashMap<String, ClassMap> classPackages;
+    private HashMap<String, JavaClassMap> classPackages;
     private List<PackageSeacherIFace> searchers = new ArrayList<>();
 
     public PackagesLoader(String sourceDirectories) {
@@ -14,32 +14,50 @@ public class PackagesLoader {
         searchers.add(new SourcePackageSearcher(sourceDirectories));
     }
 
-    public void collectPackages(HashMap<String, ClassMap> classPackages) {
+    public void collectPackages(HashMap<String, JavaClassMap> classPackages) {
         this.classPackages = classPackages;
 
         List<PackageEntry> entries = new ArrayList<>();
         searchers.parallelStream().forEach(s -> entries.addAll(s.loadEntries()));
 
-        entries.forEach(entry -> appendEntry(entry.getEntry(), entry.getSource()));
+        entries.forEach(entry -> appendEntry(entry));
     }
 
     public void setSearchers(List<PackageSeacherIFace> searchers) {
         this.searchers = searchers;
     }
 
-    private void appendEntry(String name, int source) {
+    private void appendEntry(PackageEntry entry) {
+        String name = entry.getEntry();
         if (isClassFile(name)) {
             int seppos = name.lastIndexOf('$');
             if (seppos < 0) {
                 seppos = name.replace('\\', '/').lastIndexOf('/');
             }
             if (seppos != -1) {
-                processClass(name, seppos, source);
+                processClass(entry, seppos);
             }
         }
     }
 
-    private void processClass(String name, int seppos, int source) {
+    private JavaClassMap getClassMap(String name, int type) {
+        if (classPackages.containsKey(name)) {
+            return classPackages.get(name);
+        }
+
+        JavaClassMap jcm;
+        if (type == JavaClassMap.TYPE_CLASS) {
+            jcm = new ClassNameMap(name);
+        } else {
+            jcm = new PackageNameMap(name);
+        }
+
+        classPackages.put(name, jcm);
+        return jcm;
+    }
+
+    private void processClass(PackageEntry entry, int seppos) {
+        String name = entry.getEntry();
         String parent = name.substring(0, seppos);
         String child  = name.substring(seppos + 1, name.length() - 6);
 
@@ -50,9 +68,14 @@ public class PackagesLoader {
             parentDots += "$";
         }
 
-        putClassPath(parentDots, child, source, ClassMap.CLASS, ClassMap.SUBPACKAGE);
+        int source = entry.getSource();
+
+        getClassMap(child, JavaClassMap.TYPE_CLASS)
+            .add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
+
         if (!nested) {
-            putClassPath(child, parentDots, source, ClassMap.SUBPACKAGE, ClassMap.CLASS);
+            getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)
+                .add(child, source, JavaClassMap.TYPE_CLASS);
         }
 
         addToParent(parent, source);
@@ -71,21 +94,10 @@ public class PackagesLoader {
         String parent = name.substring(0, seppos);
         String child = name.substring(seppos + 1);
 
-        putClassPath(child, makeDots(parent), source, ClassMap.SUBPACKAGE, ClassMap.SUBPACKAGE);
+        getClassMap(makeDots(parent), JavaClassMap.TYPE_SUBPACKAGE)
+            .add(child, source, JavaClassMap.TYPE_SUBPACKAGE);
 
         addToParent(parent, source);
-    }
-
-    private void putClassPath(String parent, String child, int source, int classMapType, int type) {
-        if (parent.isEmpty() || child.isEmpty()) {
-            return;
-        }
-
-        if (!classPackages.containsKey(child)) {
-            classPackages.put(child, new ClassMap(child, classMapType));
-        }
-
-        classPackages.get(child).add(parent, source, type);
     }
 
     private String makeDots(String name) {

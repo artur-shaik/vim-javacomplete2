@@ -6,15 +6,15 @@ import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.ClassReader;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import kg.ash.javavi.searchers.ClassSearcher;
 
 public class OutputClassPackages {
 
-    private HashMap<String,ClassMap> classPackages;
+    private HashMap<String, JavaClassMap> classPackages;
     private String sources = Javavi.system.get("sources").replace('\\', '/');
 
-    public OutputClassPackages(HashMap<String,ClassMap> classPackages) {
+    public OutputClassPackages(HashMap<String, JavaClassMap> classPackages) {
         this.classPackages = classPackages;
     }
 
@@ -25,8 +25,8 @@ public class OutputClassPackages {
 
         StringBuilder builder = new StringBuilder("");
         if (classPackages.containsKey(targetClass)) {
-            ClassMap cm = classPackages.get(targetClass);
-            if (cm.getType() == ClassMap.CLASS) {
+            JavaClassMap cm = classPackages.get(targetClass);
+            if (cm.getType() == JavaClassMap.TYPE_CLASS) {
                 cm.getSubpackages().forEach((String scope) -> {
                     if (scope.endsWith("$")) {
                         String target = scope + targetClass;

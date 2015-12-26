@@ -5,15 +5,15 @@ import java.util.HashMap;
 import java.util.List;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 
 public abstract class OutputSimilar {
 
     protected String wordPrefix = "";
 
-    protected HashMap<String,ClassMap> classPackages;
+    protected HashMap<String, JavaClassMap> classPackages;
 
-    public OutputSimilar(HashMap<String,ClassMap> classPackages) {
+    public OutputSimilar(HashMap<String, JavaClassMap> classPackages) {
         this.classPackages = classPackages;
     }
 
