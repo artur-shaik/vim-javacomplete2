@@ -5,7 +5,6 @@ import java.util.HashMap;
 import kg.ash.javavi.actions.Action;
 import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.clazz.SourceClass;
-import kg.ash.javavi.searchers.ClassMap;
 
 public class Javavi {
 

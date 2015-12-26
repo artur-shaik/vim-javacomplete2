@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipFile;
 import kg.ash.javavi.Javavi;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 
 public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
@@ -30,7 +30,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
                     Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
                     if (knownPath.isPresent()) {
-                        result.add(new PackageEntry(knownPath.get().replaceAll("\\.", "/") + "/" + fileName + ".class", ClassMap.CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                        result.add(new PackageEntry(knownPath.get().replaceAll("\\.", "/") + "/" + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                         return;
                     }
                     String[] split = path.split("\\.");
@@ -42,7 +42,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                         }
                         String pkg = getPackageByFile(path + fileName);
                         if (pkg != null) {
-                            result.add(new PackageEntry(pkg.replaceAll("\\.", "/") + "/" + fileName + ".class", ClassMap.CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                            result.add(new PackageEntry(pkg.replaceAll("\\.", "/") + "/" + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                             knownPaths.add(pkg);
                             break;
                         } else {
@@ -53,7 +53,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     try {
                         for (Enumeration entries = new ZipFile(filePath).entries(); entries.hasMoreElements(); ) {
                             String entry = entries.nextElement().toString();
-                            result.add(new PackageEntry(entry, ClassMap.CLASSPATH));
+                            result.add(new PackageEntry(entry, JavaClassMap.SOURCETYPE_CLASSPATH));
                         }
                     } catch (IOException e) {
                         Javavi.debug(e);
