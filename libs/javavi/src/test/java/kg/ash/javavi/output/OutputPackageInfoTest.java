@@ -1,7 +1,9 @@
 package kg.ash.javavi.output;
 
 import java.util.HashMap;
-import kg.ash.javavi.searchers.ClassMap;
+import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.searchers.ClassNameMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,14 +11,14 @@ import org.junit.Test;
 public class OutputPackageInfoTest {
 
     private String target = "foo.bar";
-    private HashMap<String,ClassMap> classPackages;
+    private HashMap<String,JavaClassMap> classPackages;
 
     @Before
     public void Init() {
-        ClassMap classMap = new ClassMap(target, ClassMap.CLASS);
-        classMap.add("baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
-        classMap.add("bax", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
-        classMap.add("Bat", ClassMap.CLASSPATH, ClassMap.CLASS);
+        JavaClassMap classMap = new ClassNameMap(target);
+        classMap.add("baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bax", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("Bat", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_CLASS);
 
         classPackages = new HashMap<>();
         classPackages.put(target, classMap);
@@ -42,6 +44,6 @@ public class OutputPackageInfoTest {
     
     @Test
     public void testNullPackages() {
-        Assert.assertEquals("{}", new OutputPackageInfo(null).get(target));
+        Assert.assertEquals(Cache.PACKAGES_EMPTY_ERROR, new OutputPackageInfo(null).get(target));
     }
 }

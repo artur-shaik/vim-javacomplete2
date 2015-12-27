@@ -20,7 +20,7 @@ public abstract class OutputSimilar {
     public String get(String target) {
         if (target == null) target = "";
 
-        if (classPackages.isEmpty()) {
+        if (classPackages == null || classPackages.isEmpty()) {
             return Cache.PACKAGES_EMPTY_ERROR;
         }
 

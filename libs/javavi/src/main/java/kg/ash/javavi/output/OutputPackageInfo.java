@@ -13,7 +13,7 @@ public class OutputPackageInfo {
     }
 
     public String get(String targetPackage) {
-        if (classPackages.isEmpty()) {
+        if (classPackages == null || classPackages.isEmpty()) {
             return Cache.PACKAGES_EMPTY_ERROR;
         }
 

@@ -70,21 +70,23 @@ public class PackagesLoader {
 
         int source = entry.getSource();
 
-        ClassNameMap classMap = (ClassNameMap) getClassMap(child, JavaClassMap.TYPE_CLASS);
-        classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
-        if (entry.getJavaFile() != null) {
-            classMap.setJavaFile(entry.getJavaFile());
-        } 
-        if (entry.getClassFile() != null) {
-            classMap.setClassFile(entry.getClassFile());
-        }
+        if (!child.isEmpty() && !parentDots.isEmpty()) {
+            ClassNameMap classMap = (ClassNameMap) getClassMap(child, JavaClassMap.TYPE_CLASS);
+            classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
+            if (entry.getJavaFile() != null) {
+                classMap.setJavaFile(entry.getJavaFile());
+            } 
+            if (entry.getClassFile() != null) {
+                classMap.setClassFile(entry.getClassFile());
+            }
 
-        if (!nested) {
-            getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)
-                .add(child, source, JavaClassMap.TYPE_CLASS);
-        }
+            if (!nested) {
+                getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)
+                    .add(child, source, JavaClassMap.TYPE_CLASS);
+            }
 
-        addToParent(parent, source);
+            addToParent(parent, source);
+        }
     }
 
     private boolean isClassFile(String name) {

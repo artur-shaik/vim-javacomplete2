@@ -11,7 +11,7 @@ import org.junit.Test;
 public class PackagesLoaderTest {
 
     private PackagesLoader ps;
-    private HashMap<String,ClassMap> result;
+    private HashMap<String, JavaClassMap> result;
     private List<PackageSeacherIFace> searchers;
 
     @Before
@@ -26,10 +26,10 @@ public class PackagesLoaderTest {
     public void testCorrect() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("java/util/List.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("java/util/ArrayList.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("foo.bar.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("kg/ash/javavi/Javavi.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("java/util/List.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("foo.bar.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("kg/ash/javavi/Javavi.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 
@@ -50,7 +50,7 @@ public class PackagesLoaderTest {
     public void testHandleEmpty() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 
@@ -64,9 +64,9 @@ public class PackagesLoaderTest {
     public void testHandleTooManySlashes() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("/////", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("/////.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("/////a.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("/////", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("/////.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("/////a.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 
@@ -80,10 +80,10 @@ public class PackagesLoaderTest {
     public void testNestedClasses() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("java/util/HashMap$KeySet.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("java/util/HashMap$TreeNode.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("foo/bar/TreeNode.class", ClassMap.CLASSPATH));
-            entries.add(new PackageEntry("java/util/ArrayList.class", ClassMap.CLASSPATH));
+            entries.add(new PackageEntry("java/util/HashMap$KeySet.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("java/util/HashMap$TreeNode.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("foo/bar/TreeNode.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 

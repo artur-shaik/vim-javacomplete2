@@ -1,34 +1,36 @@
 package kg.ash.javavi.output;
 
 import java.util.HashMap;
+import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.searchers.ClassNameMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import kg.ash.javavi.searchers.ClassMap;
 
 public class OutputSimilarClassesTest {
 
     private String target = "Bar";
-    private HashMap<String,ClassMap> classPackages;
+    private HashMap<String, JavaClassMap> classPackages;
 
     @Before
     public void Init() {
         classPackages = new HashMap<>();
 
-        ClassMap classMap = new ClassMap("Barabaz", ClassMap.CLASS);
-        classMap.add("bar", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
+        JavaClassMap classMap = new ClassNameMap("Barabaz");
+        classMap.add("bar", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
         classPackages.put("Barabaz", classMap);
 
-        classMap = new ClassMap("Bara", ClassMap.CLASS);
-        classMap.add("bar.bara", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
+        classMap = new ClassNameMap("Bara");
+        classMap.add("bar.bara", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
         classPackages.put("Bara", classMap);
 
-        classMap = new ClassMap("Bazaraz", ClassMap.CLASS);
-        classMap.add("bar.baz", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
+        classMap = new ClassNameMap("Bazaraz");
+        classMap.add("bar.baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
         classPackages.put("Bazaraz", classMap);
 
-        classMap = new ClassMap("Foobar", ClassMap.CLASS);
-        classMap.add("bar.bas", ClassMap.CLASSPATH, ClassMap.SUBPACKAGE);
+        classMap = new ClassNameMap("Foobar");
+        classMap.add("bar.bas", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
         classPackages.put("Foobar", classMap);
     }
     
@@ -51,7 +53,7 @@ public class OutputSimilarClassesTest {
 
     @Test
     public void testNullPackages() {
-        Assert.assertEquals("[]", new OutputSimilarClasses(null).get(target));
+        Assert.assertEquals(Cache.PACKAGES_EMPTY_ERROR, new OutputSimilarClasses(null).get(target));
     }
 
 }

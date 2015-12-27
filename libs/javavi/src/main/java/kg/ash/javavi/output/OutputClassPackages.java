@@ -19,7 +19,7 @@ public class OutputClassPackages {
     }
 
     public String get(String targetClass) {
-        if (classPackages.isEmpty()) {
+        if (classPackages == null || classPackages.isEmpty()) {
             return Cache.PACKAGES_EMPTY_ERROR;
         }
 
