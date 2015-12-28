@@ -30,7 +30,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
                     Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
                     if (knownPath.isPresent()) {
-                        result.add(new PackageEntry(knownPath.get().replaceAll("\\.", "/") + "/" + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                        result.add(new PackageEntry(knownPath.get() + File.separator + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                         return;
                     }
                     String[] split = path.split("\\.");
@@ -42,7 +42,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                         }
                         String pkg = getPackageByFile(path + fileName);
                         if (pkg != null) {
-                            result.add(new PackageEntry(pkg.replaceAll("\\.", "/") + "/" + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                            result.add(new PackageEntry(pkg + File.separator + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
                             knownPaths.add(pkg);
                             break;
                         } else {
@@ -76,14 +76,14 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
     private List<String> collectClassPath() {
         List<String> result = new ArrayList<>();
 
-        String extdirs = System.getProperty("java.ext.dirs").replace('\\',  '/');
+        String extdirs = System.getProperty("java.ext.dirs");
         for (String path : extdirs.split(File.pathSeparator)) {
-            result.addAll(addPathFromDir(path + '/'));
+            result.addAll(addPathFromDir(path + File.separator));
         }
 
-        result.addAll(addPathFromDir(System.getProperty("java.home").replace('\\',  '/')));
+        result.addAll(addPathFromDir(System.getProperty("java.home")));
 
-        String classPath = System.getProperty("java.class.path").replace('\\', '/') + File.pathSeparator;
+        String classPath = System.getProperty("java.class.path") + File.pathSeparator;
         for (String path : classPath.split(File.pathSeparator)) {
             if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
                 result.add(path);

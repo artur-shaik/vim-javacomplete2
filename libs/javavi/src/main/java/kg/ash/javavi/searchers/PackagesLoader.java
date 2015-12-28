@@ -1,5 +1,6 @@
 package kg.ash.javavi.searchers;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +110,6 @@ public class PackagesLoader {
     }
 
     private String makeDots(String name) {
-        return name.replaceAll("/", ".").replaceAll("[.]{2,}", "");
+        return name.replaceAll(File.separator, ".").replaceAll("[.]{2,}", "");
     }
 }

@@ -37,8 +37,7 @@ public class Cache {
                 classPackages = (HashMap<String, JavaClassMap>) o;
             } else {
                 HashMap<String, JavaClassMap> classPackagesTemp = new HashMap<>();
-                new PackagesLoader(Javavi.system.get("sources").replace('\\', '/'))
-                    .collectPackages(classPackagesTemp);
+                new PackagesLoader(Javavi.system.get("sources")).collectPackages(classPackagesTemp);
                 classPackages.putAll(classPackagesTemp);
 
                 serializator.saveCache("class_packages", classPackages);
