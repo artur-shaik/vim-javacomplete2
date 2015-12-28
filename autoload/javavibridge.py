@@ -23,6 +23,11 @@ def SafePopen(*args, **kwargs):
     if kwargs.get('stdin') is None:
         kwargs['stdin'] = subprocess.PIPE if sys.platform == 'win32' else None
 
+    if sys.platform == 'win32':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        kwargs['startupinfo'] = startupinfo
+
     return subprocess.Popen( *args, **kwargs )
 
 class JavaviBridge():
