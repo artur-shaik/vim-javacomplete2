@@ -52,10 +52,10 @@ function! javacomplete#server#Start()
   if s:Poll() == 0
     call javacomplete#logger#Log("Start server")
 
-    let classpath = javacomplete#server#GetClassPath()
+    let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
     let sources = ''
     if exists('g:JavaComplete_SourcesPath')
-      let sources = '-sources "'. s:ExpandAllPaths(g:JavaComplete_SourcesPath). '"'
+      let sources = '-sources "'. substitute(s:ExpandAllPaths(g:JavaComplete_SourcesPath), '\\', '\\\\', 'g'). '"'
     endif
 
     let args = ' kg.ash.javavi.Javavi '. sources
@@ -65,10 +65,10 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_JavaviDebug') && g:JavaComplete_JavaviDebug
       let args .= ' -d'
     endif
-    let args .= ' -base '. javacomplete#GetBase('')
-    let args .= ' -compiler '. javacomplete#server#GetCompiler()
+    let args .= ' -base "'. substitute(javacomplete#GetBase(''), '\\', '\\\\', 'g'). '"'
+    let args .= ' -compiler "'. substitute(javacomplete#server#GetCompiler(), '\\', '\\\\', 'g'). '"'
     if !empty(g:JavaComplete_ProjectKey)
-      let args .= ' -project '. g:JavaComplete_ProjectKey
+      let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'
     endif
     call javacomplete#logger#Log("Server classpath: -cp ". classpath)
     call javacomplete#logger#Log("Server arguments:". args)
