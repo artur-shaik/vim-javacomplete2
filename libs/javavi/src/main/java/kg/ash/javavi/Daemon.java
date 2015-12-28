@@ -84,8 +84,10 @@ public class Daemon extends Thread {
                 if (ch == '\\') {
                     if (slashFlag) {
                         buff.append("\\");
+                        slashFlag = false;
+                    } else {
+                        slashFlag = true;
                     }
-                    slashFlag = true;
                     continue;
                 }
                 if (ch == '"' && !slashFlag) {

@@ -14,7 +14,8 @@ public class DaemonTest {
         Assert.assertArrayEquals(new String[]{"-E", "java.util.List<HashMap<String,Integer>>"}, daemon.parseRequest("-E java.util.List<HashMap<String,Integer>>"));
         Assert.assertArrayEquals(new String[0], daemon.parseRequest(""));
         Assert.assertArrayEquals(new String[]{"-E", ""}, daemon.parseRequest("-E \"\""));
-        Assert.assertEquals("\\\\n", daemon.parseRequest("\"\\\\n\"")[0]);
+        Assert.assertEquals("\\n", daemon.parseRequest("\"\\\\n\"")[0]);
+        Assert.assertEquals(new String[]{"-base", "C:\\Documents and Settings\\directory\\"}, daemon.parseRequest("-base \"C:\\\\Documents and Settings\\\\directory\\\\\""));
     }
 
 }
