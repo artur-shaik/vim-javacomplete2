@@ -23,11 +23,6 @@ def SafePopen(*args, **kwargs):
     if kwargs.get('stdin') is None:
         kwargs['stdin'] = subprocess.PIPE if sys.platform == 'win32' else None
 
-    if sys.platform == 'win32':
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        kwargs['startupinfo'] = startupinfo
-
     return subprocess.Popen( *args, **kwargs )
 
 class JavaviBridge():
@@ -55,7 +50,7 @@ class JavaviBridge():
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
-            info.wShowWindow = 7
+            info.wShowWindow = 0
             self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE, startupinfo = info)
         else:
             self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE)
