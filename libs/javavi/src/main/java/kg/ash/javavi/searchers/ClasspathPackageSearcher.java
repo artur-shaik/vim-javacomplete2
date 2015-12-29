@@ -25,7 +25,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
         collectClassPath().stream()
             .forEach(filePath -> {
                 if (filePath.toLowerCase().endsWith(".class")) {
-                    String path = filePath.substring(0, filePath.length() - 6).replaceAll(File.separator, ".");
+                    String path = filePath.substring(0, filePath.length() - 6).replaceAll("/", ".");
                     String newPath = path.substring(0, path.lastIndexOf("."));
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
                     Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();

@@ -144,9 +144,9 @@ endfunction
 
 function! s:RemoveFile(file)
   if g:IS_WINDOWS
-    silent exe '!rmdir \s "'. a:file
+    silent exe '!rmdir /s /q "'. a:file. '"'
   else
-    silent exe '!rm -r '. a:file
+    silent exe '!rm -r "'. a:file. '"'
   endif
 endfunction
 

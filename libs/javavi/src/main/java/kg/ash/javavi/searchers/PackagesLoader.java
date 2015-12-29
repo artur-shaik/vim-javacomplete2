@@ -110,6 +110,6 @@ public class PackagesLoader {
     }
 
     private String makeDots(String name) {
-        return name.replaceAll(File.separator, ".").replaceAll("[.]{2,}", "");
+        return name.replaceAll("/", ".").replaceAll("[.]{2,}", "");
     }
 }

@@ -51,9 +51,9 @@ class JavaviBridge():
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
             info.wShowWindow = 7
-            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE, startupinfo = info)
+            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = output, startupinfo = info)
         else:
-            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = subprocess.PIPE)
+            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = output)
 
     def pid(self):
         return self.popen.pid

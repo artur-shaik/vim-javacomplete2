@@ -32,10 +32,12 @@ public class Cache {
 
         collectIsRunning = true;
         new Thread(() -> {
-            Object o;
-            if ((o = serializator.loadCache("class_packages")) != null) {
+            Object o = serializator.loadCache("class_packages");
+            if (o != null) {
                 classPackages = (HashMap<String, JavaClassMap>) o;
-            } else {
+            } 
+            
+            if (classPackages.isEmpty()) {
                 HashMap<String, JavaClassMap> classPackagesTemp = new HashMap<>();
                 new PackagesLoader(Javavi.system.get("sources")).collectPackages(classPackagesTemp);
                 classPackages.putAll(classPackagesTemp);
