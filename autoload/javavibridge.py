@@ -27,6 +27,7 @@ def SafePopen(*args, **kwargs):
 
 class JavaviBridge():
 
+    pythonVersion = sys.version_info.major
     sock = None
     popen = None
     logfile = None
@@ -96,7 +97,11 @@ class JavaviBridge():
             if self.sock is None:
                 return ''
 
-        self.sock.sendall((data.decode('UTF-8') + '\n').encode('UTF-8'))
+        if self.pythonVersion == 3:
+            self.sock.sendall((str(data) + '\n').encode('UTF-8'))
+        else:
+            self.sock.sendall((data.decode('UTF-8') + '\n').encode('UTF-8'))
+
         totalData = []
         while 1:
             try:
