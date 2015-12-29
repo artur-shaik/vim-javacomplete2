@@ -3,7 +3,7 @@
 
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
-if has("python")
+if has("python") && get(g:, 'JavaComplete_UsePython3', 0) == 0
   command! -nargs=1 JavacompletePy py <args>
   command! -nargs=1 JavacompletePyfile pyfile <args>
 elseif has("python3")
