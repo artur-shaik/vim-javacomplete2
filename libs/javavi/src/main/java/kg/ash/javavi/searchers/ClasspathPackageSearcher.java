@@ -55,7 +55,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                             String entry = entries.nextElement().toString();
                             result.add(new PackageEntry(entry, JavaClassMap.SOURCETYPE_CLASSPATH));
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         Javavi.debug(e);
                     }
                 }
