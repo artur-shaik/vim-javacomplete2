@@ -186,4 +186,12 @@ function! javacomplete#util#CleanFQN(fqnDeclaration)
   return fqnDeclaration
 endfunction
 
+function! javacomplete#util#findFile(what) abort
+  let old_suffixesadd = &suffixesadd
+  let &suffixesadd = ''
+  let file = findfile(a:what, ',;')
+  let &suffixesadd = old_suffixesadd
+  return file
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:
