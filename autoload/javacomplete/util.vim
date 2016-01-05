@@ -188,10 +188,12 @@ endfunction
 
 function! javacomplete#util#findFile(what) abort
   let old_suffixesadd = &suffixesadd
-  let &suffixesadd = ''
-  let file = findfile(a:what, ',;')
-  let &suffixesadd = old_suffixesadd
-  return file
+  try
+    let &suffixesadd = ''
+    return findfile(a:what, ',;')
+  finally
+    let &suffixesadd = old_suffixesadd
+  endtry
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:
