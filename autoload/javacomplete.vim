@@ -59,14 +59,6 @@ let g:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 's
 let g:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
 let g:J_KEYWORDS		= g:J_PRIMITIVE_TYPES + g:J_KEYWORDS_MODS + g:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
-let g:IS_WINDOWS = has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
-if g:IS_WINDOWS
-  let g:PATH_SEP	= ';'
-  let g:FILE_SEP	= '\'
-else
-  let g:PATH_SEP	= ':'
-  let g:FILE_SEP	= '/'
-endif
 
 let g:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
 let g:RE_IDENTIFIER	= '[a-zA-Z_$][a-zA-Z0-9_$]*'
@@ -121,7 +113,7 @@ function! javacomplete#GetBase(extra)
 endfunction
 
 function! s:GetBase(extra)
-  let base = expand("~". g:FILE_SEP. ".javacomplete2". g:FILE_SEP. a:extra)
+  let base = expand(g:JavaComplete_BaseDir. g:FILE_SEP. a:extra)
   if !isdirectory(base)
     call mkdir(base, "p")
   endif
@@ -143,7 +135,7 @@ function! javacomplete#RemoveFile(file)
 endfunction
 
 function! s:RemoveFile(file)
-  if g:IS_WINDOWS
+  if g:JavaComplete_IS_WINDOWS
     silent exe '!rmdir /s /q "'. a:file. '"'
   else
     silent exe '!rm -r "'. a:file. '"'
