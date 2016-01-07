@@ -302,10 +302,10 @@ function! javacomplete#imports#Add(...)
 
     else
       let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
-      let message .= "\nselect one candidate [". g:JavaComplete_Import_Default."]: "
+      let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
       let userinput = input(message, '')
       if empty(userinput)
-        let userinput = g:JavaComplete_Import_Default
+        let userinput = g:JavaComplete_ImportDefault
       elseif userinput =~ '^[0-9]*$'
         let userinput = str2nr(userinput)
       else
@@ -369,10 +369,10 @@ function! javacomplete#imports#AddMissing()
     for import in missing
       if len(import) > 1
         let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
-        let message .= "\nselect one candidate [". g:JavaComplete_Import_Default."]: "
+        let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
         let userinput = input(message, '')
         if empty(userinput)
-          let userinput = g:JavaComplete_Import_Default
+          let userinput = g:JavaComplete_ImportDefault
         elseif userinput =~ '^[0-9]*$'
           let userinput = str2nr(userinput)
         else

@@ -5,14 +5,14 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-if exists('g:JavaComplete_plugin_loaded')
+if exists('g:JavaComplete_PluginLoaded')
     finish
 endif
-let g:JavaComplete_plugin_loaded = 1
+let g:JavaComplete_PluginLoaded = 1
 
-let g:JavaComplete_IS_WINDOWS = javacomplete#util#IsWindows()
+let g:JavaComplete_IsWindows = javacomplete#util#IsWindows()
 
-if g:JavaComplete_IS_WINDOWS
+if g:JavaComplete_IsWindows
   let g:PATH_SEP    = ';'
   let g:FILE_SEP    = '\'
 else
@@ -21,10 +21,10 @@ else
 endif
 
 let g:JavaComplete_BaseDir =
-      \ get(g:,'JavaComplete_BaseDir',expand('~'. g:FILE_SEP. '.javacomplete2'))
+      \ get(g:,'JavaComplete_BaseDir',expand('~'. g:FILE_SEP. '.cache'))
 
-let g:JavaComplete_Import_Default =
-      \ get(g:,'JavaComplete_Import_Default',0)
+let g:JavaComplete_ImportDefault =
+      \ get(g:,'JavaComplete_ImportDefault',0)
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()

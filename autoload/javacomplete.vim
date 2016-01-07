@@ -113,7 +113,7 @@ function! javacomplete#GetBase(extra)
 endfunction
 
 function! s:GetBase(extra)
-  let base = expand(g:JavaComplete_BaseDir. g:FILE_SEP. a:extra)
+  let base = expand(g:JavaComplete_BaseDir. g:FILE_SEP. "javacomplete2". g:FILE_SEP. a:extra)
   if !isdirectory(base)
     call mkdir(base, "p")
   endif
@@ -135,7 +135,7 @@ function! javacomplete#RemoveFile(file)
 endfunction
 
 function! s:RemoveFile(file)
-  if g:JavaComplete_IS_WINDOWS
+  if g:JavaComplete_IsWindows
     silent exe '!rmdir /s /q "'. a:file. '"'
   else
     silent exe '!rm -r "'. a:file. '"'
