@@ -3,7 +3,7 @@
 "
 " Utility functions
 
-" TODO: search pair used in string, like 
+" TODO: search pair used in string, like
 " 	'create(ao.fox("("), new String).foo().'
 function! javacomplete#util#GetMatchedIndexEx(str, idx, one, another)
   let pos = a:idx
@@ -64,7 +64,7 @@ function! javacomplete#util#SearchPairBackward(str, idx, one, another)
         break
       endif
       let n -= 1
-    elseif a:str[idx] == a:another  " nested 
+    elseif a:str[idx] == a:another  " nested
       let n += 1
     endif
   endwhile
@@ -76,7 +76,7 @@ function! javacomplete#util#CountDims(str)
     return 0
   endif
 
-  " int[] -> [I, String[] -> 
+  " int[] -> [I, String[] ->
   let dims = len(matchstr(a:str, '^[\+'))
   if dims == 0
     let idx = len(a:str)-1
@@ -166,7 +166,7 @@ function! javacomplete#util#Sort(ci)
   return ci
 endfunction
 
-function! javacomplete#util#CleanFQN(fqnDeclaration) 
+function! javacomplete#util#CleanFQN(fqnDeclaration)
   let start = 0
   let fqnDeclaration = a:fqnDeclaration
   let result = matchlist(fqnDeclaration, '\<'. g:RE_IDENTIFIER. '\%(\s*\.\s*\('. g:RE_IDENTIFIER. '\)\)*', start)
@@ -194,6 +194,10 @@ function! javacomplete#util#findFile(what) abort
   finally
     let &suffixesadd = old_suffixesadd
   endtry
+endfunction
+
+function! javacomplete#util#IsWindows() abort
+  return has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

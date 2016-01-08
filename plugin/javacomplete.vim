@@ -1,5 +1,30 @@
 " Java complete plugin file
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
+" this file comtains command,custom g:var init and maps
+
+let s:save_cpo = &cpo
+set cpo&vim
+
+if exists('g:JavaComplete_PluginLoaded')
+    finish
+endif
+let g:JavaComplete_PluginLoaded = 1
+
+let g:JavaComplete_IsWindows = javacomplete#util#IsWindows()
+
+if g:JavaComplete_IsWindows
+  let g:PATH_SEP    = ';'
+  let g:FILE_SEP    = '\'
+else
+  let g:PATH_SEP    = ':'
+  let g:FILE_SEP    = '/'
+endif
+
+let g:JavaComplete_BaseDir =
+      \ get(g:,'JavaComplete_BaseDir',expand('~'. g:FILE_SEP. '.cache'))
+
+let g:JavaComplete_ImportDefault =
+      \ get(g:,'JavaComplete_ImportDefault',0)
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
@@ -33,4 +58,8 @@ inoremap <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#i
 nnoremap <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
 inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
 
+
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
 " vim:set fdm=marker sw=2 nowrap:
