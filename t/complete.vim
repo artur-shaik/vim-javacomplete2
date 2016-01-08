@@ -1,3 +1,4 @@
+source plugin/javacomplete.vim
 source autoload/javacomplete.vim
 source autoload/javacomplete/complete/complete.vim
 source t/javacomplete.vim
