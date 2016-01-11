@@ -130,6 +130,10 @@ To remove all missing imports with F6:
 
 `let g:JavaComplete_JavaviDebug = 1` - enables server side logging.
 
+`let g:JavaComplete_BaseDir = '~/.your_cache_dir'` - set the base cache directory of javacomplete2. By default it is `~/.cache`.
+
+`let g:JavaComplete_ImportDefault = 0` - the default selection of import options. By default it is 0, which means automatically select first one. To make nothing on default set `-1`.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
