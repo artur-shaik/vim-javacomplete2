@@ -866,6 +866,10 @@ function! s:IsBuiltinType(name)
   return index(g:J_PRIMITIVE_TYPES, a:name) >= 0
 endfunction
 
+function! javacomplete#complete#complete#IsKeyword(name)
+  return s:IsKeyword(a:name)
+endfunction
+
 function! s:IsKeyword(name)
   return index(g:J_KEYWORDS, a:name) >= 0
 endfunction

@@ -125,7 +125,7 @@ function! javacomplete#complete#context#FindContext()
     let str = matchstr(statement, '\<new\s\+' . g:RE_QUALID . '$')
     if str != ''
       let str = substitute(str, '^new\s\+', '', '')
-      if !s:IsKeyword(str)
+      if !javacomplete#complete#complete#IsKeyword(str)
         let b:incomplete = '+'
         let b:dotexpr = str
         return start - len(b:dotexpr)
@@ -143,13 +143,13 @@ function! javacomplete#complete#context#FindContext()
           let b:incomplete = '+'
           return start - len(b:dotexpr)
 
-        elseif !s:IsKeyword(statement)
+        elseif !javacomplete#complete#complete#IsKeyword(statement)
           let b:incomplete = statement
           return start - strlen(b:incomplete)
         endif
 
         " case: "expr.method(|)"
-      elseif statement[pos-1] == '.' && !s:IsKeyword(strpart(statement, pos))
+      elseif statement[pos-1] == '.' && !javacomplete#complete#complete#IsKeyword(strpart(statement, pos))
         let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(strpart(statement, 0, pos))
         let b:incomplete = strpart(statement, pos)
         return start - strlen(b:incomplete)
