@@ -1,3 +1,4 @@
+source plugin/javacomplete.vim
 source autoload/javacomplete.vim
 source autoload/java_parser.vim
 

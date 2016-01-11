@@ -866,6 +866,10 @@ function! s:IsBuiltinType(name)
   return index(g:J_PRIMITIVE_TYPES, a:name) >= 0
 endfunction
 
+function! javacomplete#complete#complete#IsKeyword(name)
+  return s:IsKeyword(a:name)
+endfunction
+
 function! s:IsKeyword(name)
   return index(g:J_KEYWORDS, a:name) >= 0
 endfunction
@@ -1202,6 +1206,13 @@ function! s:Tree2ClassInfo(t)
 
   let i = 0
   while i < len(extends)
+    if type(extends[i]) == type("") && extends[i] == t.fqn
+      let i += 1
+      continue
+    elseif type(extends[i]) == type({}) && extends[i].tag == 'ERRONEOUS'
+      let i += 1
+      continue
+    endif
     let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
     if type(ci) == type([])
       let ci = [0]
@@ -1311,9 +1322,14 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
   endif
 
   " key `classpath` indicates it is a loaded class from classpath
-  " All public members of a loaded class are stored in current ci
+  " all public members of a loaded class are stored in current ci
   if !has_key(a:ci, 'classpath') || (a:kind == 1 || a:kind == 2)
     for i in get(a:ci, 'extends', [])
+      if type(i) == type("") && i == a:ci.fqn
+        continue
+      elseif type(i) == type({}) && i.tag == 'ERRONEOUS'
+        continue
+      endif
       let ci = s:DoGetClassInfo(java_parser#type2Str(i))
       if type(ci) == type([])
         let ci = ci[0]
