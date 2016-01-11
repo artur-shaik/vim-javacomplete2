@@ -47,14 +47,23 @@ public class Reflection implements ClassReader {
         return result;
     }
 
+    private String getNameWithArguments(String name) {
+        if (!typeArguments.isEmpty()) {
+            name += "<" + String.join(",", typeArguments) + ">";
+        }
+
+        return name;
+    }
+
     @Override
     public SourceClass read(String name) {
-        if (Cache.getInstance().getClasses().containsKey(name)) {
-            return Cache.getInstance().getClasses().get(name);
+        String nameWithArguments = getNameWithArguments(name);
+        if (Cache.getInstance().getClasses().containsKey(nameWithArguments)) {
+            return Cache.getInstance().getClasses().get(nameWithArguments);
         }
 
         String[] splitted = name.split("\\.");
-        ClassNameMap classMap = (ClassNameMap) Cache.getInstance().getClassPackages().get(splitted[splitted.length - 1]);
+        ClassNameMap classMap = (ClassNameMap) Cache.getInstance().getClassPackages().get(getNameWithArguments(splitted[splitted.length - 1]));
         if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
             ClassLoader parentClassLoader = FileClassLoader.class.getClassLoader();
             FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader, classMap.getClassFile());
@@ -241,7 +250,7 @@ public class Reflection implements ClassReader {
 
         }
 
-        Cache.getInstance().getClasses().put(cls.getName(), clazz);
+        Cache.getInstance().getClasses().put(getNameWithArguments(cls.getName()), clazz);
         return clazz;
     }
 
