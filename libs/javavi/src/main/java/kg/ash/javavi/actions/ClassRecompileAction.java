@@ -4,6 +4,7 @@ import java.io.File;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassNameMap;
+import kg.ash.javavi.searchers.JavaClassMap;
 
 public class ClassRecompileAction implements Action {
 
@@ -18,8 +19,10 @@ public class ClassRecompileAction implements Action {
             String sourceFile = classMap.getJavaFile();
             String classDir = classFile.substring(0, classFile.lastIndexOf(File.separator));
 
-            int offset = findOffset(sourceFile, classDir);
+            int offset = findOffset(sourceFile.substring(0, sourceFile.lastIndexOf(File.separator)), classDir);
             classDir = classFile.substring(0, offset);
+
+            if (classDir.isEmpty()) return "";
 
             String compiler = Javavi.system.get("compiler");
             String classPath = System.getProperty("java.class.path");
@@ -42,13 +45,13 @@ public class ClassRecompileAction implements Action {
 
     private int findOffset(String sourceFile, String classDir) {
         int offset = 0;
-        while (!sourceFile.contains(classDir)) {
+        while (!sourceFile.endsWith(classDir)) {
             int index = classDir.indexOf(File.separator, 2);
             if (index > 0) {
                 classDir = classDir.substring(index);
                 offset += index;
             } else {
-                break;
+                return 0;
             }
         }
 
@@ -56,7 +59,12 @@ public class ClassRecompileAction implements Action {
     }
 
     private ClassNameMap findClass(String name) {
-        return (ClassNameMap) Cache.getInstance().getClassPackages().get(name);
+        JavaClassMap classMap = Cache.getInstance().getClassPackages().get(name);
+        if (classMap != null && classMap instanceof ClassNameMap) {
+            return (ClassNameMap) classMap;
+        }
+
+        return null;
     }
 
 }
