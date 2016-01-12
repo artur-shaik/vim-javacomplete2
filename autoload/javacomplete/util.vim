@@ -186,11 +186,11 @@ function! javacomplete#util#CleanFQN(fqnDeclaration)
   return fqnDeclaration
 endfunction
 
-function! javacomplete#util#findFile(what) abort
+function! javacomplete#util#FindFile(what) abort
   let old_suffixesadd = &suffixesadd
   try
     let &suffixesadd = ''
-    return findfile(a:what, ',;')
+    return findfile(a:what, escape(expand('.'), '*[]?{}, ') . ';')
   finally
     let &suffixesadd = old_suffixesadd
   endtry
