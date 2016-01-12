@@ -48,7 +48,7 @@ public class Reflection implements ClassReader {
     }
 
     private String getNameWithArguments(String name) {
-        if (!typeArguments.isEmpty()) {
+        if (typeArguments != null && !typeArguments.isEmpty()) {
             name += "<" + String.join(",", typeArguments) + ">";
         }
 
