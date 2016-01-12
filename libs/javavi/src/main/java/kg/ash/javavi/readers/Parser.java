@@ -1,8 +1,5 @@
 package kg.ash.javavi.readers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -14,7 +11,9 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-
+import java.util.ArrayList;
+import java.util.List;
+import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -46,6 +45,8 @@ public class Parser implements ClassReader {
     @Override
     public SourceClass read(String targetClass) {
         if (sourceFile == null || sourceFile.isEmpty()) return null;
+
+        Javavi.debug("from sources: " + targetClass);
 
         if (targetClass.contains("$")) {
             targetClass = targetClass.split("\\$")[0];

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import kg.ash.javavi.Javavi;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -58,6 +59,7 @@ public class Reflection implements ClassReader {
     @Override
     public SourceClass read(String name) {
         String nameWithArguments = getNameWithArguments(name);
+        Javavi.debug("form reflection: " + nameWithArguments);
         if (Cache.getInstance().getClasses().containsKey(nameWithArguments)) {
             return Cache.getInstance().getClasses().get(nameWithArguments);
         }
