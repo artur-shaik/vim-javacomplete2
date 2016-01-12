@@ -53,6 +53,7 @@ public class Javavi {
     public static String makeResponse(String[] args) {
 
         Action action = null;
+        boolean asyncRun = false;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             debug(arg);
@@ -81,6 +82,9 @@ public class Javavi {
                 case "-compiler":
                     system.put("compiler", args[++i]);
                     break;
+                case "-async":
+                    asyncRun = true;
+                    break;
                 default:
                     if (action == null) {
                         action = ActionFactory.get(arg);
@@ -94,7 +98,12 @@ public class Javavi {
 
         String result = "";
         if (action != null) {
-            result = action.perform(args);
+            if (asyncRun) {
+                final Action a = action;
+                new Thread(() -> { a.perform(args); }).start();
+            } else {
+                result = action.perform(args);
+            }
         }
 
         return result;
