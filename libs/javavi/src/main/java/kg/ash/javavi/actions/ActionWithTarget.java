@@ -9,7 +9,11 @@ public abstract class ActionWithTarget implements Action {
     protected String sources;
 
     public ActionWithTarget() {
-        sources = Javavi.system.get("sources").replace('\\', '/');
+        if (Javavi.system.containsKey("sources")) {
+            sources = Javavi.system.get("sources").replace('\\', '/');
+        } else {
+            sources = "";
+        }
         targetParser = new TargetParser(sources);
     }
 
