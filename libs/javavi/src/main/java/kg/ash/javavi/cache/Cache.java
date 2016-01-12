@@ -21,12 +21,14 @@ public class Cache {
     }
     
     private HashMap<String, SourceClass> classes = new HashMap<>();
+
     private HashMap<String, JavaClassMap> classPackages = new HashMap<>();
 
     private CacheSerializator serializator = new CacheSerializator();
 
     private boolean collectIsRunning = false;
 
+    @SuppressWarnings("unchecked")
     public synchronized void collectPackages() {
         if (collectIsRunning) return;
 
@@ -34,7 +36,9 @@ public class Cache {
         new Thread(() -> {
             Object o = serializator.loadCache("class_packages");
             if (o != null) {
-                classPackages = (HashMap<String, JavaClassMap>) o;
+                try {
+                    classPackages = (HashMap<String, JavaClassMap>) o;
+                } catch (ClassCastException e) {}
             } 
             
             if (classPackages.isEmpty()) {
