@@ -114,6 +114,41 @@ function! javacomplete#server#SetJVMLauncher(interpreter)
   let g:JavaComplete_JvmLauncher = a:interpreter
 endfunction
 
+function! s:CompilationJobHandler(jobId, data, event)
+  if a:event == 'exit'
+    if a:data == "0"
+      echo 'Javavi compilation finished '
+    else
+      echo 'Failed to compile javavi server'
+    endif
+    let s:compilationIsRunning = 0
+  elseif a:event == 'stderr'
+    echoerr join(a:data)
+  elseif a:event == 'stdout'
+    echom join(a:data)
+  endif
+endfunction
+
+function! s:RunSystem(command, shellName, handler)
+  if has('nvim')
+    if exists('*jobstart')
+      let callbacks = {
+      \ 'on_stdout': function(a:handler),
+      \ 'on_stderr': function(a:handler),
+      \ 'on_exit': function(a:handler)
+      \ }
+      call jobstart(a:command, extend({'shell': a:shellName}, callbacks))
+    endif
+  else
+    if type(a:command) == type([])
+      exe '!'. join(a:command, " ")
+    else
+      exe '!'. a:command
+    endif
+    call call(a:handler, [0, "0", "exit"])
+  endif
+endfunction
+
 function! javacomplete#server#Compile()
   call javacomplete#server#Terminate()
 
@@ -122,11 +157,15 @@ function! javacomplete#server#Compile()
     call javacomplete#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
   endif
 
+  let s:compilationIsRunning = 1
   if executable('mvn')
-    exe '!'. 'mvn -f "'. javaviDir . g:FILE_SEP . 'pom.xml" compile'
+    let command = ['mvn', '-f', '"'. javaviDir. g:FILE_SEP. 'pom.xml"', 'compile']
+    call s:RunSystem(command, "mvn compile", "s:CompilationJobHandler")
   else
     call mkdir(javaviDir. join(['target', 'classes'], g:FILE_SEP), "p")
-    exe '!'. javacomplete#server#GetCompiler(). ' -d "'. javaviDir. 'target'. g:FILE_SEP. 'classes" -classpath "'. javaviDir. 'target'. g:FILE_SEP. 'classes'. g:PATH_SEP. g:JavaComplete_Home. g:FILE_SEP .'libs'. g:FILE_SEP. 'javaparser.jar" -sourcepath "'. javaviDir. 'src'. g:FILE_SEP. 'main'. g:FILE_SEP. 'java" -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 "'. javaviDir. join(['src', 'main', 'java', 'kg', 'ash', 'javavi', 'Javavi.java"'], g:FILE_SEP)
+    let command = javacomplete#server#GetCompiler()
+    let command .= ' -d "'. javaviDir. 'target'. g:FILE_SEP. 'classes" -classpath "'. javaviDir. 'target'. g:FILE_SEP. 'classes'. g:PATH_SEP. g:JavaComplete_Home. g:FILE_SEP .'libs'. g:FILE_SEP. 'javaparser.jar" -sourcepath "'. javaviDir. 'src'. g:FILE_SEP. 'main'. g:FILE_SEP. 'java" -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 "'. javaviDir. join(['src', 'main', 'java', 'kg', 'ash', 'javavi', 'Javavi.java"'], g:FILE_SEP)
+    call s:RunSystem(command, "javac compile", "s:CompilationJobHandler")
   endif
 endfunction
 
@@ -141,7 +180,9 @@ fu! s:GetJavaviClassPath()
   if !empty(javacomplete#GlobPathList(javaviDir. 'target'. g:FILE_SEP. 'classes', '**'. g:FILE_SEP. '*.class', 1))
     return javaviDir. "target". g:FILE_SEP. "classes"
   else
-    echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK8+ installed?"
+    if !get(s:, 'compilationIsRunning', 0)
+      echo "No Javavi library classes found, it means that we couldn't compile it. Do you have JDK8+ installed?"
+    endif
   endif
 endfu
 
