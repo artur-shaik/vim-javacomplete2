@@ -6,13 +6,13 @@ import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.JavaClassMap;
 
-public class ClassRecompileAction implements Action {
+public class ClassRecompileAction extends ActionWithTarget {
 
     @Override 
-    public String perform(String[] target) {
-        if (target.length == 0) return "";
+    public String perform(String[] args) {
+        String target = parseTarget(args);
 
-        String[] splitted = target[0].split("\\.");
+        String[] splitted = target.split("\\.");
         ClassNameMap classMap = findClass(splitted[splitted.length - 1]);
         if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
             String classFile = classMap.getClassFile();

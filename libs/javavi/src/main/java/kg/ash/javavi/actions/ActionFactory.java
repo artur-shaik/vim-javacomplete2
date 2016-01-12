@@ -24,6 +24,8 @@ public class ActionFactory {
                 return new GetMissingImportsAction();
             case "-clear-from-cache":
                 return new RemoveClassInfoFromCache();
+            case "-recompile-class":
+                return new ClassRecompileAction();
         }
 
         return null;

@@ -18,10 +18,6 @@ public class RemoveClassInfoFromCache extends ActionWithTarget {
             Cache.getInstance().getClasses().remove(target);
         }
 
-        new Thread(() -> { 
-            new ClassRecompileAction().perform(new String[]{className}); 
-        }).start();
-
         return "";
     }
 

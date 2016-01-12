@@ -334,6 +334,7 @@ function! s:RemoveCurrentFromCache()
     call remove(g:JavaComplete_Cache, fqn)
   endif
   call javacomplete#server#Communicate('-clear-from-cache', fqn, 's:RemoveCurrentFromCache')
+  call javacomplete#server#Communicate('-async -recompile-class', fqn, 's:RemoveCurrentFromCache')
 endfunction
 
 augroup javacomplete
