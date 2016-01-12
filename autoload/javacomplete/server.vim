@@ -138,15 +138,16 @@ function! s:RunSystem(command, shellName, handler)
       \ 'on_exit': function(a:handler)
       \ }
       call jobstart(a:command, extend({'shell': a:shellName}, callbacks))
+      return
     endif
-  else
-    if type(a:command) == type([])
-      exe '!'. join(a:command, " ")
-    else
-      exe '!'. a:command
-    endif
-    call call(a:handler, [0, "0", "exit"])
   endif
+
+  if type(a:command) == type([])
+    exe '!'. join(a:command, " ")
+  else
+    exe '!'. a:command
+  endif
+  call call(a:handler, [0, "0", "exit"])
 endfunction
 
 function! javacomplete#server#Compile()
