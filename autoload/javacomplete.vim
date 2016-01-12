@@ -384,7 +384,6 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
 
   if !exists('g:JavaComplete_PomPath')
     let g:JavaComplete_PomPath = javacomplete#util#FindFile('pom.xml')
-    echom g:JavaComplete_PomPath
     if g:JavaComplete_PomPath != ""
       let g:JavaComplete_PomPath = fnamemodify(g:JavaComplete_PomPath, ':p')
     endif
