@@ -102,6 +102,9 @@ endfu
 function! javacomplete#ClearCache()
   let g:JavaComplete_Cache = {}
   let g:JavaComplete_Files = {}
+
+  call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
+  call javacomplete#server#Communicate('-collect-packages', '', 's:ClearCache')
 endfunction
 
 function! javacomplete#Complete(findstart, base)
@@ -140,6 +143,7 @@ function! s:RemoveFile(file)
   else
     silent exe '!rm -r "'. a:file. '"'
   endif
+  silent redraw!
 endfunction
 
 function! s:FindClassPath() abort

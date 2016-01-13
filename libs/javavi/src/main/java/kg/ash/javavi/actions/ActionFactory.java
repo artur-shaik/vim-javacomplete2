@@ -26,6 +26,8 @@ public class ActionFactory {
                 return new RemoveClassInfoFromCache();
             case "-recompile-class":
                 return new ClassRecompileAction();
+            case "-collect-packages":
+                return new CollectPackagesAction();
         }
 
         return null;

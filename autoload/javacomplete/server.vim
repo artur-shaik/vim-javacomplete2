@@ -193,8 +193,12 @@ function! javacomplete#server#Communicate(option, args, log)
   endif
 
   if s:Poll()
-    let args = substitute(a:args, '"', '\\"', 'g')
-    let cmd = a:option. ' "'. args. '"'
+    if !empty(a:args) 
+      let args = ' "'. substitute(a:args, '"', '\\"', 'g'). '"'
+    else
+      let args = ''
+    endif
+    let cmd = a:option. args
     call javacomplete#logger#Log("Communicate: ". cmd. " [". a:log. "]")
     let result = ""
 JavacompletePy << EOPC

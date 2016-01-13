@@ -28,29 +28,37 @@ public class Cache {
 
     private boolean collectIsRunning = false;
 
-    @SuppressWarnings("unchecked")
     public synchronized void collectPackages() {
         if (collectIsRunning) return;
 
         collectIsRunning = true;
         new Thread(() -> {
-            Object o = serializator.loadCache("class_packages");
-            if (o != null) {
-                try {
-                    classPackages = (HashMap<String, JavaClassMap>) o;
-                } catch (ClassCastException e) {}
-            } 
-            
+            loadCache();
+
             if (classPackages.isEmpty()) {
                 HashMap<String, JavaClassMap> classPackagesTemp = new HashMap<>();
                 new PackagesLoader(Javavi.system.get("sources")).collectPackages(classPackagesTemp);
                 classPackages.putAll(classPackagesTemp);
 
-                serializator.saveCache("class_packages", classPackages);
+                saveCache();
             }
 
             collectIsRunning = false;
         }).start();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void loadCache() {
+        Object o = serializator.loadCache("class_packages");
+        if (o != null) {
+            try {
+                classPackages = (HashMap<String, JavaClassMap>) o;
+            } catch (ClassCastException e) {}
+        } 
+    }
+    
+    public void saveCache() {
+        serializator.saveCache("class_packages", classPackages);
     }
 
     public HashMap<String, JavaClassMap> getClassPackages() {
