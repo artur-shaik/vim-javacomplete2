@@ -114,7 +114,7 @@ function! javacomplete#server#SetJVMLauncher(interpreter)
   let g:JavaComplete_JvmLauncher = a:interpreter
 endfunction
 
-function! s:CompilationJobHandler(jobId, data, event)
+function! javacomplete#server#CompilationJobHandler(jobId, data, event)
   if a:event == 'exit'
     if a:data == "0"
       echo 'Javavi compilation finished '
@@ -127,27 +127,6 @@ function! s:CompilationJobHandler(jobId, data, event)
   elseif a:event == 'stdout'
     echom join(a:data)
   endif
-endfunction
-
-function! s:RunSystem(command, shellName, handler)
-  if has('nvim')
-    if exists('*jobstart')
-      let callbacks = {
-      \ 'on_stdout': function(a:handler),
-      \ 'on_stderr': function(a:handler),
-      \ 'on_exit': function(a:handler)
-      \ }
-      call jobstart(a:command, extend({'shell': a:shellName}, callbacks))
-      return
-    endif
-  endif
-
-  if type(a:command) == type([])
-    exe '!'. join(a:command, " ")
-  else
-    exe '!'. a:command
-  endif
-  call call(a:handler, [0, "0", "exit"])
 endfunction
 
 function! javacomplete#server#Compile()
@@ -166,7 +145,7 @@ function! javacomplete#server#Compile()
     let command = javacomplete#server#GetCompiler()
     let command .= ' -d "'. javaviDir. 'target'. g:FILE_SEP. 'classes" -classpath "'. javaviDir. 'target'. g:FILE_SEP. 'classes'. g:PATH_SEP. g:JavaComplete_Home. g:FILE_SEP .'libs'. g:FILE_SEP. 'javaparser.jar" -sourcepath "'. javaviDir. 'src'. g:FILE_SEP. 'main'. g:FILE_SEP. 'java" -g -nowarn -target 1.8 -source 1.8 -encoding UTF-8 "'. javaviDir. join(['src', 'main', 'java', 'kg', 'ash', 'javavi', 'Javavi.java"'], g:FILE_SEP)
   endif
-  call s:RunSystem(command, "server compilation", "s:CompilationJobHandler")
+  call javacomplete#util#RunSystem(command, "server compilation", "javacomplete#server#CompilationJobHandler")
 endfunction
 
 " Check if Javavi classes exists and return classpath directory.

@@ -200,4 +200,25 @@ function! javacomplete#util#IsWindows() abort
   return has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
 endfunction
 
+function! javacomplete#util#RunSystem(command, shellName, handler)
+  if has('nvim')
+    if exists('*jobstart')
+      let callbacks = {
+      \ 'on_stdout': function(a:handler),
+      \ 'on_stderr': function(a:handler),
+      \ 'on_exit': function(a:handler)
+      \ }
+      call jobstart(a:command, extend({'shell': a:shellName}, callbacks))
+      return
+    endif
+  endif
+
+  if type(a:command) == type([])
+    exe '!'. join(a:command, " ")
+  else
+    exe '!'. a:command
+  endif
+  call call(a:handler, [0, "0", "exit"])
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:
