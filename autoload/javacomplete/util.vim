@@ -224,7 +224,9 @@ endfunction
 function! javacomplete#util#Base64Encode(str)
   JavacompletePy import base64
   JavacompletePy import vim
-  JavacompletePy vim.command("let base64 = '%s'" % base64.b64encode(vim.eval('a:str')))
+  JavacompletePy content = vim.eval('a:str') if sys.version_info.major == 2 else bytes(vim.eval('a:str'), 'utf-8')
+  JavacompletePy b64 = base64.b64encode(content) 
+  JavacompletePy vim.command("let base64 = '%s'" % (b64 if sys.version_info.major == 2 else b64.decode('utf-8')))
   return base64
 endfunction
 
