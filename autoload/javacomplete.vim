@@ -190,47 +190,77 @@ function! s:FindClassPath() abort
 endfunction
 
 function! s:GenerateMavenClassPath(path, pom) abort
-  let mvnProperties = s:GetMavenProperties(a:pom)
+  if !has_key(g:Javacomplete_PomProperties, a:pom)
+    let s:mavenPath = a:path
+    let s:mavenPom = a:pom
+    let s:mavenSettingsOutput = []
+    let mvnCmd = ['mvn', '--file', a:pom, 'help:effective-pom', 'dependency:build-classpath', '-DincludeScope=test']
+    call javacomplete#util#RunSystem(mvnCmd, 'maven classpath build process', 'javacomplete#MavenBuildClasspathHandler')
+    return ""
+  endif
+
+  return s:GetMavenClasspath(a:path, a:pom)
+endfunction
+
+function! s:GetMavenClasspath(path, pom)
+  let mvnProperties = g:Javacomplete_PomProperties[a:pom]
   let cp = get(mvnProperties, 'project.dependencybuildclasspath', '.')
   let cp .= g:PATH_SEP . get(mvnProperties, 'project.build.outputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'classes'], g:FILE_SEP))
   let cp .= g:PATH_SEP . get(mvnProperties, 'project.build.testOutputDirectory', join([fnamemodify(a:pom, ':h'), 'target', 'test-classes'], g:FILE_SEP))
   if cp != '.'
     call writefile([cp], a:path)
   endif
-  return cp
 endfunction
 
-function! s:GetMavenProperties(pom)
+function! s:ParseMavenOutput()
   let mvnProperties = {}
-  if !has_key(g:Javacomplete_PomProperties, a:pom)
-    let mvnCmd = 'mvn --file '. a:pom. ' help:effective-pom dependency:build-classpath -DincludeScope=test'
-    let mvnIsManagedTag = 1
-    let mvnSettingsOutput = split(system(mvnCmd), "\n")
-    let currentPath = 'project'
-    for i in range(len(mvnSettingsOutput))
-      if mvnSettingsOutput[i] =~ 'Dependencies classpath:'
-        let mvnProperties['project.dependencybuildclasspath'] = mvnSettingsOutput[i + 1]
-      endif
-      let matches = matchlist(mvnSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
-      if mvnIsManagedTag && !empty(matches)
-        let mvnIsManagedTag = index(g:Javacomplete_pom_tags, matches[1]) >= 0
-        let currentPath .= '.' . matches[1]
+  let mvnIsManagedTag = 1
+  let currentPath = 'project'
+  for i in range(len(s:mavenSettingsOutput))
+    if s:mavenSettingsOutput[i] =~ 'Dependencies classpath:'
+      let mvnProperties['project.dependencybuildclasspath'] = s:mavenSettingsOutput[i + 1]
+    endif
+    let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
+    if mvnIsManagedTag && !empty(matches)
+      let mvnIsManagedTag = index(g:Javacomplete_pom_tags, matches[1]) >= 0
+      let currentPath .= '.' . matches[1]
+    else
+      let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*</\([a-zA-Z0-9\-\.]\+\)>\s*$')
+      if !empty(matches)
+        let mvnIsManagedTag = index(g:Javacomplete_pom_tags, matches[1]) < 0
+        let currentPath  = substitute(currentPath, '\m\.' . matches[1] . '$', '', '')
       else
-        let matches = matchlist(mvnSettingsOutput[i], '\m^\s*</\([a-zA-Z0-9\-\.]\+\)>\s*$')
-        if !empty(matches)
-          let mvnIsManagedTag = index(g:Javacomplete_pom_tags, matches[1]) < 0
-          let currentPath  = substitute(currentPath, '\m\.' . matches[1] . '$', '', '')
-        else
-          let matches = matchlist(mvnSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\(.\+\)</[a-zA-Z0-9\-\.]\+>\s*$')
-          if mvnIsManagedTag && !empty(matches)
-            let mvnProperties[currentPath . '.' . matches[1]] = matches[2]
-          endif
+        let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\(.\+\)</[a-zA-Z0-9\-\.]\+>\s*$')
+        if mvnIsManagedTag && !empty(matches)
+          let mvnProperties[currentPath . '.' . matches[1]] = matches[2]
         endif
       endif
-    endfor
-    let g:Javacomplete_PomProperties[a:pom] = mvnProperties
+    endif
+  endfor
+  let g:Javacomplete_PomProperties[s:mavenPom] = mvnProperties
+endfunction
+
+function! javacomplete#MavenBuildClasspathHandler(jobId, data, event)
+  if a:event == 'exit' && a:data == '0'
+    if a:data == "0"
+      call s:ParseMavenOutput()
+
+      let g:JavaComplete_LibsPath .= s:GetMavenClasspath(s:mavenPath, s:mavenPom)
+
+      unlet s:mavenPath
+      unlet s:mavenPom
+      unlet s:mavenSettingsOutput
+
+      echo "Maven classpath builded successfully"
+    else
+      echo "Failed to build maven classpath"
+    endif
+  elseif a:event == 'stdout'
+    echom join(a:data)
+    call add(s:mavenSettingsOutput, join(a:data))
+  elseif a:event == 'stderr'
+    echoerr join(a:data)
   endif
-  return g:Javacomplete_PomProperties[a:pom]
 endfunction
 
 function! s:GenerateGradleClassPath(path, gradle) abort
