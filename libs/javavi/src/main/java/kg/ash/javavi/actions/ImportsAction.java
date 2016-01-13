@@ -1,6 +1,8 @@
 package kg.ash.javavi.actions;
 
 import com.github.javaparser.ast.CompilationUnit;
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Set;
 import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
@@ -12,15 +14,20 @@ public abstract class ImportsAction implements Action {
 
     @Override
     public String perform(String[] args) {
-        String content = getContent(args).replaceAll("<_Javacomplete-linebreak>".toLowerCase(), "\n");
+        try {
+            String base64Content = getContent(args);
+            String content = new String(Base64.getDecoder().decode(base64Content), "UTF-8");
 
-        compilationUnit = CompilationUnitCreator.createFromContent(content);
-        if (compilationUnit == null) return "Couldn't parse file";
+            compilationUnit = CompilationUnitCreator.createFromContent(content);
+            if (compilationUnit == null) return "Couldn't parse file";
 
-        ClassNamesFetcher classnamesFetcher = new ClassNamesFetcher(compilationUnit);
-        classnames = classnamesFetcher.getNames();
+            ClassNamesFetcher classnamesFetcher = new ClassNamesFetcher(compilationUnit);
+            classnames = classnamesFetcher.getNames();
 
-        return action();
+            return action();
+        } catch (UnsupportedEncodingException ex) {
+            return ex.getMessage();
+        }
     }
     
     private String getContent(String[] args) {

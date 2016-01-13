@@ -337,9 +337,9 @@ endfunction
 
 function! javacomplete#imports#RemoveUnused()
   let currentBuf = getline(1,'$')
-  let current = join(currentBuf, '<_javacomplete-linebreak>')
+  let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
 
-  let response = javacomplete#server#Communicate('-unused-imports -content', current, 'RemoveUnusedImports')
+  let response = javacomplete#server#Communicate('-unused-imports -content', base64Content, 'RemoveUnusedImports')
   if response =~ '^['
     let saveCursor = getcurpos()
     let unused = eval(response)
@@ -361,9 +361,9 @@ endfunction
 
 function! javacomplete#imports#AddMissing()
   let currentBuf = getline(1,'$')
-  let current = join(currentBuf, '<_javacomplete-linebreak>')
+  let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
 
-  let response = javacomplete#server#Communicate('-missing-imports -content', current, 'AddMissingImports')
+  let response = javacomplete#server#Communicate('-missing-imports -content', base64Content, 'AddMissingImports')
   if response =~ '^['
     let missing = eval(response)
     for import in missing

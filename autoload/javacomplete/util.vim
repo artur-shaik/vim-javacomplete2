@@ -221,4 +221,11 @@ function! javacomplete#util#RunSystem(command, shellName, handler)
   call call(a:handler, [0, "0", "exit"])
 endfunction
 
+function! javacomplete#util#Base64Encode(str)
+  JavacompletePy import base64
+  JavacompletePy import vim
+  JavacompletePy vim.command("let base64 = '%s'" % base64.b64encode(vim.eval('a:str')))
+  return base64
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:
