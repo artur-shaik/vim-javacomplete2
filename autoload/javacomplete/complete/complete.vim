@@ -1028,6 +1028,7 @@ function! s:DoGetClassInfo(class, ...)
   let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
     let fqn = fqn . nested . typeArgumentsCollected
+    let fqn = substitute(fqn, ' ', '', 'g')
     call s:FetchClassInfo(fqn)
 
     let key = s:KeyInCache(fqn)
