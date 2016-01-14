@@ -7,6 +7,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.MultiTypeParameter;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
@@ -72,6 +73,11 @@ public class ClassNamesFetcher {
         @Override
         public void visit(MethodDeclaration type, Object arg) {
             addAnnotations(type.getAnnotations());
+            if (type.getParameters() != null) {
+                for (Parameter param : type.getParameters()) {
+                    addAnnotations(param.getAnnotations());
+                }
+            }
 
             if (type.getThrows() != null) {
                 for (NameExpr expr : type.getThrows()) {
@@ -92,7 +98,7 @@ public class ClassNamesFetcher {
                     if (node instanceof ClassOrInterfaceType) {
                         t.visit((ClassOrInterfaceType)node, arg);
                     } else if (node instanceof NameExpr) {
-                        resultList.add(((NameExpr) node).getName());
+                        // resultList.add(((NameExpr) node).getName());
                     } else if (node instanceof MultiTypeParameter) {
                         ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
                     }
@@ -122,10 +128,24 @@ public class ClassNamesFetcher {
 
         @Override
         public void visit(ClassOrInterfaceType type, Object arg) {
-            resultList.add(type.getName());
+            String name = type.getName();
+            String fullName = type.toStringWithoutComments();
+            if (!fullName.startsWith(name)) {
+                if (!type.getChildrenNodes().isEmpty()) {
+                    name = type.getChildrenNodes().get(0).toStringWithoutComments();
+                }
+            }
+            if (name.contains(".")) {
+                name = name.split("\\.")[0];
+            }
+            resultList.add(name);
             if (type.getTypeArgs() != null) {
                 for (Type t : type.getTypeArgs()) {
-                    resultList.add(t.toStringWithoutComments());
+                    String typeName = t.toStringWithoutComments();
+                    if (typeName.contains(".")) {
+                        typeName = typeName.split("\\.")[0];
+                    }
+                    resultList.add(typeName);
                 }
             }
         }
