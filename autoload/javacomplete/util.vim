@@ -214,10 +214,13 @@ function! javacomplete#util#RunSystem(command, shellName, handler)
   endif
 
   if type(a:command) == type([])
-    exe '!'. join(a:command, " ")
+    let ret = system(join(a:command, " "))
   else
-    exe '!'. a:command
+    let ret = system(a:command)
   endif
+  for l in split(ret, "\n")
+    call call(a:handler, [0, [l], "stdout"])
+  endfor
   call call(a:handler, [0, "0", "exit"])
 endfunction
 
