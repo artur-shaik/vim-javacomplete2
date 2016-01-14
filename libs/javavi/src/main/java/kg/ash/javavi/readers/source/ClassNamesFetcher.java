@@ -98,7 +98,17 @@ public class ClassNamesFetcher {
                     if (node instanceof ClassOrInterfaceType) {
                         t.visit((ClassOrInterfaceType)node, arg);
                     } else if (node instanceof NameExpr) {
-                        // resultList.add(((NameExpr) node).getName());
+
+                        // javaparser has no difference on 'method call' expression,
+                        // so class name with static method call look the same as
+                        // object method call. that's why we check here for usual
+                        // class name type with upper case letter at the beginning.
+                        // it can miss some unusual class names with lower case at
+                        // the beginning.
+                        String name = ((NameExpr) node).getName();
+                        if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
+                            resultList.add(name);
+                        }
                     } else if (node instanceof MultiTypeParameter) {
                         ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
                     }

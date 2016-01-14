@@ -44,6 +44,8 @@ public class ResourceClassForClassFetcherTest {
 	private TestClass getTestClass(SomeClass source, String hash) throws TestClassForbiddenException {
 		try {
             TestClass testClass = bean1.getByUniq(hash);
+            String result = StaticClassName.staticMethod();
+            String result2 = AnotherStatic.staticReference;
             return testClass;
 		} catch (TestClassForbiddenException ex) {
 			logger.warn(String.format("Wrong testClass: %s %s", hash, source));

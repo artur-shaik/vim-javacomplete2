@@ -26,7 +26,7 @@ public class ClassNamesFetcherTest {
 
     @Test
     public void testClassnamesFetchComplex() {
-        String waitFor = "UserTransaction, TestException, WebService, HashMap, TestResponse, Resource, TestClass, String, Logger, WebMethod, TestClassForbiddenException, Long, EJB, BeanClass1, BeanClass2, WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, SomeClass, unusualClassName, FakeAttr";
+        String waitFor = "UserTransaction, TestException, WebService, HashMap, TestResponse, Resource, TestClass, String, Logger, WebMethod, TestClassForbiddenException, Long, EJB, BeanClass1, BeanClass2, WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, SomeClass, unusualClassName, FakeAttr, StaticClassName, AnotherStatic";
         Set<String> waitForList = new HashSet<String>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
