@@ -225,9 +225,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
   let ii = 1		" item index
   let itemkind = 0
 
-  "
   " optimized process
-  "
   " search the longest expr consisting of ident
   let i = 1
   let k = i
@@ -267,12 +265,13 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         let ii = i
       endif
     endif
+  else
+    if items[0] =~ '^\s*' . g:RE_IDENTIFIER . '\s*('
+      call insert(items, 'this', 0)
+    endif
   endif
 
-
-  "
   " first item
-  "
   if empty(ti)
     " cases:
     " 1) "int.|", "void.|"	- primitive type or pseudo-type, return `class`
@@ -333,10 +332,6 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           endif
         endif
       endif
-
-      " method invocation:	"method().|"	- "this.method().|"
-    elseif items[0] =~ '^\s*' . g:RE_IDENTIFIER . '\s*('
-      let ti = s:MethodInvocation(items[0], ti, itemkind)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
     elseif items[0] =~# g:RE_ARRAY_TYPE
