@@ -59,7 +59,7 @@ public class Reflection implements ClassReader {
     @Override
     public SourceClass read(String name) {
         String nameWithArguments = getNameWithArguments(name);
-        Javavi.debug("form reflection: " + nameWithArguments);
+        Javavi.debug("from reflection: " + nameWithArguments);
         if (Cache.getInstance().getClasses().containsKey(nameWithArguments)) {
             return Cache.getInstance().getClasses().get(nameWithArguments);
         }
