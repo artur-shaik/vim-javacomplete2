@@ -44,7 +44,7 @@ public class Reflection implements ClassReader {
         try {
             Class.forName(name);
             result = true;
-        } catch (Exception ex) {}
+        } catch (Exception | NoClassDefFoundError ex) {}
         return result;
     }
 
