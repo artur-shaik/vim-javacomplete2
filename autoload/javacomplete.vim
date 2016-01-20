@@ -182,7 +182,8 @@ function! s:FindClassPath() abort
         endif
         call s:RemoveFile(s:GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
       endif
-      return s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
+      call s:GenerateGradleClassPath(path, g:JavaComplete_GradlePath)
+      return ''
     endif
   endif
 
@@ -263,29 +264,47 @@ function! javacomplete#MavenBuildClasspathHandler(jobId, data, event)
   endif
 endfunction
 
-function! s:GenerateGradleClassPath(path, gradle) abort
-  try
-    let f = tempname()
-    if has("win32") || has("win16")
-      let gradle = '.\gradlew.bat'
+function! javacomplete#GradleBuildClasspathHandler(jobId, data, event)
+  if a:event == 'exit' && a:data == '0'
+    if a:data == "0"
+      let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]
+      let g:JavaComplete_LibsPath .= cp
+
+      call writefile([cp], s:gradlePath)
+
+      call javacomplete#server#Terminate()
+      call javacomplete#server#Start()
+
+      echo "Gradle classpath builded successfully"
     else
-      let gradle = './gradlew'
+      echo "Failed to build gradle classpath"
     endif
-    if !executable(gradle)
-      let gradle = 'gradle'
-    endif
-    call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], f)
-    let ret = system(gradle. ' -q -I '. shellescape(f). ' classpath')
-    if v:shell_error == 0
-      let cp = filter(split(ret, "\n"), 'v:val =~ "^CLASSPATH:"')[0][10:]
-      call writefile([cp], a:path)
-      return cp
-    endif
-  catch
-  finally
-    call delete(f)
-  endtry
-  return '.'
+
+    call delete(s:temporaryGradleFile)
+
+    unlet s:temporaryGradleFile
+    unlet s:gradleOutput
+    unlet s:gradlePath
+
+  elseif a:event == 'stdout'
+    echom join(a:data)
+    call add(s:gradleOutput, join(a:data))
+  elseif a:event == 'stderr'
+    echoerr join(a:data)
+  endif
+endfunction
+
+function! s:GenerateGradleClassPath(path, gradle) abort
+  let s:temporaryGradleFile = tempname()
+  let s:gradleOutput = []
+  let s:gradlePath = a:path
+  let gradle = has("win32") || has("win16") ? '.\gradlew.bat' : './gradlew'
+  if !executable(gradle)
+    let gradle = 'gradle'
+  endif
+  call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
+  let cmd = [gradle, '-I', s:temporaryGradleFile, 'classpath']
+  call javacomplete#util#RunSystem(cmd, 'gradle classpath build process', 'javacomplete#GradleBuildClasspathHandler')
 endfunction
 
 " workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
@@ -427,7 +446,7 @@ if !exists('g:JavaComplete_MavenRepositoryDisable') || !g:JavaComplete_MavenRepo
     if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
       let g:JavaComplete_GradlePath = getcwd(). g:FILE_SEP. "build.gradle"
     else
-      let g:JavaComplete_GradlePath = findfile('build.gradle', escape(expand('.'), '*[]?{}, '). ';')
+      let g:JavaComplete_GradlePath = javacomplete#util#FindFile('build.gradle')
     endif
     if g:JavaComplete_GradlePath != ""
       let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
