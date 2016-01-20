@@ -248,14 +248,14 @@ function! javacomplete#MavenBuildClasspathHandler(jobId, data, event)
 
       let g:JavaComplete_LibsPath .= s:GetMavenClasspath(s:mavenPath, s:mavenPom)
 
-      unlet s:mavenPath
-      unlet s:mavenPom
-      unlet s:mavenSettingsOutput
-
       echo "Maven classpath builded successfully"
     else
       echo "Failed to build maven classpath"
     endif
+
+    unlet s:mavenPath
+    unlet s:mavenPom
+    unlet s:mavenSettingsOutput
   elseif a:event == 'stdout'
     echom join(a:data)
     call add(s:mavenSettingsOutput, join(a:data))
