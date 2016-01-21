@@ -65,7 +65,7 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_JavaviDebug') && g:JavaComplete_JavaviDebug
       let args .= ' -d'
     endif
-    let args .= ' -base "'. substitute(javacomplete#GetBase(''), '\\', '\\\\', 'g'). '"'
+    let args .= ' -base "'. substitute(javacomplete#util#GetBase(''), '\\', '\\\\', 'g'). '"'
     let args .= ' -compiler "'. substitute(javacomplete#server#GetCompiler(), '\\', '\\\\', 'g'). '"'
     if !empty(g:JavaComplete_ProjectKey)
       let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'

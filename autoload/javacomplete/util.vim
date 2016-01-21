@@ -233,4 +233,22 @@ function! javacomplete#util#Base64Encode(str)
   return base64
 endfunction
 
+function! javacomplete#util#RemoveFile(file)
+  if g:JavaComplete_IsWindows
+    silent exe '!rmdir /s /q "'. a:file. '"'
+  else
+    silent exe '!rm -r "'. a:file. '"'
+  endif
+  silent redraw!
+endfunction
+
+function! javacomplete#util#GetBase(extra)
+  let base = expand(g:JavaComplete_BaseDir. g:FILE_SEP. "javacomplete2". g:FILE_SEP. a:extra)
+  if !isdirectory(base)
+    call mkdir(base, "p")
+  endif
+
+  return base
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:
