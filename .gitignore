@@ -1,4 +1,5 @@
 *.class
+*.py[cod]
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
