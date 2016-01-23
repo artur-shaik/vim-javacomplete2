@@ -108,36 +108,6 @@ function! javacomplete#Complete(findstart, base)
   return javacomplete#complete#complete#Complete(a:findstart, a:base)
 endfunction
 
-function! s:ReadClassPathFile(classpathFile)
-  let cp = ''
-  let file = g:JavaComplete_Home. join(['', 'autoload', 'classpath.py'], g:FILE_SEP)
-  execute "JavacompletePyfile" file
-  JavacompletePy import vim
-  JavacompletePy vim.command("let cp = '%s'" % os.pathsep.join(ReadClasspathFile(vim.eval('a:classpathFile'))).replace('\\', '/'))
-  return cp
-endfunction
-
-function! s:FindClassPath() abort
-  let cp = '.'
-
-  if has('python') || has('python3')
-    let classpathFile = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
-    if !empty(classpathFile) && filereadable(classpathFile)
-      return s:ReadClassPathFile(classpathFile)
-    endif
-  endif
-
-  if javacomplete#classpath#maven#IfMaven()
-    return javacomplete#classpath#maven#Generate()
-  endif
-
-  if javacomplete#classpath#gradle#IfGradle()
-    return javacomplete#classpath#gradle#Generate()
-  endif
-
-  return cp
-endfunction
-
 " workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
 " should be removed in future versions
 function! javacomplete#GlobPathList(path, pattern, suf)
@@ -265,29 +235,7 @@ else
   let g:JavaComplete_LibsPath = ""
 endif
 
-if !get(g:, 'JavaComplete_MavenRepositoryDisabled', 0)
-  if !exists('g:JavaComplete_PomPath')
-    let g:JavaComplete_PomPath = javacomplete#util#FindFile('pom.xml')
-    if g:JavaComplete_PomPath != ""
-      let g:JavaComplete_PomPath = fnamemodify(g:JavaComplete_PomPath, ':p')
-    endif
-  endif
-endif
-
-if !get(g:, 'JavaComplete_GradleRepositoryDisabled', 0)
-  if !exists('g:JavaComplete_GradlePath')
-    if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
-      let g:JavaComplete_GradlePath = getcwd(). g:FILE_SEP. "build.gradle"
-    else
-      let g:JavaComplete_GradlePath = javacomplete#util#FindFile('build.gradle')
-    endif
-    if g:JavaComplete_GradlePath != ""
-      let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
-    endif
-  endif
-endif
-
-let g:JavaComplete_LibsPath .= s:FindClassPath()
+call javacomplete#classpath#classpath#BuildClassPath()
 
 function! javacomplete#Start()
   call javacomplete#server#Start()
