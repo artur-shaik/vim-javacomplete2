@@ -8,10 +8,10 @@ class Source(Base):
         self.mark = '[jc]'
         self.filetypes = ['java', 'jsp']
         self.is_bytepos = True
-        self.min_pattern_length = 0
+        self.input_pattern = '[^. \t0-9]\.\w*'
 
     def get_complete_position(self, context):
-        return self.vim.call('javacomplete#Complete', 1, 0)
+        return self.vim.call('javacomplete#complete#complete#Complete', 1, '')
 
     def gather_candidates(self, context):
-        return self.vim.call('javacomplete#Complete', 0, context['complete_str'])
+        return self.vim.call('javacomplete#complete#complete#Complete', 0, '')
