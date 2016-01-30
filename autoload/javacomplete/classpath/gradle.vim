@@ -29,7 +29,9 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
 
   elseif a:event == 'stdout'
     echom join(a:data)
-    call extend(s:gradleOutput, a:data)
+    if exists('s:gradleOutput')
+      call extend(s:gradleOutput, a:data)
+    endif
   elseif a:event == 'stderr'
     echoerr join(a:data)
   endif
