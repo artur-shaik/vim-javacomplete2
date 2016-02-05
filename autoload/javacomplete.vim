@@ -197,8 +197,12 @@ augroup javacomplete
   autocmd BufWritePost *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
 
-  if has("patch-7.3.867")
+  if v:version > 704 || v:version == 704 && has('patch143')
     autocmd TextChangedI *.java,*.jsp call s:HandleTextChangedI()
+  else
+    echohl WarningMsg
+    echomsg "JavaComplete2 : TextChangedI feature needs vim version >= 7.4.143"
+    echohl None
   endif
   autocmd InsertLeave *.java,*.jsp call s:HandleInsertLeave()
 augroup END
