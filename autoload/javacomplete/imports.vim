@@ -67,7 +67,7 @@ function! s:GenerateImports()
           call add(imports, [stat[:-2], lnum])
         endif
       else
-        let curPos = getcurpos()
+        let curPos = getpos('.')
         call cursor(curPos[1] + 1, curPos[2])
       endif
     endwhile
@@ -183,7 +183,7 @@ function! s:SortImports()
     endfor
 
     call sort(importsList)
-    let saveCursor = getcurpos()
+    let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
     for imp in importsList
       if &ft == 'jsp'
@@ -242,7 +242,7 @@ function! s:AddImport(import)
     else
       let insertline = 1
     endif
-    let saveCursor = getcurpos()
+    let saveCursor = getpos('.')
     let linesCount = line('$')
     while (javacomplete#util#Trim(getline(insertline)) == '' && insertline < linesCount)
       silent execute insertline. 'delete _'
@@ -328,7 +328,7 @@ function! javacomplete#imports#Add(...)
   endif
 
   if a:0 > 0 && a:1
-    let cur = getcurpos()
+    let cur = getpos('.')
     let cur[2] = cur[2] + 1
     execute 'startinsert'
     call setpos('.', cur)
@@ -341,7 +341,7 @@ function! javacomplete#imports#RemoveUnused()
 
   let response = javacomplete#server#Communicate('-unused-imports -content', base64Content, 'RemoveUnusedImports')
   if response =~ '^['
-    let saveCursor = getcurpos()
+    let saveCursor = getpos('.')
     let unused = eval(response)
     for unusedImport in unused
       let imports = javacomplete#imports#GetImports('imports')
