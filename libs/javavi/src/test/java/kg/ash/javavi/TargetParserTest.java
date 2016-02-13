@@ -39,6 +39,7 @@ public class TargetParserTest {
         Assert.assertEquals("java.lang.String", parser.getTypeArguments().get(0));
         Assert.assertEquals("java.math.BigDecimal", parser.getTypeArguments().get(1));
 
+        Assert.assertEquals("java.util.List", parser.parse("java.util.List<java.lang.Object, java.lang.Object, java.lang.Object>"));
     }
 
     @Test

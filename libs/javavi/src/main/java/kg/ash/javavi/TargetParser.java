@@ -71,6 +71,8 @@ public class TargetParser {
     }
 
     private String markSplits(String ta) {
+        Javavi.debug("markSplits: " + ta);
+
         int i = 0;
         int lbr = 0;
         int stidx = 0;
@@ -81,9 +83,9 @@ public class TargetParser {
             } else if (c == '>') {
                 lbr--;
             } else if (c == ',' && lbr == 0) {
-                ta = ta.substring(stidx, i - stidx) + "<_split_>" + ta.substring(i - stidx + 1, ta.length());
-                stidx = i;
+                ta = ta.substring(0, i - stidx) + "<_split_>" + ta.substring(i - stidx + 1, ta.length());
                 i += 9;
+                stidx = i;
             }
 
             i++;
