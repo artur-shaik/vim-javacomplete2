@@ -73,19 +73,25 @@ public class Reflection implements ClassReader {
             if (clazz != null) {
                 try {
                     return getSourceClass(clazz);
-                } catch (Throwable t) {}
+                } catch (Throwable t) {
+                    Javavi.debug(t);
+                }
             }
         }
 
         try {
             Class clazz = Class.forName(name);
             return getSourceClass(clazz);
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            Javavi.debug(ex);
+        }
 
         try {
             Class clazz = Class.forName("java.lang." + name);
             return getSourceClass(clazz);
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            Javavi.debug(ex);
+        }
 
         String binaryName = name;
         while (true) {
@@ -99,7 +105,9 @@ public class Reflection implements ClassReader {
 
                 Class clazz = Class.forName(binaryName);
                 return getSourceClass(clazz);
-            } catch (Exception e) {}
+            } catch (Exception ex) {
+                Javavi.debug(ex);
+            }
         }
 
         return null;
