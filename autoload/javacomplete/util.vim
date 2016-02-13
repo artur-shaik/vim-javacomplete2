@@ -173,10 +173,16 @@ function! javacomplete#util#CleanFQN(fqnDeclaration)
   while !empty(result)
 
     if len(result[1]) > 0
+      if result[0][-1:-1] == '$'
+        let result[0] = result[0][:-2]. '\$'
+      endif
       let fqnDeclaration = substitute(fqnDeclaration, result[0], result[1], '')
       let shift = result[1]
     else
       let shift = result[0]
+    endif
+    if shift[-1:-1] == '$'
+      let shift = shift[:-2]. '\$'
     endif
     let start = match(fqnDeclaration, shift, start) + len(shift)
 
