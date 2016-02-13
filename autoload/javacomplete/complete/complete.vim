@@ -46,8 +46,10 @@ function! javacomplete#complete#complete#Complete(findstart, base)
       unlet s:padding
     endif
 
-    call javacomplete#logger#Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
-    return result
+    if type(result) == type([])
+      call javacomplete#logger#Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
+      return result
+    endif
   endif
 
   if len(get(b:, 'errormsg', '')) > 0
