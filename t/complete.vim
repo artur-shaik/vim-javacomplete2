@@ -9,6 +9,7 @@ describe 'javacomplete-test'
     it 'CollectFQNs test'
         Expect Call('s:CollectFQNs', 'List', 'kg.ash.foo', '') == ['kg.ash.foo.List','java.lang.List', 'java.lang.Object']
         Expect Call('s:CollectFQNs', 'java.util.List', 'kg.ash.foo', '') == ['java.util.List']
+        Expect Call('s:CollectFQNs', 'Object', 'kg.ash.foo', '') == ['kg.ash.foo.Object','java.lang.Object']
 
         new
         source autoload/javacomplete.vim
@@ -70,6 +71,8 @@ describe 'javacomplete-test'
 
         Expect Call('s:CollectTypeArguments', 'MyClass', '', '') == '<(MyClass|java.lang.MyClass|java.lang.Object)>'
         Expect Call('s:CollectTypeArguments', 'MyClass', 'foo.bar.baz', '') == '<(foo.bar.baz.MyClass|java.lang.MyClass|java.lang.Object)>'
+
+        Expect Call('s:CollectTypeArguments', 'Object,Object,String', 'kg.test', '') == '<(kg.test.Object|java.lang.Object),(kg.test.Object|java.lang.Object),(kg.test.String|java.lang.String|java.lang.Object)>'
     end
 
     it 'SplitTypeArguments test'

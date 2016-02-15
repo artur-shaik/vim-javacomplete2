@@ -75,7 +75,6 @@ public class TargetParser {
 
         int i = 0;
         int lbr = 0;
-        int stidx = 0;
         while (i < ta.length()) {
             char c = ta.charAt(i);
             if (c == '<') {
@@ -83,9 +82,8 @@ public class TargetParser {
             } else if (c == '>') {
                 lbr--;
             } else if (c == ',' && lbr == 0) {
-                ta = ta.substring(0, i - stidx) + "<_split_>" + ta.substring(i - stidx + 1, ta.length());
+                ta = ta.substring(0, i) + "<_split_>" + ta.substring(i + 1, ta.length());
                 i += 9;
-                stidx = i;
             }
 
             i++;

@@ -1020,11 +1020,11 @@ function! s:DoGetClassInfo(class, ...)
   endif
 
 
-  let typeArgumentsCollected = s:CollectTypeArguments(typeArguments, packagename, filekey)
+  let collectedArguments = s:CollectTypeArguments(typeArguments, packagename, filekey)
 
   let fqns = s:CollectFQNs(typename, packagename, filekey)
   for fqn in fqns
-    let fqn = fqn . nested . typeArgumentsCollected
+    let fqn = fqn . nested . collectedArguments
     let fqn = substitute(fqn, ' ', '', 'g')
     call s:FetchClassInfo(fqn)
 
@@ -1055,12 +1055,11 @@ function! s:SplitTypeArguments(typename)
 endfunction
 
 function! s:CollectTypeArguments(typeArguments, packagename, filekey)
-  let typeArgumentsCollected = ''
+  let collectedArguments = ''
   if !empty(a:typeArguments)
     let typeArguments = a:typeArguments
     let i = 0
     let lbr = 0
-    let stidx = 0
     while i < len(typeArguments)
       let c = typeArguments[i]
       if c == '<'
@@ -1070,10 +1069,11 @@ function! s:CollectTypeArguments(typeArguments, packagename, filekey)
       endif
 
       if c == ',' && lbr == 0
-        let typeArguments = typeArguments[stidx : i - 1] . "<_split_>". typeArguments[i + 1 : -1]
-        let stidx = i
+        let typeArguments = typeArguments[0 : i - 1] . "<_split_>". typeArguments[i + 1 : -1]
+        let i += 9
+      else
+        let i += 1
       endif
-      let i += 1
     endwhile
     
     for arg in split(typeArguments, "<_split_>")
@@ -1090,27 +1090,27 @@ function! s:CollectTypeArguments(typeArguments, packagename, filekey)
       endif
 
       let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
-      let typeArgumentsCollected .= ''
+      let collectedArguments .= ''
       if len(fqns) > 1
-        let typeArgumentsCollected .= '('
+        let collectedArguments .= '('
       endif
       for fqn in fqns
         if len(fqn) > 0
-          let typeArgumentsCollected .= fqn. argTypeArguments. '|'
+          let collectedArguments .= fqn. argTypeArguments. '|'
         endif
       endfor
       if len(fqns) > 1
-        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. '),'
+        let collectedArguments = collectedArguments[0:-2]. '),'
       else
-        let typeArgumentsCollected = typeArgumentsCollected[0:-2]. ','
+        let collectedArguments = collectedArguments[0:-2]. ','
       endif
     endfor
-    if !empty(typeArgumentsCollected)
-      let typeArgumentsCollected = '<'. typeArgumentsCollected[0:-2]. '>'
+    if !empty(collectedArguments)
+      let collectedArguments = '<'. collectedArguments[0:-2]. '>'
     endif
   endif
 
-  return typeArgumentsCollected
+  return collectedArguments
 endfunction
 
 function! s:KeyInCache(fqn)
@@ -1155,7 +1155,9 @@ function! s:CollectFQNs(typename, packagename, filekey)
   for p in imports
     call add(fqns, p . a:typename)
   endfor
-  call add(fqns, 'java.lang.Object')
+  if typename != 'Object'
+    call add(fqns, 'java.lang.Object')
+  endif
   return fqns
 endfunction
 
