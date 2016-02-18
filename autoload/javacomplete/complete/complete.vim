@@ -597,6 +597,7 @@ function! s:SearchForName(name, first, fullmatch)
   let targetPos = java_parser#MakePos(line('.')-1, col('.')-1)
   let trees = javacomplete#parseradapter#SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
   for tree in trees
+    call javacomplete#logger#Log(tree)
     if tree.tag == 'VARDEF'
       call add(result[2], tree)
     elseif tree.tag == 'METHODDEF'
@@ -808,6 +809,14 @@ function! s:GetDeclaredClassName(var, ...)
   if get(variable, 'tag', '') == 'VARDEF'
     if has_key(variable, 't')
       let splitted = split(variable.t, '\.')
+
+      if len(splitted) == 1
+        let rootClassName = s:SearchForRootClassName(variable)
+        if len(rootClassName) > 0
+          call insert(splitted, rootClassName)
+        endif
+      endif
+
       if len(splitted) > 1
         let directFqn = javacomplete#imports#SearchSingleTypeImport(splitted[0], javacomplete#imports#GetImports('imports_fqn', javacomplete#GetCurrentFileKey()))
         if empty(directFqn) 
@@ -816,7 +825,7 @@ function! s:GetDeclaredClassName(var, ...)
       else
         return variable.t
       endif
-      return substitute(variable.t, '\.', '\$', 'g')
+      return substitute(join(splitted, '.'), '\.', '\$', 'g')
     endif
     return java_parser#type2Str(variable.vartype)
   endif
@@ -835,6 +844,19 @@ function! s:GetDeclaredClassName(var, ...)
   endif
 
   return ''
+endfunction
+
+function! s:SearchForRootClassName(variable)
+  if has_key(a:variable, 'vartype') && a:variable.vartype.tag == 'TYPEAPPLY'
+    if has_key(a:variable.vartype, 'clazz') && a:variable.vartype.clazz.tag == 'SELECT'
+      let clazz = a:variable.vartype.clazz
+      if has_key(clazz, 'selected') && has_key(clazz.selected, 'name')
+        return clazz.selected.name
+      endif
+    endif
+  endif
+
+  return ""
 endfunction
 
 function! s:CheckModifier(modifier, condition)
