@@ -597,7 +597,6 @@ function! s:SearchForName(name, first, fullmatch)
   let targetPos = java_parser#MakePos(line('.')-1, col('.')-1)
   let trees = javacomplete#parseradapter#SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
   for tree in trees
-    call javacomplete#logger#Log(tree)
     if tree.tag == 'VARDEF'
       call add(result[2], tree)
     elseif tree.tag == 'METHODDEF'
