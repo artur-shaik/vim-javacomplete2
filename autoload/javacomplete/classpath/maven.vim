@@ -49,23 +49,25 @@ function! s:ParseMavenOutput()
   for i in range(len(s:mavenSettingsOutput))
     if s:mavenSettingsOutput[i] =~ 'Dependencies classpath:'
       let mvnProperties['project.dependencybuildclasspath'] = s:mavenSettingsOutput[i + 1]
-      if s:mavenSettingsOutput[i+2] !~ '^[\w*'
-        let mvnProperties['project.dependencybuildclasspath'] .= s:mavenSettingsOutput[i + 2]
-      endif
+      let offset = 2
+      while s:mavenSettingsOutput[i + offset] !~ '^[INFO.*'
+        let mvnProperties['project.dependencybuildclasspath'] .= s:mavenSettingsOutput[i + offset]
+        let offset += 1
+      endwhile
     endif
     let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
     if mvnIsManagedTag && !empty(matches)
       let mvnIsManagedTag = index(s:pomTags, matches[1]) >= 0
-      let currentPath .= '.' . matches[1]
+      let currentPath .= '.'. matches[1]
     else
       let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*</\([a-zA-Z0-9\-\.]\+\)>\s*$')
       if !empty(matches)
         let mvnIsManagedTag = index(s:pomTags, matches[1]) < 0
-        let currentPath  = substitute(currentPath, '\m\.' . matches[1] . '$', '', '')
+        let currentPath = substitute(currentPath, '\m\.'. matches[1]. '$', '', '')
       else
         let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\(.\+\)</[a-zA-Z0-9\-\.]\+>\s*$')
         if mvnIsManagedTag && !empty(matches)
-          let mvnProperties[currentPath . '.' . matches[1]] = matches[2]
+          let mvnProperties[currentPath. '.'. matches[1]] = matches[2]
         endif
       endif
     endif
