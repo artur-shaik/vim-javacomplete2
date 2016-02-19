@@ -49,6 +49,9 @@ function! s:ParseMavenOutput()
   for i in range(len(s:mavenSettingsOutput))
     if s:mavenSettingsOutput[i] =~ 'Dependencies classpath:'
       let mvnProperties['project.dependencybuildclasspath'] = s:mavenSettingsOutput[i + 1]
+      if s:mavenSettingsOutput[i+2] !~ '^[\w*'
+        let mvnProperties['project.dependencybuildclasspath'] .= s:mavenSettingsOutput[i + 2]
+      endif
     endif
     let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
     if mvnIsManagedTag && !empty(matches)
