@@ -53,6 +53,10 @@ function! s:ParseMavenOutput()
       while s:mavenSettingsOutput[i + offset] !~ '^[INFO.*'
         let mvnProperties['project.dependencybuildclasspath'] .= s:mavenSettingsOutput[i + offset]
         let offset += 1
+
+        if offset == 10
+          break
+        endif
       endwhile
     endif
     let matches = matchlist(s:mavenSettingsOutput[i], '\m^\s*<\([a-zA-Z0-9\-\.]\+\)>\s*$')
