@@ -846,11 +846,14 @@ function! s:GetDeclaredClassName(var, ...)
 endfunction
 
 function! s:SearchForRootClassName(variable)
-  if has_key(a:variable, 'vartype') && a:variable.vartype.tag == 'TYPEAPPLY'
-    if has_key(a:variable.vartype, 'clazz') && a:variable.vartype.clazz.tag == 'SELECT'
-      let clazz = a:variable.vartype.clazz
-      if has_key(clazz, 'selected') && has_key(clazz.selected, 'name')
-        return clazz.selected.name
+  call javacomplete#logger#Log(a:variable)
+  if has_key(a:variable, 'vartype') && type(a:variable.vartype) == type({})
+    if has_key(a:variable.vartype, 'tag') && a:variable.vartype.tag == 'TYPEAPPLY'
+      if has_key(a:variable.vartype, 'clazz') && a:variable.vartype.clazz.tag == 'SELECT'
+        let clazz = a:variable.vartype.clazz
+        if has_key(clazz, 'selected') && has_key(clazz.selected, 'name')
+          return clazz.selected.name
+        endif
       endif
     endif
   endif
