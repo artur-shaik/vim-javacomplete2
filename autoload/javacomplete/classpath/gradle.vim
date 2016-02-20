@@ -56,8 +56,8 @@ function! s:GenerateClassPath(path, gradle) abort
   let s:temporaryGradleFile = tempname()
   let s:gradleOutput = []
   let s:gradlePath = a:path
-  let gradle = has("win32") || has("win16") ? '.\gradlew.bat' : './gradlew'
-  if !executable(gradle)
+  let gradle = javacomplete#util#IsWindows() ? '.\gradlew.bat' : './gradlew'
+  if g:JavaComplete_EnableGradle && executable('gradle')
     let gradle = 'gradle'
   endif
   call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
