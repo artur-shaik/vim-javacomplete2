@@ -239,6 +239,10 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
         let g:JavaComplete_ImportDefault = 0
 
+    Use your own executable file for gradle:
+
+        let g:JavaComplete_GradleExecutable = 'gradle'
+
 2.4 Commands					*javacomplete-commands*
 
     JCimportsAddMissing - add all missing 'imports';
