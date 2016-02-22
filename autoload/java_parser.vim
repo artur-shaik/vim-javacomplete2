@@ -766,7 +766,7 @@ fu! s:scanComment()
     " javadoc
     if b:ch == '*'
       let b:docComment = s:scanDocComment()
-      " normal! comment
+      " normal comment
     else
       call s:skipComment()
     endif

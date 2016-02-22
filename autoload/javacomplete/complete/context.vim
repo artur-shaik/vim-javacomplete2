@@ -131,7 +131,7 @@ function! javacomplete#complete#context#FindContext()
         return start - len(b:dotexpr)
       endif
 
-      " normal! method invocations
+      " normal method invocations
     else
       let pos = match(statement, '\s*' . g:RE_IDENTIFIER . '$')
       " case: "method(|)", "this(|)", "super(|)"
