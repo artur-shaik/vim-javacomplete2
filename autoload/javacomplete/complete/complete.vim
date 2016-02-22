@@ -108,7 +108,7 @@ function! javacomplete#complete#complete#CompleteAfterWord(incomplete)
       elseif javacomplete#util#InCommentOrLiteral(line('.'), col('.'))
         continue
       else
-        normal w
+        normal! w
         call add(types, {'kind': 'C', 'word': matchstr(getline(line('.'))[col('.')-1:], g:RE_IDENTIFIER)})
       endif
     endwhile

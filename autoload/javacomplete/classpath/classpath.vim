@@ -33,23 +33,36 @@ function! s:ReadClassPathFile(classpathFile)
   return cp
 endfunction
 
-function! s:FindClassPath() abort
-  let cp = '.'
-
+fu! s:UseEclipse()
   if has('python') || has('python3')
     let classpathFile = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
     if !empty(classpathFile) && filereadable(classpathFile)
       return s:ReadClassPathFile(classpathFile)
     endif
   endif
+endf
 
+fu! s:UseMaven()
   if javacomplete#classpath#maven#IfMaven()
     return javacomplete#classpath#maven#Generate()
   endif
+endf
 
+fu! s:UseGradle()
   if javacomplete#classpath#gradle#IfGradle()
     return javacomplete#classpath#gradle#Generate()
   endif
+endf
+
+function! s:FindClassPath() abort
+  let cp = '.'
+
+  for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
+    try
+      exec "call s:Use". classpathSourceType. "()"
+    catch
+    endtry
+  endfor
 
   return cp
 endfunction

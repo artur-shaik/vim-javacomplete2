@@ -60,7 +60,7 @@ function! s:GenerateImports()
       if (lnum == 0)
         break
       elseif !javacomplete#util#InComment(line("."), col(".")-1)
-        normal w
+        normal! w
         " TODO: search semicolon or import keyword, excluding comment
         let stat = matchstr(getline(lnum)[col('.')-1:], '\(static\s\+\)\?\(' .g:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*;')
         if !empty(stat)

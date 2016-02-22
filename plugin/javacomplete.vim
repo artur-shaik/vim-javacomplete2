@@ -26,6 +26,9 @@ let g:JavaComplete_BaseDir =
 let g:JavaComplete_ImportDefault =
       \ get(g:,'JavaComplete_ImportDefault',0)
 
+let g:JavaComplete_ClasspathGenerationOrder =
+      \ get(g:,'g:JavaComplete_ClasspathGenerationOrder',['Eclipse', 'Maven', 'Gradle'])
+
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
 command! JCimportAdd call javacomplete#imports#Add()
