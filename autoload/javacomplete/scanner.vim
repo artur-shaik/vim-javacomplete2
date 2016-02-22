@@ -26,7 +26,7 @@ function! javacomplete#scanner#GetStatement()
         continue
       endif
 
-      normal w
+      normal! w
       let lnum = line('.')
       let col = col('.')
     endif
@@ -211,7 +211,7 @@ function! javacomplete#scanner#GetVariableDeclaration()
   let col_old = col('.')
 
   silent call search('[^a-zA-Z0-9$_.,?<>[\] \t\r\n]', 'bW')	" call search('[{};(,]', 'b')
-  normal w
+  normal! w
   let lnum = line('.')
   let col = col('.')
   if (lnum == lnum_old && col == col_old)
