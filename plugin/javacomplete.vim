@@ -29,6 +29,9 @@ let g:JavaComplete_ImportDefault =
 let g:JavaComplete_EnableGradle =
       \ get(g:,'g:JavaComplete_EnableGradle',1)
 
+let g:JavaComplete_ClassPathLoaddingOrder =
+      \ get(g:,'g:JavaComplete_ClassPathLoaddingOrder',['eclipse', 'maven', 'gradle'])
+
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
 command! JCimportAdd call javacomplete#imports#Add()
