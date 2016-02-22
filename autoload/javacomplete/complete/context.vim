@@ -2,8 +2,8 @@ let g:JC__CONTEXT_AFTER_DOT		        = 1
 let g:JC__CONTEXT_METHOD_PARAM	        = 2
 let g:JC__CONTEXT_IMPORT		        = 3
 let g:JC__CONTEXT_IMPORT_STATIC	        = 4
-let g:JC__CONTEXT_PACKAGE_DECL	        = 6 
-let g:JC__CONTEXT_NEED_TYPE		        = 7 
+let g:JC__CONTEXT_PACKAGE_DECL	        = 6
+let g:JC__CONTEXT_NEED_TYPE		        = 7
 let g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS	    = 8
 let g:JC__CONTEXT_METHOD_REFERENCE      = 9
 let g:JC__CONTEXT_ANNOTATION_FIELDS     = 10
@@ -78,7 +78,7 @@ function! javacomplete#complete#context#FindContext()
       let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
     elseif matchend(statement, '^\s*' . g:RE_TYPE_DECL) != -1
       " type declaration
-      
+
       let b:dotexpr = strpart(statement, idx_type)
       " return if not after extends or implements
       if b:dotexpr !~ '^\(extends\|implements\)\s\+'
@@ -131,14 +131,14 @@ function! javacomplete#complete#context#FindContext()
         return start - len(b:dotexpr)
       endif
 
-      " normal method invocations
+      " normal! method invocations
     else
       let pos = match(statement, '\s*' . g:RE_IDENTIFIER . '$')
       " case: "method(|)", "this(|)", "super(|)"
       if pos == 0
         let statement = substitute(statement, '^\s*', '', '')
         " treat "this" or "super" as a type name.
-        if statement == 'this' || statement == 'super' 
+        if statement == 'this' || statement == 'super'
           let b:dotexpr = statement
           let b:incomplete = '+'
           return start - len(b:dotexpr)

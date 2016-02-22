@@ -22,7 +22,7 @@ For now the main difference from the original plugin is the existence of a serve
 
 One more issue I had with the original javacomplete plugin is losing my classpath and as a result, completion not working.
 So now the javacomplete2 plugin detects the JRE library path, thus bringing standard java completion out of the box - no configuration required!
-The plugin will scan child directory tree for `src` directory and add it to the sources path (For this, it is nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin). 
+The plugin will scan child directory tree for `src` directory and add it to the sources path (For this, it is nice to have [vim-rooter](https://github.com/airblade/vim-rooter.git) plugin).
 
 For the first run the plugin will compile the Javavi library.
 
@@ -46,7 +46,7 @@ Features (originally existed):
 - Complete an incomplete word;
 - Provide a complete JAVA parser written in Vim script language;
 - Use the JVM to obtain most information.
- 
+
 Features borrowed and ported to vimscript from vim-javacompleteex:
 - Complete class name;
 - Add import statement for a given class name.

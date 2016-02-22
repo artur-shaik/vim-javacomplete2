@@ -123,7 +123,7 @@ fu! javacomplete#util#GotoUpperBracket()
   while (!searched)
     call search('[{}]', 'bW')
     if getline('.')[col('.')-1] == '}'
-      normal %
+      normal! %
     else
       let searched = 1
     endif
