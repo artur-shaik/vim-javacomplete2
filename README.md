@@ -134,7 +134,7 @@ To remove all missing imports with F6:
 
 `let g:JavaComplete_ImportDefault = 0` - the default selection of import options. By default it is 0, which means automatically select first one. To make nothing on default set `-1`.
 
-`let g:JavaComplete_GradleExecutable = 'gradle'` - use you own path to gradle executable file.
+`let g:JavaComplete_GradleExecutable = 'gradle'` - use your own path to gradle executable file.
 
 ## Commands
 
