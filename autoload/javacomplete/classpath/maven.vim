@@ -94,10 +94,14 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
     unlet s:mavenPom
     unlet s:mavenSettingsOutput
   elseif a:event == 'stdout'
-    echom join(a:data)
+    for data in filter(a:data,'v:val !~ "^\\s*$"')
+        echomsg data
+    endfor
     call extend(s:mavenSettingsOutput, a:data)
   elseif a:event == 'stderr'
-    echoerr join(a:data)
+    for data in filter(a:data,'v:val !~ "^\\s*$"')
+        echoerr data
+    endfor
   endif
 endfunction
 
