@@ -40,18 +40,24 @@ fu! s:UseEclipse()
       return s:ReadClassPathFile(classpathFile)
     endif
   endif
+
+  return ""
 endf
 
 fu! s:UseMaven()
   if javacomplete#classpath#maven#IfMaven()
     return javacomplete#classpath#maven#Generate()
   endif
+
+  return ""
 endf
 
 fu! s:UseGradle()
   if javacomplete#classpath#gradle#IfGradle()
     return javacomplete#classpath#gradle#Generate()
   endif
+
+  return ""
 endf
 
 function! s:FindClassPath() abort
@@ -59,7 +65,7 @@ function! s:FindClassPath() abort
 
   for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
-      exec "call s:Use". classpathSourceType. "()"
+      exec "let cp .= s:Use". classpathSourceType. "()"
     catch
     endtry
   endfor
