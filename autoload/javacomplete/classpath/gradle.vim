@@ -36,12 +36,16 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
     unlet s:gradlePath
 
   elseif a:event == 'stdout'
-    echom join(a:data)
+    for data in filter(a:data,'v:val !~ "^\\s*$"')
+        echomsg data
+    endfor
     if exists('s:gradleOutput')
       call extend(s:gradleOutput, a:data)
     endif
   elseif a:event == 'stderr'
-    echoerr join(a:data)
+    for data in filter(a:data,'v:val !~ "^\\s*$"')
+        echoerr data
+    endfor
   endif
 endfunction
 
