@@ -14,7 +14,7 @@ function! javacomplete#classpath#gradle#IfGradle()
 endfunction
 
 function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event)
-  if a:event == 'exit' && a:data == '0'
+  if a:event == 'exit'
     if a:data == "0"
       let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]
       let g:JavaComplete_LibsPath .= cp

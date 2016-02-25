@@ -76,7 +76,7 @@ function! s:ParseMavenOutput()
 endfunction
 
 function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
-  if a:event == 'exit' && a:data == '0'
+  if a:event == 'exit'
     if a:data == "0"
       call s:ParseMavenOutput()
 
