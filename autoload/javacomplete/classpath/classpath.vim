@@ -66,6 +66,9 @@ function! s:FindClassPath() abort
   for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
       exec "let cp .= s:Use". classpathSourceType. "()"
+      if cp != '.'
+        break
+      endif
     catch
     endtry
   endfor
