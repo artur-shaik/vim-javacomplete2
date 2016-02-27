@@ -1,6 +1,6 @@
 function! javacomplete#classpath#gradle#IfGradle()
   if exists("g:JavaComplete_GradleExecutable")
-    if executable(g:JavaComplete_GradleExecutable")
+    if executable(g:JavaComplete_GradleExecutable)
       return 1
     else
       return 0
@@ -24,9 +24,9 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 
-      echo "Gradle classpath builded successfully"
+      echomsg "Gradle classpath builded successfully"
     else
-      echo "Failed to build gradle classpath"
+      echohl WarningMsg | echomsg "Failed to build gradle classpath" | echohl None
     endif
 
     call delete(s:temporaryGradleFile)
@@ -37,7 +37,9 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
 
   elseif a:event == 'stdout'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
+      if g:JavaComplete_ShowExternalCommandsOutput
         echomsg data
+      endif
     endfor
     if exists('s:gradleOutput')
       call extend(s:gradleOutput, a:data)

@@ -125,7 +125,9 @@ function! javacomplete#server#CompilationJobHandler(jobId, data, event)
   elseif a:event == 'stderr'
     echoerr join(a:data)
   elseif a:event == 'stdout'
-    echom join(a:data)
+    if g:JavaComplete_ShowExternalCommandsOutput
+      echomsg join(a:data)
+    endif
   endif
 endfunction
 
@@ -134,7 +136,7 @@ function! javacomplete#server#Compile()
 
   let javaviDir = g:JavaComplete_Home. g:FILE_SEP. join(['libs', 'javavi'], g:FILE_SEP). g:FILE_SEP
   if isdirectory(javaviDir. join(['target', 'classes'], g:FILE_SEP)) 
-    call javacomplete#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
+    call javacomplete#util#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
   endif
 
   let s:compilationIsRunning = 1

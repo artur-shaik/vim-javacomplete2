@@ -21,13 +21,16 @@ else
 endif
 
 let g:JavaComplete_BaseDir =
-      \ get(g:,'JavaComplete_BaseDir',expand('~'. g:FILE_SEP. '.cache'))
+      \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
 
 let g:JavaComplete_ImportDefault =
-      \ get(g:,'JavaComplete_ImportDefault',0)
+      \ get(g:, 'JavaComplete_ImportDefault', 0)
+
+let g:JavaComplete_ShowExternalCommandsOutput =
+      \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
 
 let g:JavaComplete_ClasspathGenerationOrder =
-      \ get(g:,'g:JavaComplete_ClasspathGenerationOrder',['Eclipse', 'Maven', 'Gradle'])
+      \ get(g:, 'g:JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle'])
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
