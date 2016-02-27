@@ -134,7 +134,7 @@ function! javacomplete#server#Compile()
 
   let javaviDir = g:JavaComplete_Home. g:FILE_SEP. join(['libs', 'javavi'], g:FILE_SEP). g:FILE_SEP
   if isdirectory(javaviDir. join(['target', 'classes'], g:FILE_SEP)) 
-    call javacomplete#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
+    call javacomplete#util#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
   endif
 
   let s:compilationIsRunning = 1
