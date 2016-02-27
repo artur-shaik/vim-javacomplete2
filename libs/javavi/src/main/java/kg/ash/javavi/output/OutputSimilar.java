@@ -24,7 +24,8 @@ public abstract class OutputSimilar {
             return Cache.PACKAGES_EMPTY_ERROR;
         }
 
-        List<String> keys = sort(getKeys(target));
+        List<String> keys = getKeys(target);
+        Collections.sort(keys);
 
         StringBuilder builder = new StringBuilder();
         for (String key : keys) {
@@ -40,19 +41,6 @@ public abstract class OutputSimilar {
         return String.format("[%s]", builder);
     }
 
-    private List<String> sort(List<String> keys) {
-        Collections.sort(keys, (String s1, String s2) -> {
-            int i1 = s1.length(); int i2 = s2.length();
-            if (i1 < i2) return -1;
-            if (i1 == i2) {
-                return s1.compareTo(s2);
-            }
-            return 1;
-        });
-
-        return keys;
-    }
-    
     protected abstract List<String> getKeys(String target);
 
 }
