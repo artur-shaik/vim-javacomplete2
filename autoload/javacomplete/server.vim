@@ -125,7 +125,9 @@ function! javacomplete#server#CompilationJobHandler(jobId, data, event)
   elseif a:event == 'stderr'
     echoerr join(a:data)
   elseif a:event == 'stdout'
-    echom join(a:data)
+    if g:JavaComplete_ShowExternalCommandsOutput
+      echomsg join(a:data)
+    endif
   endif
 endfunction
 

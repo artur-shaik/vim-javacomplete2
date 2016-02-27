@@ -37,7 +37,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
 
   elseif a:event == 'stdout'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
-      if g:JavaComplete_EnableCompileMessage
+      if g:JavaComplete_ShowExternalCommandsOutput
         echomsg data
       endif
     endfor

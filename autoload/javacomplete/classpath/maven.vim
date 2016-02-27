@@ -95,7 +95,7 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
     unlet s:mavenSettingsOutput
   elseif a:event == 'stdout'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
-      if g:JavaComplete_EnableCompileMessage
+      if g:JavaComplete_ShowExternalCommandsOutput
         echomsg data
       elseif data =~ "^[ERROR]\w*"
         echohl WarningMsg | echomsg data | echohl None
