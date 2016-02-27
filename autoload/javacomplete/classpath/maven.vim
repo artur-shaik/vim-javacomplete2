@@ -85,9 +85,9 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 
-      echo "Maven classpath builded successfully"
+      echomsg "Maven classpath builded successfully"
     else
-      echo "Failed to build maven classpath"
+      echohl WarningMsg | echomsg "Failed to build maven classpath" | echohl None
     endif
 
     unlet s:mavenPath
@@ -95,7 +95,11 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
     unlet s:mavenSettingsOutput
   elseif a:event == 'stdout'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
+      if g:JavaComplete_EnableCompileMessage
         echomsg data
+      elseif data =~ "^[ERROR]\w*"
+        echohl WarningMsg | echomsg data | echohl None
+      endif
     endfor
     call extend(s:mavenSettingsOutput, a:data)
   elseif a:event == 'stderr'

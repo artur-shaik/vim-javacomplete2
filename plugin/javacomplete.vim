@@ -26,6 +26,9 @@ let g:JavaComplete_BaseDir =
 let g:JavaComplete_ImportDefault =
       \ get(g:,'JavaComplete_ImportDefault',0)
 
+let g:JavaComplete_EnableCompileMessage =
+      \ get(g:,'JavaComplete_EnableCompileMessage',1)
+
 let g:JavaComplete_ClasspathGenerationOrder =
       \ get(g:,'g:JavaComplete_ClasspathGenerationOrder',['Eclipse', 'Maven', 'Gradle'])
 
