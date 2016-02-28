@@ -1,5 +1,5 @@
 " Vim completion script for java
-" Maintainer:	artur shaik <ashaihullin@gmail.com>
+" Maintainer:   artur shaik <ashaihullin@gmail.com>
 "
 " Everything to work with imports
 
@@ -80,10 +80,10 @@ endfunction
 function! javacomplete#imports#GetImports(kind, ...)
   let filekey = a:0 > 0 && !empty(a:1) ? a:1 : javacomplete#GetCurrentFileKey()
   let props = get(g:JavaComplete_Files, filekey, {})
-  let props['imports']	= filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
-  let props['imports_static']	= []
-  let props['imports_fqn']	= []
-  let props['imports_star']	= ['java.lang.']
+  let props['imports']  = filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
+  let props['imports_static']   = []
+  let props['imports_fqn']  = []
+  let props['imports_star'] = ['java.lang.']
   if &ft == 'jsp' || filekey =~ '\.jsp$'
     let props.imports_star += ['javax.servlet.', 'javax.servlet.http.', 'javax.servlet.jsp.']
   endif
@@ -110,7 +110,7 @@ function! javacomplete#imports#GetImports(kind, ...)
   return get(props, a:kind, [])
 endfu
 
-" search for name in 
+" search for name in
 " return the fqn matched
 function! javacomplete#imports#SearchSingleTypeImport(name, fqns)
   let matches = s:filter(a:fqns, 'item =~# ''\<' . a:name . '$''')
@@ -127,10 +127,10 @@ endfu
 " return [types, methods, fields]
 function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   let result = [[], [], []]
-  let candidates = []		" list of the canonical name
+  let candidates = []       " list of the canonical name
   for item in javacomplete#imports#GetImports('imports_static')
     call javacomplete#logger#Log(item)
-    if item[-1:] == '*'		" static import on demand
+    if item[-1:] == '*'     " static import on demand
       call add(candidates, item[:-3])
     elseif item[strridx(item, '.')+1:] ==# a:name
           \ || (!a:fullmatch && item[strridx(item, '.')+1:] =~ '^' . a:name)
@@ -178,18 +178,43 @@ function! s:SortImports()
     let beginLine = imports[0][1]
     let lastLine = imports[len(imports) - 1][1]
     let importsList = []
-    for import in imports 
+    for import in imports
       call add(importsList, import[0])
     endfor
 
     call sort(importsList)
+    "TODO sort imports
+    "call s:sort(importsList)
+    let importsList_sorted = []
+    for a in g:JavaComplete_ImportOrder
+      let l_a = filter(copy(importsList),'v:val =~? "^' . a . '\\."')
+      if len(l_a) > 0
+        for imp in l_a
+          call remove(importsList, index(importsList, imp))
+          call add(importsList_sorted, imp)
+        endfor
+        call add(importsList_sorted, '')
+      endif
+    endfor
+    if len(importsList) > 0
+      for imp in importsList
+        call add(importsList_sorted, imp)
+      endfor
+    else
+      call remove(importsList_sorted, -1)
+    endif
+
     let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
-    for imp in importsList
-      if &ft == 'jsp'
-        call append(beginLine - 1, '<%@ page import = "'. imp. '" %>')
+    for imp in importsList_sorted
+      if imp != ''
+        if &ft == 'jsp'
+          call append(beginLine - 1, '<%@ page import = "'. imp. '" %>')
+        else
+          call append(beginLine - 1, 'import '. imp. ';')
+        endif
       else
-        call append(beginLine - 1, 'import '. imp. ';')
+          call append(beginLine - 1, '')
       endif
       let beginLine += 1
     endfor
@@ -281,7 +306,7 @@ function! javacomplete#imports#Add(...)
   while empty(classname)
     let offset = col('.') - i
     if offset <= 0
-      return 
+      return
     endif
     let classname = javacomplete#util#GetClassNameWithScope(offset)
     let i += 1
@@ -312,7 +337,7 @@ function! javacomplete#imports#Add(...)
         let userinput = -1
       endif
       redraw!
-      
+
       if userinput < 0 || userinput >= len(result)
         echo "JavaComplete: wrong input"
       else
