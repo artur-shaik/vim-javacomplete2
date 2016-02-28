@@ -183,8 +183,6 @@ function! s:SortImports()
     endfor
 
     call sort(importsList)
-    "TODO sort imports
-    "call s:sort(importsList)
     let importsList_sorted = []
     for a in g:JavaComplete_ImportOrder
       let l_a = filter(copy(importsList),"v:val =~? '^" . a . "\\.'")
@@ -200,7 +198,7 @@ function! s:SortImports()
       for imp in importsList
         call add(importsList_sorted, imp)
       endfor
-    else
+    elseif len(importsList_sorted) > 0
       call remove(importsList_sorted, -1)
     endif
 
