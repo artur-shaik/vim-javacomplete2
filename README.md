@@ -136,6 +136,8 @@ To remove all missing imports with F6:
 
 `let g:JavaComplete_GradleExecutable = 'gradle'` - use your own path to gradle executable file.
 
+`let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']` - Specifies the order of import groups. An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';

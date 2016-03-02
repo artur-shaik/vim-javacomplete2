@@ -33,7 +33,7 @@ let g:JavaComplete_ClasspathGenerationOrder =
       \ get(g:, 'g:JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle'])
 
 let g:JavaComplete_ImportOrder =
-      \ get(g:,'JavaComplete_ImportOrder',['java', 'javax', 'com', 'org', 'net'])
+      \ get(g:,'JavaComplete_ImportOrder',['java.', 'javax.', 'com.', 'org.', 'net.'])
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()

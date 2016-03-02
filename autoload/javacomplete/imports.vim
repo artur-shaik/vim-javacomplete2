@@ -185,7 +185,7 @@ function! s:SortImports()
     call sort(importsList)
     let importsList_sorted = []
     for a in g:JavaComplete_ImportOrder
-      let l_a = filter(copy(importsList),"v:val =~? '^" . a . "\\.'")
+      let l_a = filter(copy(importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
       if len(l_a) > 0
         for imp in l_a
           call remove(importsList, index(importsList, imp))
