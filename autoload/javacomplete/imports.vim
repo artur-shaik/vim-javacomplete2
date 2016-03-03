@@ -258,11 +258,14 @@ function! s:AddImport(import)
 
   let imports = javacomplete#imports#GetImports('imports')
   if empty(imports)
-    let firstline = getline(1)
-    if firstline =~ '^package.*'
-      let insertline = 3
-      call append(1, '')
-    else
+    for i in range(line('$'))
+      if getline(i) =~ '^package\s\+.*\;$'
+        let insertline = i + 2
+        call append(i, '')
+        break
+      endif
+    endfor
+    if !exists('insertline')
       let insertline = 1
     endif
     let saveCursor = getpos('.')
