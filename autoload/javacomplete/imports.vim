@@ -296,6 +296,10 @@ function! s:AddImport(import)
 
 endfunction
 
+if !exists('s:RegularClassesDict')
+  let s:RegularClassesDict=javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
+endif
+
 function! javacomplete#imports#Add(...)
   call javacomplete#server#Start()
 
@@ -312,9 +316,6 @@ function! javacomplete#imports#Add(...)
 
   if classname =~ '^@.*'
     let classname = classname[1:]
-  endif
-  if !exists('s:RegularClassesDict')
-    let s:RegularClassesDict=javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
   endif
   if index(keys(s:RegularClassesDict),classname) < 0
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
@@ -399,24 +400,34 @@ function! javacomplete#imports#AddMissing()
     let missing = eval(response)
     for import in missing
       if len(import) > 1
-        let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
-        let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
-        let userinput = input(message, '')
-        if empty(userinput)
-          let userinput = g:JavaComplete_ImportDefault
-        elseif userinput =~ '^[0-9]*$'
-          let userinput = str2nr(userinput)
-        else
-          let userinput = -1
+        let flag = 0
+        for class in import
+          if index(g:JavaComplete_RegularClasses, class) >= 0
+            let flag = 1
+          endif
+          if flag
+            call s:AddImport(class)
+            break
+          endif
+        endfor
+        if !flag
+          let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
+          let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
+          let userinput = input(message, '')
+          if empty(userinput)
+            let userinput = g:JavaComplete_ImportDefault
+          elseif userinput =~ '^[0-9]*$'
+            let userinput = str2nr(userinput)
+          else
+            let userinput = -1
+          endif
+          redraw!
+          if userinput < 0 || userinput >= len(import)
+            echo "JavaComplete: wrong input"
+            continue
+          endif
+          call s:AddImport(import[userinput])
         endif
-        redraw!
-
-        if userinput < 0 || userinput >= len(import)
-          echo "JavaComplete: wrong input"
-          continue
-        endif
-
-        call s:AddImport(import[userinput])
       else
         call s:AddImport(import[0])
       endif
