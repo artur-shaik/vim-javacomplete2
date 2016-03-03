@@ -212,7 +212,7 @@ function! s:SortImports()
           call append(beginLine - 1, 'import '. imp. ';')
         endif
       else
-          call append(beginLine - 1, '')
+        call append(beginLine - 1, '')
       endif
       let beginLine += 1
     endfor
@@ -313,42 +313,50 @@ function! javacomplete#imports#Add(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
-  let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
-  if response =~ '^['
-    let result = eval(response)
-    let import = ''
-    if len(result) == 0
-      echo "JavaComplete: classname '". classname. "' not found in any scope."
-
-    elseif len(result) == 1
-      let import = result[0]
-
-    else
-      let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
-      let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
-      let userinput = input(message, '')
-      if empty(userinput)
-        let userinput = g:JavaComplete_ImportDefault
-      elseif userinput =~ '^[0-9]*$'
-        let userinput = str2nr(userinput)
-      else
-        let userinput = -1
-      endif
-      redraw!
-
-      if userinput < 0 || userinput >= len(result)
-        echo "JavaComplete: wrong input"
-      else
-        let import = result[userinput]
-      endif
-    endif
-
-    if !empty(import)
-      call s:AddImport(import)
-      call s:SortImports()
-    endif
-
+  if !exists('s:RegularClassesDict')
+    let s:RegularClassesDict=javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
   endif
+  if index(keys(s:RegularClassesDict),classname) < 0
+    let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
+    if response =~ '^['
+      let result = eval(response)
+      let import = ''
+      if len(result) == 0
+        echo "JavaComplete: classname '". classname. "' not found in any scope."
+
+      elseif len(result) == 1
+        let import = result[0]
+
+      else
+        let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
+        let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
+        let userinput = input(message, '')
+        if empty(userinput)
+          let userinput = g:JavaComplete_ImportDefault
+        elseif userinput =~ '^[0-9]*$'
+          let userinput = str2nr(userinput)
+        else
+          let userinput = -1
+        endif
+        redraw!
+
+        if userinput < 0 || userinput >= len(result)
+          echo "JavaComplete: wrong input"
+        else
+          let import = result[userinput]
+        endif
+      endif
+
+      if !empty(import)
+        call s:AddImport(import)
+        call s:SortImports()
+      endif
+    endif
+  else
+    call s:AddImport(s:RegularClassesDict[classname])
+    call s:SortImports()
+  endif
+
 
   if a:0 > 0 && a:1
     let cur = getpos('.')

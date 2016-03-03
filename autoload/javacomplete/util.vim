@@ -234,7 +234,7 @@ function! javacomplete#util#Base64Encode(str)
   JavacompletePy import base64
   JavacompletePy import vim
   JavacompletePy content = vim.eval('a:str') if sys.version_info.major == 2 else bytes(vim.eval('a:str'), 'utf-8')
-  JavacompletePy b64 = base64.b64encode(content) 
+  JavacompletePy b64 = base64.b64encode(content)
   JavacompletePy vim.command("let base64 = '%s'" % (b64 if sys.version_info.major == 2 else b64.decode('utf-8')))
   return base64
 endfunction
@@ -256,5 +256,14 @@ function! javacomplete#util#GetBase(extra)
 
   return base
 endfunction
+
+function! javacomplete#util#GetRegularClassesDict(classes)
+  let dict = {}
+  for class in a:classes
+    call extend(dict, {split(class,'\.')[-1] : class})
+  endfor
+  return dict
+endfunction
+
 
 " vim:set fdm=marker sw=2 nowrap:
