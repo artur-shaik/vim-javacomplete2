@@ -8,7 +8,6 @@ set cpo&vim
 if exists('g:JavaComplete_PluginLoaded')
     finish
 endif
-let g:JavaComplete_PluginLoaded = 1
 
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
@@ -45,6 +44,7 @@ inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Ad
 
 
 
+let g:JavaComplete_PluginLoaded = 1
 let &cpo = s:save_cpo
 unlet s:save_cpo
 " vim:set fdm=marker sw=2 nowrap:
