@@ -40,8 +40,8 @@ let g:JavaComplete_RegularClasses =
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
+command! JCimportAddSmart call javacomplete#imports#Add(1)
 command! JCimportAdd call javacomplete#imports#Add()
-command! JCimportAddI call javacomplete#imports#Add(1)
 
 command! JCserverShowPort call javacomplete#server#ShowPort()
 command! JCserverShowPID call javacomplete#server#ShowPID()
@@ -68,7 +68,9 @@ inoremap <Plug>(JavaComplete-Imports-AddMissing) <c-r>=<SID>nop(javacomplete#imp
 nnoremap <Plug>(JavaComplete-Imports-RemoveUnused) :call javacomplete#imports#RemoveUnused()<cr>
 inoremap <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#imports#RemoveUnused())<cr>
 nnoremap <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
+nnoremap <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)<cr>
 inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
+inoremap <Plug>(JavaComplete-Imports-AddSmart) <c-r>=<SID>nop(javacomplete#imports#Add(1))<cr>
 
 
 

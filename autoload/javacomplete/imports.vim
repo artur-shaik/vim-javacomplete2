@@ -336,7 +336,7 @@ function! javacomplete#imports#Add(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
-  if index(keys(s:RegularClassesDict), classname) < 0 || (len(a:0) >= 2 && a:2)
+  if a:0 == 0 || !a:1 || index(keys(s:RegularClassesDict), classname) < 0
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
     if response =~ '^['
       let result = eval(response)
@@ -387,14 +387,6 @@ function! javacomplete#imports#Add(...)
   else
     call s:AddImport(s:RegularClassesDict[classname])
     call s:SortImports()
-  endif
-
-
-  if a:0 > 0 && a:1
-    let cur = getpos('.')
-    let cur[2] = cur[2] + 1
-    execute 'startinsert'
-    call setpos('.', cur)
   endif
 endfunction
 
