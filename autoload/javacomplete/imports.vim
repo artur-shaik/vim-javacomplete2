@@ -336,7 +336,7 @@ function! javacomplete#imports#Add(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
-  if index(keys(s:RegularClassesDict), classname) < 0
+  if index(keys(s:RegularClassesDict), classname) < 0 || (len(a:0) >= 2 && a:2)
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
     if response =~ '^['
       let result = eval(response)
@@ -357,8 +357,8 @@ function! javacomplete#imports#Add(...)
             let message .= "\n"
           else
             let message .= "candidate [". index. "]: ". imp. "\n"
-            let index += 1
           endif
+          let index += 1
         endfor
         let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
         let userinput = input(message, '')
@@ -375,6 +375,7 @@ function! javacomplete#imports#Add(...)
           echo "JavaComplete: wrong input"
         else
           let import = result[userinput]
+          let s:RegularClassesDict[classname] = import
         endif
       endif
 
