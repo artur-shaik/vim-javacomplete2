@@ -183,24 +183,7 @@ function! s:SortImports()
     endfor
 
     call sort(importsList)
-    let importsListSorted = []
-    for a in g:JavaComplete_ImportOrder
-      let l_a = filter(copy(importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
-      if len(l_a) > 0
-        for imp in l_a
-          call remove(importsList, index(importsList, imp))
-          call add(importsListSorted, imp)
-        endfor
-        call add(importsListSorted, '')
-      endif
-    endfor
-    if len(importsList) > 0
-      for imp in importsList
-        call add(importsListSorted, imp)
-      endfor
-    elseif len(importsListSorted) > 0
-      call remove(importsListSorted, -1)
-    endif
+    let importsListSorted = s:SortImportsList(importsList)
 
     let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
@@ -304,6 +287,38 @@ if !exists('s:RegularClassesDict')
   let s:RegularClassesDict=javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
 endif
 
+function! s:SortImportsList(importsList)
+  let importsListSorted = []
+  for a in g:JavaComplete_ImportOrder
+    let l_a = filter(copy(a:importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
+    if len(l_a) > 0
+      for imp in l_a
+        call remove(a:importsList, index(a:importsList, imp))
+        call add(importsListSorted, imp)
+      endfor
+      call add(importsListSorted, '')
+    endif
+  endfor
+  if len(a:importsList) > 0
+    for imp in a:importsList
+      call add(importsListSorted, imp)
+    endfor
+  elseif len(importsListSorted) > 0
+    call remove(importsListSorted, -1)
+  endif
+  return importsListSorted
+endfunction
+
+function! s:_SortStaticToEnd(i1, i2)
+  if stridx(a:i1, '$') >= 0 && stridx(a:i2, '$') < 0
+    return 1
+  elseif stridx(a:i2, '$') >= 0 && stridx(a:i1, '$') < 0
+    return -1
+  else
+    return a:i1 > a:i2
+  endif
+endfunction
+
 function! javacomplete#imports#Add(...)
   call javacomplete#server#Start()
 
@@ -333,7 +348,18 @@ function! javacomplete#imports#Add(...)
         let import = result[0]
 
       else
-        let message = join(map(range(len(result)), '"candidate [".v:val."]: ".result[v:val]'), "\n")
+        call sort(result, 's:_SortStaticToEnd')
+        let result = s:SortImportsList(result)
+        let index = 0
+        let message = ''
+        for imp in result
+          if len(imp) == 0
+            let message .= "\n"
+          else
+            let message .= "candidate [". index. "]: ". imp. "\n"
+            let index += 1
+          endif
+        endfor
         let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
         let userinput = input(message, '')
         if empty(userinput)
