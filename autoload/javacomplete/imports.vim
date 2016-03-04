@@ -196,10 +196,10 @@ function! s:SortImports()
         endif
       else
         call append(beginLine - 1, '')
-        let saveCursor[1] += 1
       endif
       let beginLine += 1
     endfor
+    let saveCursor[1] += beginLine - lastLine - 1
     call setpos('.', saveCursor)
   endif
 endfunction
