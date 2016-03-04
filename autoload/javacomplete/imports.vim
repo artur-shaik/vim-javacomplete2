@@ -1,5 +1,5 @@
 " Vim completion script for java
-" Maintainer:   artur shaik <ashaihullin@gmail.com>
+" Maintainer: artur shaik <ashaihullin@gmail.com>
 "
 " Everything to work with imports
 
@@ -80,9 +80,9 @@ endfunction
 function! javacomplete#imports#GetImports(kind, ...)
   let filekey = a:0 > 0 && !empty(a:1) ? a:1 : javacomplete#GetCurrentFileKey()
   let props = get(g:JavaComplete_Files, filekey, {})
-  let props['imports']  = filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
-  let props['imports_static']   = []
-  let props['imports_fqn']  = []
+  let props['imports'] = filekey == javacomplete#GetCurrentFileKey() ? s:GenerateImports() : props.unit.imports
+  let props['imports_static'] = []
+  let props['imports_fqn'] = []
   let props['imports_star'] = ['java.lang.']
   if &ft == 'jsp' || filekey =~ '\.jsp$'
     let props.imports_star += ['javax.servlet.', 'javax.servlet.http.', 'javax.servlet.jsp.']
@@ -127,10 +127,10 @@ endfu
 " return [types, methods, fields]
 function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   let result = [[], [], []]
-  let candidates = []       " list of the canonical name
+  let candidates = [] " list of the canonical name
   for item in javacomplete#imports#GetImports('imports_static')
     call javacomplete#logger#Log(item)
-    if item[-1:] == '*'     " static import on demand
+    if item[-1:] == '*' " static import on demand
       call add(candidates, item[:-3])
     elseif item[strridx(item, '.')+1:] ==# a:name
           \ || (!a:fullmatch && item[strridx(item, '.')+1:] =~ '^' . a:name)
@@ -183,28 +183,28 @@ function! s:SortImports()
     endfor
 
     call sort(importsList)
-    let importsList_sorted = []
+    let importsListSorted = []
     for a in g:JavaComplete_ImportOrder
       let l_a = filter(copy(importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
       if len(l_a) > 0
         for imp in l_a
           call remove(importsList, index(importsList, imp))
-          call add(importsList_sorted, imp)
+          call add(importsListSorted, imp)
         endfor
-        call add(importsList_sorted, '')
+        call add(importsListSorted, '')
       endif
     endfor
     if len(importsList) > 0
       for imp in importsList
-        call add(importsList_sorted, imp)
+        call add(importsListSorted, imp)
       endfor
-    elseif len(importsList_sorted) > 0
-      call remove(importsList_sorted, -1)
+    elseif len(importsListSorted) > 0
+      call remove(importsListSorted, -1)
     endif
 
     let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
-    for imp in importsList_sorted
+    for imp in importsListSorted
       if imp != ''
         if &ft == 'jsp'
           call append(beginLine - 1, '<%@ page import = "'. imp. '" %>')
@@ -320,7 +320,7 @@ function! javacomplete#imports#Add(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
-  if index(keys(s:RegularClassesDict),classname) < 0
+  if index(keys(s:RegularClassesDict), classname) < 0
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
     if response =~ '^['
       let result = eval(response)
@@ -403,17 +403,15 @@ function! javacomplete#imports#AddMissing()
     let missing = eval(response)
     for import in missing
       if len(import) > 1
-        let flag = 0
+        let isRegular = 0
         for class in import
           if index(g:JavaComplete_RegularClasses, class) >= 0
-            let flag = 1
-          endif
-          if flag
+            let isRegular = 1
             call s:AddImport(class)
             break
           endif
         endfor
-        if !flag
+        if !isRegular
           let message = join(map(range(len(import)), '"candidate [".v:val."]: ".import[v:val]'), "\n")
           let message .= "\nselect one candidate [". g:JavaComplete_ImportDefault."]: "
           let userinput = input(message, '')
