@@ -14,6 +14,16 @@ else
   finish
 endif
 
+let g:JavaComplete_IsWindows = javacomplete#util#IsWindows()
+
+if g:JavaComplete_IsWindows
+  let g:PATH_SEP    = ';'
+  let g:FILE_SEP    = '\'
+else
+  let g:PATH_SEP    = ':'
+  let g:FILE_SEP    = '/'
+endif
+
 let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm',		'word': 'clone(',	'abbr': 'clone()',	'menu': 'Object clone()', },
       \	{'kind': 'm',		'word': 'equals(',	'abbr': 'equals()',	'menu': 'boolean equals(Object)', },
@@ -90,6 +100,24 @@ let g:JAVA_HOME = $JAVA_HOME
 let g:JavaComplete_Cache = {}	" FQN -> member list, e.g. {'java.lang.StringBuffer': classinfo, 'java.util': packageinfo, '/dir/TopLevelClass.java': compilationUnit}
 let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {'unit': compilationUnit, 'changedtick': tick, }}
 
+
+let g:JavaComplete_BaseDir =
+      \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
+
+let g:JavaComplete_ImportDefault =
+      \ get(g:, 'JavaComplete_ImportDefault', 0)
+
+let g:JavaComplete_ShowExternalCommandsOutput =
+      \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
+
+let g:JavaComplete_ClasspathGenerationOrder =
+      \ get(g:, 'g:JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle'])
+
+let g:JavaComplete_ImportOrder =
+      \ get(g:,'JavaComplete_ImportOrder',['java.', 'javax.', 'com.', 'org.', 'net.'])
+
+let g:JavaComplete_RegularClasses =
+      \ get(g:,'JavaComplete_RegularClasses',['java.lang.String','java.lang.Object'])
 let g:JavaComplete_ProjectKey = ''
 
 fu! SScope()

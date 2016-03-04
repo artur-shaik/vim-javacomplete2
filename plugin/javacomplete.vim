@@ -10,33 +10,6 @@ if exists('g:JavaComplete_PluginLoaded')
 endif
 let g:JavaComplete_PluginLoaded = 1
 
-let g:JavaComplete_IsWindows = javacomplete#util#IsWindows()
-
-if g:JavaComplete_IsWindows
-  let g:PATH_SEP    = ';'
-  let g:FILE_SEP    = '\'
-else
-  let g:PATH_SEP    = ':'
-  let g:FILE_SEP    = '/'
-endif
-
-let g:JavaComplete_BaseDir =
-      \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
-
-let g:JavaComplete_ImportDefault =
-      \ get(g:, 'JavaComplete_ImportDefault', 0)
-
-let g:JavaComplete_ShowExternalCommandsOutput =
-      \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
-
-let g:JavaComplete_ClasspathGenerationOrder =
-      \ get(g:, 'g:JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle'])
-
-let g:JavaComplete_ImportOrder =
-      \ get(g:,'JavaComplete_ImportOrder',['java.', 'javax.', 'com.', 'org.', 'net.'])
-
-let g:JavaComplete_RegularClasses =
-      \ get(g:,'JavaComplete_RegularClasses',['java.lang.String','java.lang.Object'])
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
