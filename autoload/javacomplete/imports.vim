@@ -357,7 +357,7 @@ function! s:ChooseImportOption(options, classname)
   let import = ''
   let options = a:options
   if len(options) == 0
-    echo "JavaComplete: classname '". classname. "' not found in any scope."
+    echo "JavaComplete: classname '". a:classname. "' not found in any scope."
 
   elseif len(options) == 1
     let import = options[0]
