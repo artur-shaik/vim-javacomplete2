@@ -263,6 +263,19 @@ function! s:AddImport(import)
     let insertline = insertline - 1
     let newline = 1
   else
+    let replaceIdx = -1
+    let idx = 0
+    for i in imports
+      if split(i[0], '\.')[-1] == className
+        let replaceIdx = idx
+        break
+      endif
+      let idx += 1
+    endfor
+    if replaceIdx > 0
+      silent execute imports[replaceIdx][1]. 'normal! cc'
+      call remove(imports, replaceIdx)
+    endif
     let insertline = imports[len(imports) - 1][1]
     let newline = 0
   endif
