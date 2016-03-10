@@ -36,7 +36,7 @@ let g:JavaComplete_ImportOrder =
       \ get(g:, 'JavaComplete_ImportOrder', ['java.', 'javax.', 'com.', 'org.', 'net.'])
 
 let g:JavaComplete_RegularClasses =
-      \ get(g:, 'JavaComplete_RegularClasses', ['java.lang.String', 'java.lang.Object', 'java.lang.Exception', 'java.lang.StringBuilder', 'java.lang.Override', 'java.lang.UnsupportedOperationException', 'java.math.BigDecimal', 'java.lang.Boolean'])
+      \ get(g:, 'JavaComplete_RegularClasses', ['java.lang.String', 'java.lang.Object', 'java.lang.Exception', 'java.lang.StringBuilder', 'java.lang.Override', 'java.lang.UnsupportedOperationException', 'java.math.BigDecimal', 'java.lang.Byte', 'java.lang.Short', 'java.lang.Integer', 'java.lang.Long', 'java.lang.Float', 'java.lang.Double', 'java.lang.Character', 'java.lang.Boolean'])
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
