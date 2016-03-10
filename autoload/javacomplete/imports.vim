@@ -403,10 +403,15 @@ function! s:ChooseImportOption(options, classname)
       echo "JavaComplete: wrong input"
     else
       let import = options[userinput]
-      let s:RegularClassesDict[a:classname] = import
+      call s:PopulateRegularClasses(a:classname, import)
     endif
   endif
   return import
+endfunction
+
+function! s:PopulateRegularClasses(classname, import)
+    let s:RegularClassesDict[a:classname] = a:import
+    call javacomplete#util#SaveRegularClassesList(s:RegularClassesDict)
 endfunction
 
 function! javacomplete#imports#RemoveUnused()

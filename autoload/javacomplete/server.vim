@@ -10,25 +10,6 @@ function! s:System(cmd, caller)
   return res
 endfunction
 
-if exists('*uniq')
-  function! s:_uniq(list) abort
-    return uniq(a:list)
-  endfunction
-else
-  function! s:_uniq(list) abort
-    let i = len(a:list) - 1
-    while 0 < i
-      if a:list[i] ==# a:list[i - 1]
-        call remove(a:list, i)
-        let i -= 2
-      else
-        let i -= 1
-      endif
-    endwhile
-    return a:list
-  endfunction
-endif
-
 function! s:Poll()
   let value = 0
 JavacompletePy << EOPC
@@ -240,7 +221,7 @@ endfunction
 
 function! s:ExpandAllPaths(path)
     let result = ''
-    let list = s:_uniq(sort(split(a:path, g:PATH_SEP)))
+    let list = javacomplete#util#uniq(sort(split(a:path, g:PATH_SEP)))
     for l in list
       let result = result. substitute(expand(l), '\\', '/', 'g') . g:PATH_SEP
     endfor

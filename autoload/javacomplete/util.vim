@@ -248,6 +248,25 @@ function! javacomplete#util#RemoveFile(file)
   silent redraw!
 endfunction
 
+if exists('*uniq')
+  function! javacomplete#util#uniq(list) abort
+    return uniq(a:list)
+  endfunction
+else
+  function! javacomplete#util#uniq(list) abort
+    let i = len(a:list) - 1
+    while 0 < i
+      if a:list[i] ==# a:list[i - 1]
+        call remove(a:list, i)
+        let i -= 2
+      else
+        let i -= 1
+      endif
+    endwhile
+    return a:list
+  endfunction
+endif
+
 function! javacomplete#util#GetBase(extra)
   let base = expand(g:JavaComplete_BaseDir. g:FILE_SEP. "javacomplete2". g:FILE_SEP. a:extra)
   if !isdirectory(base)
@@ -258,12 +277,23 @@ function! javacomplete#util#GetBase(extra)
 endfunction
 
 function! javacomplete#util#GetRegularClassesDict(classes)
+  let path = javacomplete#util#GetBase('cache'). g:FILE_SEP. 'regular_classes_'. g:JavaComplete_ProjectKey. '.dat'
+  if filereadable(path)
+    let classes = readfile(path)
+  else
+    let classes = []
+  endif
+  let classes = javacomplete#util#uniq(sort(extend(classes, a:classes)))
   let dict = {}
-  for class in a:classes
+  for class in classes
     call extend(dict, {split(class,'\.')[-1] : class})
   endfor
   return dict
 endfunction
 
+function! javacomplete#util#SaveRegularClassesList(classesDict)
+    let path = javacomplete#util#GetBase('cache'). g:FILE_SEP. 'regular_classes_'. g:JavaComplete_ProjectKey. '.dat'
+    call writefile(values(a:classesDict), path)
+endfunction
 
 " vim:set fdm=marker sw=2 nowrap:
