@@ -301,11 +301,7 @@ if !exists('s:RegularClassesDict')
 endif
 
 function! s:SortImportsList(importsList, ...)
-  if a:0 > 0
-    let sortType = a:1
-  else
-    let sortType = g:JavaComplete_ImportSortType
-  endif
+  let sortType = a:0 > 0 ? a:1 : g:JavaComplete_ImportSortType
   let importsListSorted = []
   if sortType == 'packageName'
     for a in g:JavaComplete_ImportOrder
