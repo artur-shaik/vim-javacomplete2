@@ -28,6 +28,8 @@ public class ActionFactory {
                 return new ClassRecompileAction();
             case "-collect-packages":
                 return new CollectPackagesAction();
+            case "-fetch-class-archives":
+                return new GetClassesArchiveNamesAction();
         }
 
         return null;

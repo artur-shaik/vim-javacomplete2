@@ -9,10 +9,17 @@ public class PackageEntry {
     private int source;
     private String javaFile = null;
     private String classFile = null;
+    private String archiveName = null;
 
     public PackageEntry(String entry, int source) {
         this.entry = entry;
         this.source = source;
+    }
+
+    public PackageEntry(String entry, int source, String archiveName) {
+        this.entry = entry;
+        this.source = source;
+        this.archiveName = archiveName;
     }
 
     public PackageEntry(String entry, int source, String filePath, int fileType) {
@@ -47,6 +54,14 @@ public class PackageEntry {
 
     public void setClassFile(String classFile) {
         this.classFile = classFile;
+    }
+
+    public void setArchiveName(String archiveName) {
+        this.archiveName = archiveName;
+    }
+
+    public String getArchiveName() {
+        return archiveName;
     }
 
     @Override

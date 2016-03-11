@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class JavaClassMap implements Serializable {
@@ -18,7 +19,7 @@ public abstract class JavaClassMap implements Serializable {
     protected String name = null;
     protected HashMap<String, Integer> pathsMap = new HashMap<>();
     protected List<String> classes = new ArrayList<>();
-    protected List<String> subpackages = new ArrayList<>();
+    protected Map<String, String> subpackages = new HashMap<>();
 
     public JavaClassMap(String name) {
         setName(name);
@@ -44,13 +45,13 @@ public abstract class JavaClassMap implements Serializable {
 		this.name = name;
 	}
 
-    public void add(String path, int source, int type) {
+    public void add(String path, int source, int type, String filename) {
         if (!contains(path)) {
             pathsMap.put(path, source);
             if (type == TYPE_CLASS) {
                 classes.add(path);
             } else {
-                subpackages.add(path);
+                subpackages.put(path, filename);
             }
         }
     }
@@ -63,7 +64,7 @@ public abstract class JavaClassMap implements Serializable {
 
     public StringBuilder getCachedSubpackages() {
         StringBuilder cachedSubpackages = new StringBuilder();
-        subpackages.stream().sorted().forEach(path -> cachedSubpackages.append("'").append(path).append("',"));
+        subpackages.keySet().stream().sorted().forEach(path -> cachedSubpackages.append("'").append(path).append("',"));
         return cachedSubpackages;
     }
 
@@ -72,7 +73,7 @@ public abstract class JavaClassMap implements Serializable {
         return classes;
     }
 
-    public List<String> getSubpackages() {
+    public Map<String, String> getSubpackages() {
         return subpackages;
     }
 

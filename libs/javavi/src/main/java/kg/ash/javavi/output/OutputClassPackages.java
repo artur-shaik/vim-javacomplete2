@@ -27,7 +27,7 @@ public class OutputClassPackages {
         if (classPackages.containsKey(targetClass)) {
             JavaClassMap cm = classPackages.get(targetClass);
             if (cm.getType() == JavaClassMap.TYPE_CLASS) {
-                cm.getSubpackages().forEach((String scope) -> {
+                cm.getSubpackages().keySet().forEach((String scope) -> {
                     if (scope.endsWith("$")) {
                         String target = scope + targetClass;
                         ClassSearcher seacher = new ClassSearcher();

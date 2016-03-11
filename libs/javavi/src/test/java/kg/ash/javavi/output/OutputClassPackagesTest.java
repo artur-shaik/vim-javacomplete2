@@ -18,8 +18,8 @@ public class OutputClassPackagesTest {
     public void Init() {
         Javavi.system.put("sources", "");
         JavaClassMap classMap = new ClassNameMap(target);
-        classMap.add("bar.baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
-        classMap.add("foo.bar", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bar.baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
+        classMap.add("foo.bar", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
 
         classPackages = new HashMap<>();
         classPackages.put(target, classMap);
@@ -27,7 +27,7 @@ public class OutputClassPackagesTest {
 
     @Test
     public void testCorrect() {
-        Assert.assertEquals("['bar.baz.Bar','foo.bar.Bar',]", new OutputClassPackages(classPackages).get(target));
+        Assert.assertEquals("['foo.bar.Bar','bar.baz.Bar',]", new OutputClassPackages(classPackages).get(target));
     }
 
     @Test

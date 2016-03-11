@@ -1,6 +1,5 @@
 package kg.ash.javavi.searchers;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,7 +72,7 @@ public class PackagesLoader {
 
         if (!child.isEmpty() && !parentDots.isEmpty()) {
             ClassNameMap classMap = (ClassNameMap) getClassMap(child, JavaClassMap.TYPE_CLASS);
-            classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE);
+            classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE, entry.getArchiveName());
             if (entry.getJavaFile() != null) {
                 classMap.setJavaFile(entry.getJavaFile());
             } 
@@ -83,7 +82,7 @@ public class PackagesLoader {
 
             if (!nested) {
                 getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)
-                    .add(child, source, JavaClassMap.TYPE_CLASS);
+                    .add(child, source, JavaClassMap.TYPE_CLASS, null);
             }
 
             addToParent(parent, source);
@@ -104,7 +103,7 @@ public class PackagesLoader {
         String child = name.substring(seppos + 1);
 
         getClassMap(makeDots(parent), JavaClassMap.TYPE_SUBPACKAGE)
-            .add(child, source, JavaClassMap.TYPE_SUBPACKAGE);
+            .add(child, source, JavaClassMap.TYPE_SUBPACKAGE, null);
 
         addToParent(parent, source);
     }

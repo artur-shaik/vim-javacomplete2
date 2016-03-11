@@ -18,7 +18,11 @@ public abstract class ActionWithTarget implements Action {
     }
 
     protected String parseTarget(String[] args) {
-        return targetParser.parse(args[args.length - 1]);
+        if (args.length > 0) {
+            return targetParser.parse(args[args.length - 1]);
+        } else {
+            return "";
+        }
     }
     
 }

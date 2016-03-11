@@ -302,16 +302,32 @@ endif
 
 function! s:SortImportsList(importsList)
   let importsListSorted = []
-  for a in g:JavaComplete_ImportOrder
-    let l_a = filter(copy(a:importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
-    if len(l_a) > 0
-      for imp in l_a
-        call remove(a:importsList, index(a:importsList, imp))
-        call add(importsListSorted, imp)
+  if g:JavaComplete_ImportSortType == 'packageName'
+    for a in g:JavaComplete_ImportOrder
+      let l_a = filter(copy(a:importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
+      if len(l_a) > 0
+        for imp in l_a
+          call remove(a:importsList, index(a:importsList, imp))
+          call add(importsListSorted, imp)
+        endfor
+        call add(importsListSorted, '')
+      endif
+    endfor
+  else
+    let response = javacomplete#server#Communicate("-fetch-class-archives", join(a:importsList, ","), "Fetch imports jar archives")
+    if response =~ '^['
+      let result = sort(eval(response), 's:_SortArchivesByFirstClassName')
+      for jar in result
+        for classFqn in sort(jar[1])
+          let idx = index(a:importsList, classFqn)
+          let cf = a:importsList[idx]
+          call remove(a:importsList, idx)
+          call add(importsListSorted, cf)
+        endfor
+        call add(importsListSorted, '')
       endfor
-      call add(importsListSorted, '')
     endif
-  endfor
+  endif
   if len(a:importsList) > 0
     for imp in a:importsList
       call add(importsListSorted, imp)
@@ -320,6 +336,10 @@ function! s:SortImportsList(importsList)
     call remove(importsListSorted, -1)
   endif
   return importsListSorted
+endfunction
+
+function! s:_SortArchivesByFirstClassName(i1, i2)
+  return a:i1[1][0] > a:i2[1][0]
 endfunction
 
 function! s:_SortStaticToEnd(i1, i2)

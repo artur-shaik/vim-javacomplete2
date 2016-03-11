@@ -15,12 +15,14 @@ import kg.ash.javavi.Javavi;
 
 public class SourcePackageSearcher implements PackageSeacherIFace {
 
-    private String sourceDirectories;
+    private String sourceDirectories = "";
     private ByExtensionVisitor finder = 
         new ByExtensionVisitor(Arrays.asList("*.java"));
 
     public SourcePackageSearcher(String sourceDirectories) {
-        this.sourceDirectories = sourceDirectories;
+        if (sourceDirectories != null) {
+            this.sourceDirectories = sourceDirectories;
+        }
     }
     
     public List<PackageEntry> loadEntries() {

@@ -16,9 +16,9 @@ public class OutputPackageInfoTest {
     @Before
     public void Init() {
         JavaClassMap classMap = new ClassNameMap(target);
-        classMap.add("baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
-        classMap.add("bax", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
-        classMap.add("Bat", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_CLASS);
+        classMap.add("baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
+        classMap.add("bax", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
+        classMap.add("Bat", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_CLASS, null);
 
         classPackages = new HashMap<>();
         classPackages.put(target, classMap);

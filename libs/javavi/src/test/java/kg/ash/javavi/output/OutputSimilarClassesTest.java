@@ -18,19 +18,19 @@ public class OutputSimilarClassesTest {
         classPackages = new HashMap<>();
 
         JavaClassMap classMap = new ClassNameMap("Barabaz");
-        classMap.add("bar", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bar", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
         classPackages.put("Barabaz", classMap);
 
         classMap = new ClassNameMap("Bara");
-        classMap.add("bar.bara", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bar.bara", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
         classPackages.put("Bara", classMap);
 
         classMap = new ClassNameMap("Bazaraz");
-        classMap.add("bar.baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bar.baz", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
         classPackages.put("Bazaraz", classMap);
 
         classMap = new ClassNameMap("Foobar");
-        classMap.add("bar.bas", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE);
+        classMap.add("bar.bas", JavaClassMap.SOURCETYPE_CLASSPATH, JavaClassMap.TYPE_SUBPACKAGE, null);
         classPackages.put("Foobar", classMap);
     }
     
