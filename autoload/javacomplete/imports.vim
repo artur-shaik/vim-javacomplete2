@@ -300,9 +300,14 @@ if !exists('s:RegularClassesDict')
   let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
 endif
 
-function! s:SortImportsList(importsList)
+function! s:SortImportsList(importsList, ...)
+  if a:0 > 0
+    let sortType = a:1
+  else
+    let sortType = g:JavaComplete_ImportSortType
+  endif
   let importsListSorted = []
-  if g:JavaComplete_ImportSortType == 'packageName'
+  if sortType == 'packageName'
     for a in g:JavaComplete_ImportOrder
       let l_a = filter(copy(a:importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
       if len(l_a) > 0
@@ -397,7 +402,7 @@ function! s:ChooseImportOption(options, classname)
 
   else
     call sort(options, 's:_SortStaticToEnd')
-    let options = s:SortImportsList(options)
+    let options = s:SortImportsList(options, 'packageName')
     let index = 0
     let message = ''
     for imp in options
