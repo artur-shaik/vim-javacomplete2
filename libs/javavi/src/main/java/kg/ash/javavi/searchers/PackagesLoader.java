@@ -1,5 +1,7 @@
 package kg.ash.javavi.searchers;
 
+import kg.ash.javavi.Javavi;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +43,7 @@ public class PackagesLoader {
     }
 
     private JavaClassMap getClassMap(String name, int type) {
-        if (classPackages.containsKey(name)) {
+        if (classPackages.containsKey(name) && classPackages.get(name).getType() == type) {
             return classPackages.get(name);
         }
 
