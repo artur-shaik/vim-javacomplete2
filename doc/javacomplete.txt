@@ -241,13 +241,22 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
         let g:JavaComplete_BaseDir = '~/.your_cache_dir'
 
-    Default selection of import options:
+    In the import selection the default behavior is to use the first option available:
 
         let g:JavaComplete_ImportDefault = 0
+        
+    To avoid this behavior use:
+    
+        let g:JavaComplete_ImportDefault = -1
 
     Use your own executable file for gradle:
 
         let g:JavaComplete_GradleExecutable = 'gradle'
+        
+    The Java daemon should kill itself when Vim stops. Also its possible to configure the timeout, so if there is no request during this time the daemon will stop. To configure the timemout use the following (in seconds):
+    
+        let g:JavaComplete_ServerAutoShutdownTime=180
+    
 
     Imports sorting type:
 
