@@ -1,7 +1,5 @@
 package kg.ash.javavi.searchers;
 
-import kg.ash.javavi.Javavi;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
