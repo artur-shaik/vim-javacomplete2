@@ -296,7 +296,7 @@ function! s:AddImport(import)
 
 endfunction
 
-if !exists('s:RegularClassesDict')
+if !exists('s:RegularClassesDict') && exists('g:JavaComplete_RegularClasses')
   let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
 endif
 

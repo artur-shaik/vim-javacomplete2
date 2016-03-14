@@ -1,4 +1,5 @@
 source autoload/javacomplete/imports.vim
+source plugin/javacomplete.vim
 source t/javacomplete.vim
 
 call vspec#hint({'sid': 'g:SID("imports")', 'scope': 'SScope()'})
@@ -19,7 +20,10 @@ describe 'javacomplete imports test'
         Expect getline(5) == 'import foo.bar.Baz;'
 
         call Call('s:AddImport', 'zoo.bar.Baz')
-        Expect getline(5) == 'import foo.bar.Baz;'
+        Expect getline(5) == 'import zoo.bar.Baz;'
+
+        call Call('s:AddImport', 'zoo.bar.Baz')
+        Expect getline(5) == 'import zoo.bar.Baz;'
 
         new
 
@@ -34,7 +38,7 @@ describe 'javacomplete imports test'
         Expect getline(3) == 'import foo.bar.Baz;'
 
         call Call('s:AddImport', 'zoo.bar.Baz')
-        Expect getline(3) == 'import foo.bar.Baz;'
+        Expect getline(3) == 'import zoo.bar.Baz;'
 
     end
 end
