@@ -37,7 +37,8 @@ Features:
 - Nested classes;
 - Adding imports automatically, includes `static` imports and imports of nested classes;
 - Complete methods declaration after '@Override';
-- Jsp support, without taglibs.
+- Jsp support, without taglibs;
+- Cross-session cache.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -94,23 +95,29 @@ Add this to your `.vimrc` file:
 
 `autocmd FileType java setlocal omnifunc=javacomplete#Complete`
 
-To enable inserting class imports with F4, add:
+To enable smart (trying to guess import option) inserting class imports with F4, add:
 
-`nmap <F4> <Plug>(JavaComplete-Imports-Add)`
+`nmap <F4> <Plug>(JavaComplete-Imports-AddSmart)`
 
-`imap <F4> <Plug>(JavaComplete-Imports-Add)`
+`imap <F4> <Plug>(JavaComplete-Imports-AddSmart)`
 
-To add all missing imports with F5:
+To enable usual (will ask for import option) inserting class imports with F5, add:
 
-`nmap <F5> <Plug>(JavaComplete-Imports-AddMissing)`
+`nmap <F5> <Plug>(JavaComplete-Imports-Add)`
 
-`imap <F5> <Plug>(JavaComplete-Imports-AddMissing)`
+`imap <F5> <Plug>(JavaComplete-Imports-Add)`
 
-To remove all missing imports with F6:
+To add all missing imports with F6:
 
-`nmap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)`
+`nmap <F6> <Plug>(JavaComplete-Imports-AddMissing)`
 
-`imap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)`
+`imap <F6> <Plug>(JavaComplete-Imports-AddMissing)`
+
+To remove all missing imports with F7:
+
+`nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
+
+`imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
 ### Optional
 
@@ -136,7 +143,11 @@ To remove all missing imports with F6:
 
 `let g:JavaComplete_GradleExecutable = 'gradle'` - use your own path to gradle executable file.
 
-`let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']` - Specifies the order of import groups. An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group.
+`let g:JavaComplete_ImportSortType = 'jarName'` - imports sorting type. Sorting can be by jar archives `jarName` or by package names `packageName`.
+
+`let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']` - Specifies the order of import groups, when use `packageName` sorting type. An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group.
+
+`let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']` - Regular class names that will be used automatically when you insert import. You can populate it with your custom classes, or it will be populated automatically when you choose any import option. List will be persisted, so it will be used next time you run the same project.
 
 ## Commands
 
@@ -146,7 +157,7 @@ To remove all missing imports with F6:
 
 `JCimportAdd` - add 'import' for classname that is under cursor, or before it;
 
-`JCimportAddI` - the same, but enable insert mode after 'import' was added;
+`JCimportAddSmart` - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing).
 
 
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
@@ -178,7 +189,7 @@ To remove all missing imports with F6:
 
 - Add javadoc;
 - ~~Lambda support~~;
-- Cross session cache;
+- ~~Cross session cache~~;
 - Most used (classes, methods, vars) at first place (smart suggestions);
 - FXML support;
 - ~~Check for jsp support~~;

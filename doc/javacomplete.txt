@@ -46,7 +46,8 @@ javaparser library and javacomplete.txt.
 - Complete class name;
 - Add import statement for a given class name;
 - Complete methods declaration after '@Override';
-- Support for maven, gradle and Eclipse's '.classpath'.
+- Support for maven, gradle and Eclipse's '.classpath';
+- Cross-session cache.
 
 1.2 Requirements				*javacomplete-requirements*
 
@@ -70,20 +71,25 @@ You can download the lastest version from this url:
     autocmd Filetype java setlocal omnifunc=javacomplete#Complete
 
 3. Map keys you prefer:
-For insert class import with <F4>:
+For smart (trying to guess import option) insert class import with <F4>:
 
-    nmap <F4> <Plug>(JavaComplete-Imports-Add)
-    imap <F4> <Plug>(JavaComplete-Imports-Add)
+    nmap <F4> <Plug>(JavaComplete-Imports-AddSmart)
+    imap <F4> <Plug>(JavaComplete-Imports-AddSmart)
 
-For add all missing imports with <F5>:
+For usual (will ask for import option) insert class import with <F5>:
 
-    nmap <F5> <Plug>(JavaComplete-Imports-AddMissing)
-    imap <F5> <Plug>(JavaComplete-Imports-AddMissing)
+    nmap <F5> <Plug>(JavaComplete-Imports-Add)
+    imap <F5> <Plug>(JavaComplete-Imports-Add)
 
-For remove all missing imports with <F6>:
+For add all missing imports with <F6>:
 
-    nmap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)
-    imap <F6> <Plug>(JavaComplete-Imports-RemoveUnused)
+    nmap <F6> <Plug>(JavaComplete-Imports-AddMissing)
+    imap <F6> <Plug>(JavaComplete-Imports-AddMissing)
+
+For remove all missing imports with <F7>:
+
+    nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
+    imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
@@ -243,12 +249,27 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
         let g:JavaComplete_GradleExecutable = 'gradle'
 
+    Imports sorting type:
+
+        let g:JavaComplete_ImportSortType = 'jarName'
+        Sorting can by jar archives `jarName` or by package names `packageName`.
+
+    Specifies the order of import groups, when use `packageName` sorting type:
+
+        let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.'] 
+        An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group.
+
+    Regular class names that will be used automatically when you insert import:
+
+        let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']
+        You can populate it with your custom classes, or it will be populated automatically when you choose any import option. List will be persisted, so it will be used next time you run the same project.
+
 2.4 Commands					*javacomplete-commands*
 
     JCimportsAddMissing - add all missing 'imports';
     JCimportsRemoveUnused - remove all unsused 'imports';
     JCimportAdd - add 'import' for classname that is under cursor, or before it;
-    JCimportAddI - the same, but enable insert mode after 'import' was added;
+    JCimportAddSmart - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing);
     
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
