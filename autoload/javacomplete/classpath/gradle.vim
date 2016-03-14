@@ -7,7 +7,7 @@ function! javacomplete#classpath#gradle#IfGradle()
     end
   endif
 
-  if (executable('gradle') || executable('./gradlew') || executable('.\gradlew.bat')) && g:JavaComplete_GradlePath != ""
+  if g:JavaComplete_GradlePath != "" && (executable('gradle') || executable(fnamemodify(g:JavaComplete_GradlePath, ':p:h') . (javacomplete#util#IsWindows() ? '\gradlew.bat' : '/gradlew')))
     return 1
   endif
   return 0
@@ -73,9 +73,9 @@ function! s:GenerateClassPath(path, gradle) abort
   if exists("g:JavaComplete_GradleExecutable")
     let gradle = g:JavaComplete_GradleExecutable
   else
-    let gradle = 'gradle'
+    let gradle = fnamemodify(g:JavaComplete_GradlePath, ':p:h') . (javacomplete#util#IsWindows() ? '\gradlew.bat' : '/gradlew')
     if !executable(gradle)
-      let gradle = javacomplete#util#IsWindows() ? '.\gradlew.bat' : './gradlew'
+      let gradle = 'gradle'
     endif
   endif
   call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
