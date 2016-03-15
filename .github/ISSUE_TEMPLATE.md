@@ -16,7 +16,7 @@
  * Neovim version:
 
 
-Q&A
+## Q&A
 - [x] Yes, I tried minimal .vimrc configuraion.
 - [x] Yes, I have enabled logs with `JCdebugEnableLogs` and can put here content of `JCdebugGetLogContent` command, if you need.
 - [x] Even, if you wish, I can set `g:JavaComplete_JavaviDebug` to `1`, than set `g:JavaComplete_JavaviLogfileDirectory`, and put here server logs, too.
