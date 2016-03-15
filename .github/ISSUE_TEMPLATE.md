@@ -1,32 +1,28 @@
-# Problems summary
+## Actual behavior (Required!)
 
 
-## Expected
+## Expected behavior (Required!)
 
 
-## Environment Information
+## The steps to reproduce actual behavior (Required!)
+ 1. ...
+ 2. ...
+ 3. ...
+
+
+## Environment (Required!)
  * OS:
  * Vim version:
- * neovim version:
+ * Neovim version:
 
 
-## Provide a minimal .vimrc with less than 50 lines (Required!)
-
-```vim
-" Your minimal .vimrc
-set runtimepath^=~/path/to/vim-javacomplete2/
-autocmd FileType java setlocal omnifunc=javacomplete#Complete
-```
+Q&A
+- [x] Yes, I tried minimal .vimrc configuraion.
+- [x] Yes, I have enabled logs with `JCdebugEnableLogs` and can put here content of `JCdebugGetLogContent` command, if you need.
+- [x] Even, if you wish, I can set `g:JavaComplete_JavaviDebug` to `1`, than set `g:JavaComplete_JavaviLogfileDirectory`, and put here server logs, too.
 
 
-## The reproduce ways from Vim starting (Required!)
-
- 1. foo
- 2. bar
- 3. baz
+## Screenshot (Optional)
 
 
-## Screen shot (if possible)
-
-
-## Upload the log messages by `:redir` and `:message`
+## The output of :redir and :message (Optional)
