@@ -101,7 +101,7 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
     for data in filter(a:data,'v:val !~ "^\\s*$"')
       if g:JavaComplete_ShowExternalCommandsOutput
         echomsg data
-      elseif data =~ "^[ERROR]\w*"
+      elseif data =~ '^\[ERROR\]\w*' || data =~ '^\[WARNING\]\w*'
         echohl WarningMsg | echomsg data | echohl None
       endif
     endfor
