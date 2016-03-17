@@ -273,6 +273,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']
         You can populate it with your custom classes, or it will be populated automatically when you choose any import option. List will be persisted, so it will be used next time you run the same project.
 
+    Make javacomplete2 use python3 interpreter instead of python2
+
+        let g:JavaComplete_UsePython3 = 1
+        an option to make javacomplete2 use python3 interpreter instead of python2, default value is 0.
+
 2.4 Commands					*javacomplete-commands*
 
     JCimportsAddMissing - add all missing 'imports';
