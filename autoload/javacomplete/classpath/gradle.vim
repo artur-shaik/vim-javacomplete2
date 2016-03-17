@@ -21,6 +21,9 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
 
       call writefile([cp], s:gradlePath)
 
+      call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
+
+      call javacomplete#server#UnblockStart()
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 
@@ -80,6 +83,7 @@ function! s:GenerateClassPath(path, gradle) abort
   endif
   call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
   let cmd = [gradle, '-I', s:temporaryGradleFile, 'classpath']
+  call javacomplete#server#BlockStart()
   call javacomplete#util#RunSystem(cmd, 'gradle classpath build process', 'javacomplete#classpath#gradle#BuildClasspathHandler')
 endfunction
 

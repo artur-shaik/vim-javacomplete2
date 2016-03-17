@@ -24,6 +24,7 @@ function! javacomplete#classpath#maven#Generate() abort
     let s:mavenPom = g:JavaComplete_PomPath
     let s:mavenSettingsOutput = []
     let mvnCmd = ['mvn', '--file', g:JavaComplete_PomPath, 'help:effective-pom', 'dependency:build-classpath', '-DincludeScope=test']
+    call javacomplete#server#BlockStart()
     call javacomplete#util#RunSystem(mvnCmd, 'maven classpath build process', 'javacomplete#classpath#maven#BuildClasspathHandler')
     return ""
   endif
@@ -82,6 +83,9 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
 
       let g:JavaComplete_LibsPath .= s:GetMavenClasspath(s:mavenPath, s:mavenPom)
 
+      call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
+
+      call javacomplete#server#UnblockStart()
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 

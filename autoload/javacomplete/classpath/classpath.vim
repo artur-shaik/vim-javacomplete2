@@ -61,19 +61,17 @@ fu! s:UseGradle()
 endf
 
 function! s:FindClassPath() abort
-  let cp = '.'
-
-  for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
+    for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
       exec "let cp .= s:Use". classpathSourceType. "()"
-      if cp != '.'
-        break
+      if cp != ''
+        return '.:'. cp
       endif
     catch
     endtry
   endfor
 
-  return cp
+  return '.'
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

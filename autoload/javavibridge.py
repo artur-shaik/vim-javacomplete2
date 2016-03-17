@@ -63,10 +63,14 @@ class JavaviBridge():
         return SERVER[1]
 
     def poll(self):
-        return self.popen.poll() is None
+        if self.popen:
+            return self.popen.poll() is None
+        else:
+            return 0
 
     def terminateServer(self):
         self.popen.terminate()
+        self.popen.wait()
 
         if self.logfile:
             self.logfile.close()

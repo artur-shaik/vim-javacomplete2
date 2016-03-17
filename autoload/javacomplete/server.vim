@@ -3,6 +3,16 @@
 "
 " Java server bridge initiator and caller
 
+let s:serverStartBlocked = 0
+
+function! javacomplete#server#BlockStart()
+  let s:serverStartBlocked = 1
+endfunction
+
+function! javacomplete#server#UnblockStart()
+  let s:serverStartBlocked = 0
+endfunction
+
 function! s:System(cmd, caller)
   let t = reltime()
   let res = system(a:cmd)
@@ -30,7 +40,7 @@ function! javacomplete#server#Terminate()
 endfunction
 
 function! javacomplete#server#Start()
-  if s:Poll() == 0
+  if s:Poll() == 0 && s:serverStartBlocked == 0
     call javacomplete#logger#Log("Start server")
 
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
