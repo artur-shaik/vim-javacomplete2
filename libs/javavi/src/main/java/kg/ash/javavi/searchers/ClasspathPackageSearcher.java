@@ -68,7 +68,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
         try {
             Class clazz = Class.forName(path);
             return clazz.getPackage().getName();
-        } catch (ClassNotFoundException | NoClassDefFoundError ex) {
+        } catch (ExceptionInInitializerError | ClassNotFoundException | NoClassDefFoundError ex) {
             return null;
         }
     }
