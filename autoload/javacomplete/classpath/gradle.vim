@@ -17,7 +17,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
   if a:event == 'exit'
     if a:data == "0"
       let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]
-      let g:JavaComplete_LibsPath .= cp
+      let g:JavaComplete_LibsPath .= ':'. cp
 
       call writefile([cp], s:gradlePath)
 
