@@ -63,8 +63,9 @@ endf
 function! s:FindClassPath() abort
     for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
+      let cp = ''
       exec "let cp .= s:Use". classpathSourceType. "()"
-      if cp != ''
+      if !empty(cp)
         return '.:'. cp
       endif
     catch
