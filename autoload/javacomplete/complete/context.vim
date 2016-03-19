@@ -69,7 +69,7 @@ function! javacomplete#complete#context#FindContext()
       endif
 
       " String literal
-    elseif statement =~  '"\s*\.\s*$'
+    elseif statement =~  '"\s*\.\s*\(\S*\.\s*\|\)$'
       let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
       return start - strlen(b:incomplete)
 

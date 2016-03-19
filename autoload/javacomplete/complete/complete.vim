@@ -275,6 +275,10 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
   " first item
   if empty(ti)
+    if items[0] =~  '\("\|"\.\)$'
+      let items[0] = "new String()"
+    endif
+
     " cases:
     " 1) "int.|", "void.|"	- primitive type or pseudo-type, return `class`
     " 2) "this.|", "super.|"	- special reference
@@ -764,9 +768,16 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
   return {}
 endfunction
 
-" TODO: how to determine overloaded functions
+" determine overloaded mathod by parameters count
 function! s:DetermineMethod(methods, parameters)
-  return get(a:methods, 0, {})
+  let parameters = substitute(a:parameters, '(\(.*\))', '\1', '')
+  let paramsCount = len(split(parameters, ','))
+  for m in a:methods
+    if len(get(m, 'p', [])) == paramsCount
+      return m
+    endif
+  endfor
+  return get(a:methods, -1, {})
 endfunction
 
 " Used in jsp files to find last declaration of object 'name'
