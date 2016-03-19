@@ -768,7 +768,7 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
   return {}
 endfunction
 
-" determine overloaded mathod by parameters count
+" determine overloaded method by parameters count
 function! s:DetermineMethod(methods, parameters)
   let parameters = substitute(a:parameters, '(\(.*\))', '\1', '')
   let paramsCount = len(split(parameters, ','))
