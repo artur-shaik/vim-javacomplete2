@@ -69,8 +69,10 @@ function! javacomplete#complete#context#FindContext()
       endif
 
       " String literal
-    elseif statement =~  '"\s*\.\s*\(\S*\.\s*\|\)$'
+    elseif statement =~  '"\s*\.\s*\(\S*\.\s*\|\S*\|\)$'
       let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
+      let b:dotexpr = substitute(b:dotexpr, '^\(["\S\.]*\.\).*', '\1', '')
+      let b:incomplete = statement[len(b:dotexpr):]
       return start - strlen(b:incomplete)
 
     elseif &ft == 'jsp' && statement =~# '.*page.*import.*'
