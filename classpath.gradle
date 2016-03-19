@@ -8,7 +8,7 @@ task classpath << {
     def listFiles = new File(exploded)
     if (listFiles.exists()) {
       listFiles.eachFileRecurse(){ file ->
-        if (file.name.endsWith("classes.jar")){
+        if (file.name.endsWith(".jar")){
           classpathFiles += file
         }
       }
