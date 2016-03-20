@@ -71,7 +71,7 @@ function! javacomplete#complete#context#FindContext()
       " String literal
     elseif statement =~  '"\s*\.\s*\(\S*\.\s*\|\S*\|\)$'
       let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
-      let b:dotexpr = substitute(b:dotexpr, '^\(["\S\.]*\.\).*', '\1', '')
+      let b:dotexpr = b:dotexpr[:strridx(b:dotexpr, '.')]
       let b:incomplete = statement[len(b:dotexpr):]
       return start - strlen(b:incomplete)
 
