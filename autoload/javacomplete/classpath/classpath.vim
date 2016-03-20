@@ -66,7 +66,7 @@ function! s:FindClassPath() abort
       let cp = ''
       exec "let cp .= s:Use". classpathSourceType. "()"
       if !empty(cp)
-        return '.:'. cp
+        return '.' . g:PATH_SEP . cp
       endif
     catch
     endtry
