@@ -1008,6 +1008,12 @@ function! s:DoGetClassInfo(class, ...)
 
   " either this or super is not qualified
   let t = get(javacomplete#parseradapter#SearchTypeAt(javacomplete#parseradapter#Parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
+  if has_key(t, 'extends')
+    let fqn = javacomplete#imports#SearchSingleTypeImport(t.extends[0].clazz.name, javacomplete#imports#GetImports('imports_fqn', filekey))
+    let extends = fqn. '$'. a:class
+  else
+    let extends = ''
+  endif
   if class == 'this' || class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename. '.'. class)
     if &ft == 'jsp'
       let ci = s:FetchClassInfo('javax.servlet.jsp.HttpJspPage')
@@ -1057,7 +1063,7 @@ function! s:DoGetClassInfo(class, ...)
 
   let collectedArguments = s:CollectTypeArguments(typeArguments, packagename, filekey)
 
-  let fqns = s:CollectFQNs(typename, packagename, filekey)
+  let fqns = s:CollectFQNs(typename, packagename, filekey, extends)
   for fqn in fqns
     let fqn = fqn . nested . collectedArguments
     let fqn = substitute(fqn, ' ', '', 'g')
@@ -1165,7 +1171,7 @@ function! s:KeyInCache(fqn)
   return ''
 endfunction
 
-function! s:CollectFQNs(typename, packagename, filekey)
+function! s:CollectFQNs(typename, packagename, filekey, extends)
   if len(split(a:typename, '\.')) > 1
     return [a:typename]
   endif
@@ -1190,6 +1196,9 @@ function! s:CollectFQNs(typename, packagename, filekey)
   for p in imports
     call add(fqns, p . a:typename)
   endfor
+  if !empty(a:extends)
+    call add(fqns, a:extends)
+  endif
   if typename != 'Object'
     call add(fqns, 'java.lang.Object')
   endif
