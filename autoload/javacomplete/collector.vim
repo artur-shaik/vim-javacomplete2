@@ -103,11 +103,15 @@ function! javacomplete#collector#GetPackageName()
 endfunction
 
 function! javacomplete#collector#FetchClassInfo(fqn)
-  if has_key(g:JavaComplete_Cache, a:fqn)
-    return g:JavaComplete_Cache[a:fqn]
+  call javacomplete#collector#FetchInfoFromServer(a:fqn, '-E')
+endfunction
+
+function! javacomplete#collector#FetchInfoFromServer(class, option)
+  if has_key(g:JavaComplete_Cache, substitute(a:class, '\$', '.', 'g'))
+    return g:JavaComplete_Cache[substitute(a:class, '\$', '.', 'g')]
   endif
 
-  let res = javacomplete#server#Communicate('-E', a:fqn, 'FetchClassInfo in Batch')
+  let res = javacomplete#server#Communicate(a:option, a:class, 'collector#FetchInfoFromServer')
   if res =~ "^{'"
     let dict = eval(res)
     for key in keys(dict)
@@ -119,6 +123,8 @@ function! javacomplete#collector#FetchClassInfo(fqn)
         endif
       endif
     endfor
+  else
+    let b:errormsg = res
   endif
 endfunction
 
@@ -174,7 +180,7 @@ function! s:CollectTypeArguments(typeArguments, packagename, filekey)
         let arg = arg[i+1 : -1]
       endif
 
-      let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
+      let fqns = s:CollectFQNs(arg, a:packagename, a:filekey, '')
       let collectedArguments .= ''
       if len(fqns) > 1
         let collectedArguments .= '('

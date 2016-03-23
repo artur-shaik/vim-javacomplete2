@@ -211,7 +211,7 @@ function! javacomplete#complete#context#ExecuteContext(base)
     elseif b:context_type == g:JC__CONTEXT_ANNOTATION_FIELDS
       let result = javacomplete#complete#complete#CompleteAnnotationsParameters(b:incomplete)
     else
-      let result = javacomplete#complete#complete#CompleteAfterWord(b:incomplete)
+      let result = javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(a:base)
     endif
 
     " then no filter needed

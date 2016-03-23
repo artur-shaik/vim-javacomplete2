@@ -296,4 +296,38 @@ function! javacomplete#util#SaveRegularClassesList(classesDict)
     call writefile(values(a:classesDict), path)
 endfunction
 
+function! javacomplete#util#IsStatic(modifier)
+  return a:modifier[strlen(a:modifier)-4]
+endfunction
+
+function! javacomplete#util#IsBuiltinType(name)
+  return index(g:J_PRIMITIVE_TYPES, a:name) >= 0
+endfunction
+
+function! javacomplete#util#IsKeyword(name)
+  return index(g:J_KEYWORDS, a:name) >= 0
+endfunction
+
+function! javacomplete#util#HasKeyword(name)
+  return a:name =~# g:RE_KEYWORDS
+endfunction
+
+function! javacomplete#util#CheckModifier(modifier, condition)
+  if type(a:condition) == type([])
+    for condition in a:condition
+      if condition <= len(a:modifier)
+        if a:modifier[-condition : -condition] == '1'
+          return 1
+        endif
+      endif
+    endfor
+    return 0
+  else
+    if a:condition <= len(a:modifier)
+      return a:modifier[-a:condition : -a:condition] == '1'
+    endif
+    return 0
+  endif
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:

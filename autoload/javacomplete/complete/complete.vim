@@ -60,100 +60,11 @@ function! javacomplete#complete#complete#Complete(findstart, base)
   return []
 endfunction
 
-" Precondition:	incomplete must be a word without '.'.
-" return all the matched, variables, fields, methods, types, packages
-function! javacomplete#complete#complete#CompleteAfterWord(incomplete)
-  " packages in jar files
-  if !exists('s:all_packages_in_jars_loaded')
-    call s:DoGetInfoByReflection('-', '-P')
-    let s:all_packages_in_jars_loaded = 1
-  endif
-
-  let pkgs = []
-  let types = []
-  for key in keys(g:JavaComplete_Cache)
-    if key =~# '^' . a:incomplete
-      if type(g:JavaComplete_Cache[key]) == type('') || get(g:JavaComplete_Cache[key], 'tag', '') == 'PACKAGE'
-        call add(pkgs, {'kind': 'P', 'word': key})
-
-        " filter out type info
-      elseif b:context_type != g:JC__CONTEXT_PACKAGE_DECL && b:context_type != g:JC__CONTEXT_IMPORT && b:context_type != g:JC__CONTEXT_IMPORT_STATIC
-        call add(types, {'kind': 'C', 'word': key})
-      endif
-    endif
-  endfor
-
-  let pkgs += s:DoGetPackageInfoInDirs(a:incomplete, b:context_type == g:JC__CONTEXT_PACKAGE_DECL, 1)
-
-
-  " add accessible types which name beginning with the incomplete in source files
-  " TODO: remove the inaccessible
-  if b:context_type != g:JC__CONTEXT_PACKAGE_DECL
-    " single type import
-    for fqn in javacomplete#imports#GetImports('imports_fqn')
-      let name = fqn[strridx(fqn, ".")+1:]
-      if name =~ '^' . a:incomplete
-        call add(types, {'kind': 'C', 'word': name})
-      endif
-    endfor
-
-    " current file
-    let lnum_old = line('.')
-    let col_old = col('.')
-    call cursor(1, 1)
-    while 1
-      let lnum = search('\<\C\(class\|interface\|enum\)[ \t\n\r]\+' . a:incomplete . '[a-zA-Z0-9_$]*[< \t\n\r]', 'W')
-      if lnum == 0
-        break
-      elseif javacomplete#util#InCommentOrLiteral(line('.'), col('.'))
-        continue
-      else
-        normal! w
-        call add(types, {'kind': 'C', 'word': matchstr(getline(line('.'))[col('.')-1:], g:RE_IDENTIFIER)})
-      endif
-    endwhile
-    call cursor(lnum_old, col_old)
-
-    " other files
-    let filepatterns = ''
-    for dirpath in s:GetSourceDirs(expand('%:p'))
-      let filepatterns .= escape(dirpath, ' \') . '/**/*.java '
-    endfor
-    silent! exe 'vimgrep /\s*' . g:RE_TYPE_DECL . '/jg ' . filepatterns
-    for item in getqflist()
-      if item.text !~ '^\s*\*\s\+'
-        let text = matchstr(javacomplete#util#Prune(item.text, -1), '\s*' . g:RE_TYPE_DECL)
-        if text != ''
-          let subs = split(substitute(text, '\s*' . g:RE_TYPE_DECL, '\1;\2;\3', ''), ';', 1)
-          if subs[2] =~# '^' . a:incomplete && (subs[0] =~ '\C\<public\>' || fnamemodify(bufname(item.bufnr), ':p:h') == expand('%:p:h'))
-            call add(types, {'kind': 'C', 'word': subs[2]})
-          endif
-        endif
-      endif
-    endfor
-  endif
-
-
-  let result = []
-
-  " add variables and members in source files
-  if get(b:, 'context_type', '') == g:JC__CONTEXT_AFTER_DOT
-    let matches = s:SearchForName(a:incomplete, 0, 0)
-    let result += sort(eval('[' . s:DoGetFieldList(matches[2]) . ']'))
-    let result += sort(eval('[' . s:DoGetMethodList(matches[1], 0) . ']'))
-  endif
-  let result += sort(pkgs)
-  let result += sort(types)
-
-  return result
-endfunction
-
-
 function! javacomplete#complete#complete#CompleteAfterOverride()
-  let ti = s:DoGetClassInfo('this')
+  let ti = javacomplete#collector#DoGetClassInfo('this')
   let s = ''
   for i in get(ti, 'extends', [])
-    let members = javacomplete#complete#complete#SearchMember(s:DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
+    let members = javacomplete#complete#complete#SearchMember(javacomplete#collector#DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
     let s .= s:DoGetMethodList(members[1], 14, 0)
     unlet i
   endfor
@@ -172,7 +83,7 @@ function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(b
     let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
   else
     let b:incomplete = a:base
-    let result = s:DoGetMemberList(s:DoGetClassInfo('this'), 7)
+    let result = s:DoGetMemberList(javacomplete#collector#DoGetClassInfo('this'), 7)
     
     let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
   endif
@@ -191,11 +102,11 @@ function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
   let identList = matchlist(last, '\('. g:RE_IDENTIFIER. '\)\((\|$\)')
   if !empty(identList)
     let name = identList[1]
-    let ti = s:DoGetClassInfo(name)
+    let ti = javacomplete#collector#DoGetClassInfo(name)
     if has_key(ti, 'methods') 
       let methods = []
       for m in ti.methods
-        if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+        if javacomplete#util#CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
           call add(methods, m)
         endif
       endfor
@@ -236,7 +147,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     if ident == 'class' || ident == 'this' || ident == 'super'
       let k = i
       " return when found other keywords
-    elseif s:IsKeyword(ident)
+    elseif javacomplete#util#IsKeyword(ident)
       return []
     endif
     let items[i] = substitute(items[i], '\s', '', 'g')
@@ -247,7 +158,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     " cases: "this.|", "super.|", "ClassName.this.|", "ClassName.super.|", "TypeName.class.|"
     if items[k] ==# 'class' || items[k] ==# 'this' || items[k] ==# 'super'
       call javacomplete#logger#Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
-      let ti = s:DoGetClassInfo(items[k] == 'class' ? 'java.lang.Class' : join(items[:k-1], '.'))
+      let ti = javacomplete#collector#DoGetClassInfo(items[k] == 'class' ? 'java.lang.Class' : join(items[:k-1], '.'))
       if !empty(ti)
         let itemkind = items[k] ==# 'this' ? 1 : items[k] ==# 'super' ? 2 : 0
         let ii = k+1
@@ -258,9 +169,9 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       " case: "java.io.File.|"
     else
       let fqn = join(items[:i-1], '.')
-      let srcpath = join(s:GetSourceDirs(expand('%:p'), s:GetPackageName()), ',')
+      let srcpath = join(s:GetSourceDirs(expand('%:p'), javacomplete#collector#GetPackageName()), ',')
       call javacomplete#logger#Log('O2. ' . fqn)
-      call s:FetchClassInfo(fqn)
+      call javacomplete#collector#FetchClassInfo(fqn)
       if get(get(g:JavaComplete_Cache, fqn, {}), 'tag', '') == 'CLASSDEF'
         let ti = g:JavaComplete_Cache[fqn]
         let itemkind = 11
@@ -288,10 +199,10 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     if items[0] =~ '^\s*' . g:RE_IDENTIFIER . '\s*$'
       let ident = substitute(items[0], '\s', '', 'g')
 
-      if s:IsKeyword(ident)
+      if javacomplete#util#IsKeyword(ident)
         " 1)
         call javacomplete#logger#Log('F1. "' . ident . '.|"')
-        if ident ==# 'void' || s:IsBuiltinType(ident)
+        if ident ==# 'void' || javacomplete#util#IsBuiltinType(ident)
           let ti = g:J_PRIMITIVE_TYPE_INFO
           let itemkind = 11
 
@@ -299,7 +210,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           call javacomplete#logger#Log('F2. "' . ident . '.|"')
         elseif ident ==# 'this' || ident ==# 'super'
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
-          let ti = s:DoGetClassInfo(ident)
+          let ti = javacomplete#collector#DoGetClassInfo(ident)
         endif
 
       else
@@ -309,14 +220,14 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
             let ti = g:J_ARRAY_TYPE_INFO
-          elseif typename != 'void' && !s:IsBuiltinType(typename)
-            let ti = s:DoGetClassInfo(typename)
+          elseif typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
+            let ti = javacomplete#collector#DoGetClassInfo(typename)
           endif
 
         else
           " 4)
           call javacomplete#logger#Log('F4. "TypeName.|"')
-          let ti = s:DoGetClassInfo(ident)
+          let ti = javacomplete#collector#DoGetClassInfo(ident)
           let itemkind = 11
 
           if get(ti, 'tag', '') != 'CLASSDEF' || get(ti, 'name', '') == 'java.lang.Object'
@@ -343,7 +254,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     elseif items[0] =~# g:RE_ARRAY_TYPE
       call javacomplete#logger#Log('array type. "' . items[0] . '"')
       let qid = substitute(items[0], g:RE_ARRAY_TYPE, '\1', '')
-      if s:IsBuiltinType(qid) || (!s:HasKeyword(qid) && !empty(s:DoGetClassInfo(qid)))
+      if javacomplete#util#IsBuiltinType(qid) || (!javacomplete#util#HasKeyword(qid) && !empty(javacomplete#collector#DoGetClassInfo(qid)))
         let ti = g:J_PRIMITIVE_TYPE_INFO
         let itemkind = 11
       endif
@@ -355,7 +266,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       call javacomplete#logger#Log('creation expr. "' . joinedItems . '"')
       let subs = split(substitute(joinedItems, '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([<([]\|\)', '\1;\2', ''), ';')
       if len(subs) == 1
-        let ti = s:DoGetClassInfo(subs[0])
+        let ti = javacomplete#collector#DoGetClassInfo(subs[0])
         if get(ti, 'tag', '') == 'CLASSDEF' && get(ti, 'name', '') != 'java.lang.Object'
           let members = javacomplete#complete#complete#SearchMember(ti, '', 1, itemkind, 1, 0)
           return eval('['. s:DoGetNestedList(members[3]) . ']')
@@ -375,7 +286,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         else
           let s = subs[0]
         endif
-        let ti = s:DoGetClassInfo(s)
+        let ti = javacomplete#collector#DoGetClassInfo(s)
         " exclude interfaces and abstract class.  TODO: exclude the inaccessible
         if get(ti, 'flags', '')[-10:-10] || get(ti, 'flags', '')[-11:-11]
           echo 'cannot instantiate the type ' . subs[0]
@@ -388,7 +299,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     elseif items[0] =~ g:RE_CASTING
       call javacomplete#logger#Log('Casting conversion. "' . items[0] . '"')
       let subs = split(substitute(items[0], g:RE_CASTING, '\1;\2', ''), ';')
-      let ti = s:DoGetClassInfo(subs[0])
+      let ti = javacomplete#collector#DoGetClassInfo(subs[0])
 
       " array access:	"var[i][j].|"		Note: "var[i][]" is incorrect
     elseif items[0] =~# g:RE_ARRAY_ACCESS
@@ -429,7 +340,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       let brackets = get(subs, 1, '')
 
       " package members
-      if itemkind/10 == 2 && empty(brackets) && !s:IsKeyword(ident)
+      if itemkind/10 == 2 && empty(brackets) && !javacomplete#util#IsKeyword(ident)
         let qn = join(items[:ii], '.')
         call javacomplete#logger#Log("package members: ". qn)
         if type(ti) == type([])
@@ -442,7 +353,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
               continue
             elseif ti[idx].kind == 'C'
               unlet ti
-              let ti = s:DoGetClassInfo(qn)
+              let ti = javacomplete#collector#DoGetClassInfo(qn)
               let itemkind = 11
               let ii += 1
               continue
@@ -455,12 +366,12 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       elseif itemkind/10 == 1 && empty(brackets)
         if ident ==# 'class' || ident ==# 'this' || ident ==# 'super'
           call javacomplete#logger#Log("type members: ". ident)
-          let ti = s:DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
+          let ti = javacomplete#collector#DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ii += 1
           continue
 
-        elseif !s:IsKeyword(ident) && type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
+        elseif !javacomplete#util#IsKeyword(ident) && type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           " accessible static field
           call javacomplete#logger#Log("static fields: ". ident)
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
@@ -474,7 +385,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           " accessible nested type
           "if !empty(filter(copy(get(ti, 'classes', [])), 'strpart(v:val, strridx(v:val, ".")) ==# "' . ident . '"'))
           if !empty(members[0])
-            let ti = s:DoGetClassInfo(join(items[:ii], '.'))
+            let ti = javacomplete#collector#DoGetClassInfo(join(items[:ii], '.'))
             let ii += 1
             continue
           endif
@@ -484,7 +395,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
               let fount = 0
               for entry in members[3]
                 if has_key(entry, 'n') && entry.n == ident && has_key(entry, 'm')
-                  let ti = s:DoGetClassInfo(entry.m)
+                  let ti = javacomplete#collector#DoGetClassInfo(entry.m)
                   let ii += 1
                   let found = 1
                   break
@@ -499,7 +410,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
 
         " instance members
-      elseif itemkind/10 == 0 && !s:IsKeyword(ident)
+      elseif itemkind/10 == 0 && !javacomplete#util#IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           call javacomplete#logger#Log("instance members")
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
@@ -577,8 +488,8 @@ function! s:ArrayAccess(arraytype, expr)
     endif
   endif
   if dims == 0
-    if typename != 'void' && !s:IsBuiltinType(typename)
-      return s:DoGetClassInfo(typename)
+    if typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
+      return javacomplete#collector#DoGetClassInfo(typename)
     endif
   endif
   return {}
@@ -593,7 +504,7 @@ endfunction
 
 function! s:SearchForName(name, first, fullmatch)
   let result = [[], [], [], []]
-  if s:IsKeyword(a:name)
+  if javacomplete#util#IsKeyword(a:name)
     return result
   endif
 
@@ -681,11 +592,11 @@ function! s:DetermineLambdaArguments(unit, ti, name)
     if (typename != '')
       if typename[1] == '[' || typename[-1:] == ']'
         let ti = g:J_ARRAY_TYPE_INFO
-      elseif typename != 'void' && !s:IsBuiltinType(typename)
-        let ti = s:DoGetClassInfo(typename)
+      elseif typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
+        let ti = javacomplete#collector#DoGetClassInfo(typename)
       endif
     else " It can be static request."
-      let ti = s:DoGetClassInfo(items[0])
+      let ti = javacomplete#collector#DoGetClassInfo(items[0])
     endif
 
     let ii = 1
@@ -748,10 +659,10 @@ function! s:GetLambdaParameterType(type, name, argIdx, argPos)
         return {'tag': 'VARDEF', 'name': type, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': a:argPos}, 'pos': a:argPos}
       endif
     else
-      let functionalMembers = s:DoGetClassInfo(a:type)
+      let functionalMembers = javacomplete#collector#DoGetClassInfo(a:type)
       if has_key(functionalMembers, 'methods')
         for m in functionalMembers.methods
-          if s:CheckModifier(m.m, s:MODIFIER_ABSTRACT)
+          if javacomplete#util#CheckModifier(m.m, s:MODIFIER_ABSTRACT)
             if a:argIdx < len(m.p)
               let pType = m.p[a:argIdx]
               break
@@ -872,44 +783,6 @@ function! s:SearchForRootClassName(variable)
   return ""
 endfunction
 
-function! s:CheckModifier(modifier, condition)
-  if type(a:condition) == type([])
-    for condition in a:condition
-      if condition <= len(a:modifier)
-        if a:modifier[-condition : -condition] == '1'
-          return 1
-        endif
-      endif
-    endfor
-    return 0
-  else
-    if a:condition <= len(a:modifier)
-      return a:modifier[-a:condition : -a:condition] == '1'
-    endif
-    return 0
-  endif
-endfunction
-
-function! s:IsStatic(modifier)
-  return a:modifier[strlen(a:modifier)-4]
-endfunction
-
-function! s:IsBuiltinType(name)
-  return index(g:J_PRIMITIVE_TYPES, a:name) >= 0
-endfunction
-
-function! javacomplete#complete#complete#IsKeyword(name)
-  return s:IsKeyword(a:name)
-endfunction
-
-function! s:IsKeyword(name)
-  return index(g:J_KEYWORDS, a:name) >= 0
-endfunction
-
-function! s:HasKeyword(name)
-  return a:name =~# g:RE_KEYWORDS
-endfunction
-
 function! s:GetSourceDirs(filepath, ...)
   let dirs = exists('s:sourcepath') ? s:sourcepath : []
 
@@ -917,7 +790,7 @@ function! s:GetSourceDirs(filepath, ...)
     let filepath = fnamemodify(a:filepath, ':p:h')
 
     " get source path according to file path and package name
-    let packageName = a:0 > 0 ? a:1 : s:GetPackageName()
+    let packageName = a:0 > 0 ? a:1 : javacomplete#collector#GetPackageName()
     if packageName != ''
       let path = fnamemodify(substitute(filepath, packageName, '', 'g'), ':p:h')
       if index(dirs, path) < 0
@@ -945,369 +818,16 @@ function! s:GetClassDirs()
 endfunction
 
 function! javacomplete#complete#complete#GetPackageName()
-  return s:GetPackageName()
+  return javacomplete#collector#GetPackageName()
 endfunction
 
-function! s:GetPackageName()
-  let lnum_old = line('.')
-  let col_old = col('.')
 
-  call cursor(1, 1)
-  let lnum = search('^\s*package[ \t\r\n]\+\([a-zA-Z][a-zA-Z0-9._]*\);', 'w')
-  let packageName = substitute(getline(lnum), '^\s*package\s\+\([a-zA-Z][a-zA-Z0-9._]*\);', '\1', '')
-
-  call cursor(lnum_old, col_old)
-  return packageName
-endfunction
-
-" functions to get information						{{{1
-" class information							{{{2
-
-function! s:FetchClassInfo(fqn)
-  if has_key(g:JavaComplete_Cache, a:fqn)
-    return g:JavaComplete_Cache[a:fqn]
-  endif
-
-  let res = javacomplete#server#Communicate('-E', a:fqn, 'FetchClassInfo in Batch')
-  if res =~ "^{'"
-    let dict = eval(res)
-    for key in keys(dict)
-      if !has_key(g:JavaComplete_Cache, key)
-        if type(dict[key]) == type({})
-          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
-        elseif type(dict[key]) == type([])
-          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = sort(dict[key])
-        endif
-      endif
-    endfor
-  endif
-endfunction
-
-" a:1	filepath
-" a:2	package name
-function! s:DoGetClassInfo(class, ...)
-  if type(a:class) == type({})
-    let class = a:class.name
-  else
-    let class = a:class
-  endif
-
-  if has_key(g:JavaComplete_Cache, class)
-    return g:JavaComplete_Cache[class]
-  endif
-
-  call javacomplete#logger#Log("DoGetClassInfo: ". class)
-
-  " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
-  if class[-1:] == ']' || class[0] == '['
-    return g:J_ARRAY_TYPE_INFO
-  endif
-
-  let filekey	= a:0 > 0 && len(a:1) > 0 ? a:1 : javacomplete#GetCurrentFileKey()
-  let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : s:GetPackageName()
-
-  " either this or super is not qualified
-  let t = get(javacomplete#parseradapter#SearchTypeAt(javacomplete#parseradapter#Parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
-  if has_key(t, 'extends')
-    let fqn = javacomplete#imports#SearchSingleTypeImport(t.extends[0].clazz.name, javacomplete#imports#GetImports('imports_fqn', filekey))
-    let extends = fqn. '$'. a:class
-  else
-    let extends = ''
-  endif
-  if class == 'this' || class == 'super' || (has_key(t, 'fqn') && t.fqn == packagename. '.'. class)
-    if &ft == 'jsp'
-      let ci = s:FetchClassInfo('javax.servlet.jsp.HttpJspPage')
-      if class == 'this'
-        " TODO: search methods defined in <%! [declarations] %>
-        "	search methods defined in other jsp files included
-        "	avoid including self directly or indirectly
-      endif
-      return ci
-    endif
-
-    call javacomplete#logger#Log('A0. ' . class)
-    " this can be a local class or anonymous class as well as static type
-    if !empty(t)
-      " What will be returned for super?
-      " - the protected or public inherited fields and methods. No ctors.
-      " - the (public static) fields of interfaces.
-      " - the methods of the Object class.
-      " What will be returned for this?
-      " - besides the above, all fields and methods of current class. No ctors.
-      return javacomplete#util#Sort(s:Tree2ClassInfo(t))
-    endif
-  endif
-
-  let typename = class
-
-  let typeArguments = ''
-  let splittedType = s:SplitTypeArguments(typename)
-  if type(splittedType) == type([])
-    let typename = splittedType[0]
-    let typeArguments = splittedType[1]
-  endif
-
-  if stridx(typename, '$') > 0
-    let sc = split(typename, '\$')
-    let typename = sc[0]
-    let nested = '$'.sc[1]
-  else
-    let nested = ''
-  endif
-  
-  if typename !~ '^\s*' . g:RE_QUALID . '\s*$' || s:HasKeyword(typename)
-    call javacomplete#logger#Log("No qualid: ". typename)
-    return {}
-  endif
-
-
-  let collectedArguments = s:CollectTypeArguments(typeArguments, packagename, filekey)
-
-  let fqns = s:CollectFQNs(typename, packagename, filekey, extends)
-  for fqn in fqns
-    let fqn = fqn . nested . collectedArguments
-    let fqn = substitute(fqn, ' ', '', 'g')
-    call s:FetchClassInfo(fqn)
-
-    let key = s:KeyInCache(fqn)
-    if !empty(key)
-      return get(g:JavaComplete_Cache[key], 'tag', '') == 'CLASSDEF' ? g:JavaComplete_Cache[key] : {}
-    endif
-  endfor
-
-  return {}
-endfunction
-
-function! s:SplitTypeArguments(typename)
-  if a:typename =~ g:RE_TYPE_WITH_ARGUMENTS
-    let lbridx = stridx(a:typename, '<')
-    let typeArguments = a:typename[lbridx + 1 : -2]
-    let typename = a:typename[0 : lbridx - 1]
-    return [typename, typeArguments]
-  endif
-
-  let lbridx = stridx(a:typename, '<')
-  if lbridx > 0
-    let typename = a:typename[0 : lbridx - 1]
-    return [typename, 0]
-  endif
-
-  return a:typename
-endfunction
-
-function! s:CollectTypeArguments(typeArguments, packagename, filekey)
-  let collectedArguments = ''
-  if !empty(a:typeArguments)
-    let typeArguments = a:typeArguments
-    let i = 0
-    let lbr = 0
-    while i < len(typeArguments)
-      let c = typeArguments[i]
-      if c == '<'
-        let lbr += 1
-      elseif c == '>'
-        let lbr -= 1
-      endif
-
-      if c == ',' && lbr == 0
-        let typeArguments = typeArguments[0 : i - 1] . "<_split_>". typeArguments[i + 1 : -1]
-        let i += 9
-      else
-        let i += 1
-      endif
-    endwhile
-    
-    for arg in split(typeArguments, "<_split_>")
-      let argTypeArguments = ''
-      if arg =~ g:RE_TYPE_WITH_ARGUMENTS
-        let lbridx = stridx(arg, '<')
-        let argTypeArguments = arg[lbridx : -1]
-        let arg = arg[0 : lbridx - 1]
-      endif
-
-      if arg =~ g:RE_TYPE_ARGUMENT_EXTENDS
-        let i = matchend(arg, g:RE_TYPE)
-        let arg = arg[i+1 : -1]
-      endif
-
-      let fqns = s:CollectFQNs(arg, a:packagename, a:filekey)
-      let collectedArguments .= ''
-      if len(fqns) > 1
-        let collectedArguments .= '('
-      endif
-      for fqn in fqns
-        if len(fqn) > 0
-          let collectedArguments .= fqn. argTypeArguments. '|'
-        endif
-      endfor
-      if len(fqns) > 1
-        let collectedArguments = collectedArguments[0:-2]. '),'
-      else
-        let collectedArguments = collectedArguments[0:-2]. ','
-      endif
-    endfor
-    if !empty(collectedArguments)
-      let collectedArguments = '<'. collectedArguments[0:-2]. '>'
-    endif
-  endif
-
-  return collectedArguments
-endfunction
-
-function! s:KeyInCache(fqn)
-  let fqn = substitute(a:fqn, '<', '\\<', 'g')
-  let fqn = substitute(fqn, '>', '\\>', 'g')
-  let fqn = substitute(fqn, ']', '\\]', 'g')
-  let fqn = substitute(fqn, '[', '\\[', 'g')
-  let fqn = substitute(fqn, '\$', '.', 'g')
-
-  let keys = keys(g:JavaComplete_Cache)
-  let idx = match(keys, '\v'. fqn. '$')
-  
-  if idx >= 0
-    return keys[idx]
-  endif
-
-  return ''
-endfunction
-
-function! s:CollectFQNs(typename, packagename, filekey, extends)
-  if len(split(a:typename, '\.')) > 1
-    return [a:typename]
-  endif
-
-  let brackets = stridx(a:typename, '[')
-  let extra = ''
-  if brackets >= 0
-    let typename = a:typename[0 : brackets - 1]
-    let extra = a:typename[brackets : -1]
-  else
-    let typename = a:typename
-  endif
-
-  let directFqn = javacomplete#imports#SearchSingleTypeImport(typename, javacomplete#imports#GetImports('imports_fqn', a:filekey))
-  if !empty(directFqn)
-    return [directFqn. extra]
-  endif
-
-  let fqns = []
-  call add(fqns, empty(a:packagename) ? a:typename : a:packagename . '.' . a:typename)
-  let imports = javacomplete#imports#GetImports('imports_star', a:filekey)
-  for p in imports
-    call add(fqns, p . a:typename)
-  endfor
-  if !empty(a:extends)
-    call add(fqns, a:extends)
-  endif
-  if typename != 'Object'
-    call add(fqns, 'java.lang.Object')
-  endif
-  return fqns
-endfunction
-
-function! s:Tree2ClassInfo(t)
-  let t = a:t
-
-  " fill fields and methods
-  let t.fields = []
-  let t.methods = []
-  let t.ctors = []
-  let t.classes = []
-  for def in t.defs
-    if type(def) == type([]) && len(def) == 1
-      let tmp = def[0]
-      unlet def
-      let def = tmp
-      unlet tmp
-    endif
-    if def.tag == 'METHODDEF'
-      call add(def.n == t.name ? t.ctors : t.methods, def)
-    elseif def.tag == 'VARDEF'
-      call add(t.fields, def)
-    elseif def.tag == 'CLASSDEF'
-      call add(t.classes, t.fqn . '.' . def.name)
-    endif
-    unlet def
-  endfor
-
-  " convert type name in extends to fqn for class defined in source files
-  if has_key(a:t, 'filepath') && a:t.filepath != javacomplete#GetCurrentFileKey()
-    let filepath = a:t.filepath
-    let packagename = get(g:JavaComplete_Files[filepath].unit, 'package', '')
-  else
-    let filepath = expand('%:p')
-    let packagename = s:GetPackageName()
-  endif
-
-  if !has_key(a:t, 'extends')
-    let a:t.extends = ['java.lang.Object']
-  endif
-
-  let extends = a:t.extends
-  if has_key(a:t, 'implements')
-    let extends += a:t.implements
-  endif
-
-  let i = 0
-  while i < len(extends)
-    if type(extends[i]) == type("") && extends[i] == get(t, 'fqn', '')
-      let i += 1
-      continue
-    elseif type(extends[i]) == type({}) && extends[i].tag == 'ERRONEOUS'
-      let i += 1
-      continue
-    endif
-    let ci = s:DoGetClassInfo(java_parser#type2Str(extends[i]), filepath, packagename)
-    if type(ci) == type([])
-      let ci = [0]
-    endif
-    if has_key(ci, 'fqn')
-      let extends[i] = ci.fqn
-    endif
-    let i += 1
-  endwhile
-
-  return t
-endfunction
-
-" package information							{{{2
-
-function! s:DoGetInfoByReflection(class, option)
-  if has_key(g:JavaComplete_Cache, substitute(a:class, '\$', '.', 'g'))
-    return g:JavaComplete_Cache[substitute(a:class, '\$', '.', 'g')]
-  endif
-
-  let res = javacomplete#server#Communicate(a:option, a:class, 's:DoGetInfoByReflection')
-  if res =~ '^[{\[]'
-    let v = eval(res)
-    if type(v) == type([]) && !empty(v)
-      let g:JavaComplete_Cache[substitute(a:class, '\$', '.', '')] = sort(v)
-    elseif type(v) == type({})
-      if get(v, 'tag', '') =~# '^\(PACKAGE\|CLASSDEF\)$'
-        let g:JavaComplete_Cache[substitute(a:class, '\$', '.', '')] = v
-      else
-        call extend(g:JavaComplete_Cache, v, 'force')
-      endif
-    endif
-    unlet v
-  else
-    let b:errormsg = res
-  endif
-
-  return get(g:JavaComplete_Cache, a:class, {})
-endfunction
-
-" search in members							{{{2
-" TODO: what about default access?
-" public for all              
-" protected for this or super 
-" private for this            
 function! s:CanAccess(mods, kind, outputkind)
   if a:outputkind == 14
-    return s:CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !s:CheckModifier(a:mods, s:MODIFIER_FINAL)
+    return javacomplete#util#CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !javacomplete#util#CheckModifier(a:mods, s:MODIFIER_FINAL)
   endif
   if a:outputkind == 15
-    return s:IsStatic(a:mods)
+    return javacomplete#util#IsStatic(a:mods)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
@@ -1343,7 +863,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
     if has_key(g:JavaComplete_Cache, _c)
       let nestedClass = g:JavaComplete_Cache[_c]
       if a:kind == 12
-        if s:IsStatic(nestedClass.flags)
+        if javacomplete#util#IsStatic(nestedClass.flags)
           call add(result[3], {'n': split(c, '\$')[-1], 'm':c})
         endif
       else
@@ -1374,7 +894,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
       elseif type(i) == type({}) && i.tag == 'ERRONEOUS'
         continue
       endif
-      let ci = s:DoGetClassInfo(java_parser#type2Str(i))
+      let ci = javacomplete#collector#DoGetClassInfo(java_parser#type2Str(i))
       if type(ci) == type([])
         let ci = ci[0]
       endif
@@ -1431,7 +951,7 @@ function! s:DoGetFieldList(fields)
     if !useFQN
       let fieldType = javacomplete#util#CleanFQN(fieldType)
     endif
-    let s .= "{'kind':'" . (s:IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . fieldType . "','dup':1},"
+    let s .= "{'kind':'" . (javacomplete#util#IsStatic(field.m) ? "F" : "f") . "','word':'" . field.n . "','menu':'" . fieldType . "','dup':1},"
   endfor
   return s
 endfunction
@@ -1456,7 +976,7 @@ function! s:DoGetMethodList(methods, kind, ...)
     if !useFQN
       let method.d = javacomplete#util#CleanFQN(method.d)
     endif
-    let s .= "{'kind':'" . (s:IsStatic(method.m) ? "M" : "m") . "','word':'" . s:GenWord(method, a:kind, paren) . "','abbr':'" . method.n . abbrEnd . "','menu':'" . method.d . "','dup':'1'},"
+    let s .= "{'kind':'" . (javacomplete#util#IsStatic(method.m) ? "M" : "m") . "','word':'" . s:GenWord(method, a:kind, paren) . "','abbr':'" . method.n . abbrEnd . "','menu':'" . method.d . "','dup':'1'},"
   endfor
 
   return s
@@ -1532,7 +1052,7 @@ function! s:DoGetMemberList(ci, outputkind)
   endif
 
   if kind == 11
-    let tmp = s:DoGetClassInfo('this')
+    let tmp = javacomplete#collector#DoGetClassInfo('this')
     if tmp.name == a:ci.name
       let outputkind = 15
     endif
@@ -1560,7 +1080,7 @@ function! s:DoGetMemberList(ci, outputkind)
     let sfieldlist = []
     for field in members[2]
       "for field in get(a:ci, 'fields', [])
-      if s:IsStatic(field['m'])
+      if javacomplete#util#IsStatic(field['m'])
         if kind != 1
           call add(sfieldlist, field)
         endif
@@ -1572,7 +1092,7 @@ function! s:DoGetMemberList(ci, outputkind)
     let methodlist = []
     let smethodlist = []
     for method in members[1]
-      if s:IsStatic(method['m'])
+      if javacomplete#util#IsStatic(method['m'])
         if kind != 1
           call add(smethodlist, method)
         endif
@@ -1603,15 +1123,15 @@ endfunction
 " interface							{{{2
 
 function! s:GetMemberList(class)
-  if s:IsBuiltinType(a:class)
+  if javacomplete#util#IsBuiltinType(a:class)
     return []
   endif
 
-  return s:DoGetMemberList(s:DoGetClassInfo(a:class), 0)
+  return s:DoGetMemberList(javacomplete#collector#DoGetClassInfo(a:class), 0)
 endfunction
 
 function! s:GetConstructorList(class)
-  let ci = s:DoGetClassInfo(a:class)
+  let ci = javacomplete#collector#DoGetClassInfo(a:class)
   if empty(ci)
     return []
   endif
@@ -1646,7 +1166,8 @@ function! s:GetMembers(fqn, ...)
     endif
   endif
 
-  let v = s:DoGetInfoByReflection(a:fqn, '-p')
+  call javacomplete#collector#FetchInfoFromServer(a:fqn, '-p')
+  let v = get(g:JavaComplete_Cache, a:fqn, {})
   if type(v) == type([])
     let list = v
   elseif type(v) == type({}) && v != {}
