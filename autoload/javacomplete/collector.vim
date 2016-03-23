@@ -28,8 +28,14 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
 
   let t = get(javacomplete#parseradapter#SearchTypeAt(javacomplete#parseradapter#Parse(), java_parser#MakePos(line('.')-1, col('.')-1)), -1, {})
   if has_key(t, 'extends')
-    let fqn = javacomplete#imports#SearchSingleTypeImport(t.extends[0].clazz.name, javacomplete#imports#GetImports('imports_fqn', filekey))
-    let extends = fqn. '$'. a:class
+    if type(t.extends) == type({})
+      let fqn = javacomplete#imports#SearchSingleTypeImport(t.extends[0].clazz.name, javacomplete#imports#GetImports('imports_fqn', filekey))
+      let extends = fqn. '$'. a:class
+    elseif type(t.extends) == type([])
+      let extends = t.extends[1]. '$'. a:class
+    else
+      let extends = ''
+    endif
   else
     let extends = ''
   endif
