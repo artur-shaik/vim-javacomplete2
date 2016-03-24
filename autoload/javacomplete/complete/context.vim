@@ -127,7 +127,7 @@ function! javacomplete#complete#context#FindContext()
     let str = matchstr(statement, '\<new\s\+' . g:RE_QUALID . '$')
     if str != ''
       let str = substitute(str, '^new\s\+', '', '')
-      if !javacomplete#complete#complete#IsKeyword(str)
+      if !javacomplete#util#IsKeyword(str)
         let b:incomplete = '+'
         let b:dotexpr = str
         return start - len(b:dotexpr)
@@ -145,13 +145,13 @@ function! javacomplete#complete#context#FindContext()
           let b:incomplete = '+'
           return start - len(b:dotexpr)
 
-        elseif !javacomplete#complete#complete#IsKeyword(statement)
+        elseif !javacomplete#util#IsKeyword(statement)
           let b:incomplete = statement
           return start - strlen(b:incomplete)
         endif
 
         " case: "expr.method(|)"
-      elseif statement[pos-1] == '.' && !javacomplete#complete#complete#IsKeyword(strpart(statement, pos))
+      elseif statement[pos-1] == '.' && !javacomplete#util#IsKeyword(strpart(statement, pos))
         let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(strpart(statement, 0, pos))
         let b:incomplete = strpart(statement, pos)
         return start - strlen(b:incomplete)
@@ -206,7 +206,7 @@ function! javacomplete#complete#context#ExecuteContext(base)
   elseif b:incomplete !~ '^\s*$'
     " only need methods
     if b:context_type == g:JC__CONTEXT_METHOD_PARAM
-      let methods = javacomplete#complete#complete#SearchForName(b:incomplete, 0, 1)[1]
+      let methods = javacomplete#collector#SearchForName(b:incomplete, 0, 1)[1]
       call extend(result, eval('[' . javacomplete#complete#complete#DoGetMethodList(methods, 0) . ']'))
     elseif b:context_type == g:JC__CONTEXT_ANNOTATION_FIELDS
       let result = javacomplete#complete#complete#CompleteAnnotationsParameters(b:incomplete)

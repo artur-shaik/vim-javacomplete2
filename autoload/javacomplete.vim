@@ -59,6 +59,11 @@ let g:J_KEYWORDS_MODS	= ['public', 'private', 'protected', 'static', 'final', 's
 let g:J_KEYWORDS_TYPE	= ['class', 'interface', 'enum']
 let g:J_KEYWORDS		= g:J_PRIMITIVE_TYPES + g:J_KEYWORDS_MODS + g:J_KEYWORDS_TYPE + ['super', 'this', 'void'] + ['assert', 'break', 'case', 'catch', 'const', 'continue', 'default', 'do', 'else', 'extends', 'finally', 'for', 'goto', 'if', 'implements', 'import', 'instanceof', 'interface', 'new', 'package', 'return', 'switch', 'throw', 'throws', 'try', 'while', 'true', 'false', 'null']
 
+let g:JC_MODIFIER_PUBLIC               = 1
+let g:JC_MODIFIER_PROTECTED            = 3
+let g:JC_MODIFIER_FINAL                = 5
+let g:JC_MODIFIER_NATIVE               = 9
+let g:JC_MODIFIER_ABSTRACT             = 11
 
 let g:RE_BRACKETS	= '\%(\s*\[\s*\]\)'
 let g:RE_IDENTIFIER	= '[a-zA-Z_$][a-zA-Z0-9_$]*'

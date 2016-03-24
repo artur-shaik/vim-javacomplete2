@@ -3,12 +3,6 @@
 "
 " This file contains everything related to completions
 
-let s:MODIFIER_PUBLIC               = 1
-let s:MODIFIER_PROTECTED            = 3
-let s:MODIFIER_FINAL                = 5
-let s:MODIFIER_NATIVE               = 9
-let s:MODIFIER_ABSTRACT             = 11
-
 let b:dotexpr = ''
 let b:incomplete = ''
 let b:errormsg = ''
@@ -106,7 +100,7 @@ function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
     if has_key(ti, 'methods') 
       let methods = []
       for m in ti.methods
-        if javacomplete#util#CheckModifier(m.m, s:MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
+        if javacomplete#util#CheckModifier(m.m, g:JC_MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
           call add(methods, m)
         endif
       endfor
@@ -215,7 +209,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
       else
         " 3)
-        let typename = s:GetDeclaredClassName(ident)
+        let typename = javacomplete#collector#GetDeclaredClassName(ident)
         call javacomplete#logger#Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
@@ -305,13 +299,13 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     elseif items[0] =~# g:RE_ARRAY_ACCESS
       let subs = split(substitute(items[0], g:RE_ARRAY_ACCESS, '\1;\2', ''), ';')
       if get(subs, 1, '') !~ g:RE_BRACKETS
-        let typename = s:GetDeclaredClassName(subs[0])
+        let typename = javacomplete#collector#GetDeclaredClassName(subs[0])
         if type(typename) == type([])
           let typename = typename[0]
         endif
         call javacomplete#logger#Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
-          let ti = s:ArrayAccess(typename, items[0])
+          let ti = javacomplete#complete#complete#ArrayAccess(typename, items[0])
         endif
       endif
     endif
@@ -326,7 +320,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     if items[ii] =~ '^\s*' . g:RE_IDENTIFIER . '\s*('
       let tmp = ti
       unlet ti
-      let ti = s:MethodInvocation(items[ii], tmp, itemkind)
+      let ti = javacomplete#collector#MethodInvocation(items[ii], tmp, itemkind)
       unlet tmp
       let itemkind = 0
       let ii += 1
@@ -376,7 +370,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           call javacomplete#logger#Log("static fields: ". ident)
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
-            let ti = s:ArrayAccess(members[2][0].t, items[ii])
+            let ti = javacomplete#complete#complete#ArrayAccess(members[2][0].t, items[ii])
             let itemkind = 0
             let ii += 1
             continue
@@ -416,7 +410,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           let itemkind = 0
           if !empty(members[2])
-            let ti = s:ArrayAccess(members[2][0].t, items[ii])
+            let ti = javacomplete#complete#complete#ArrayAccess(members[2][0].t, items[ii])
             let ii += 1
             continue
           endif
@@ -449,338 +443,6 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
   endif
 
   return []
-endfunction
-
-function! s:MethodInvocation(expr, ti, itemkind)
-  let subs = split(substitute(a:expr, '\s*\(' . g:RE_IDENTIFIER . '\)\s*\((.*\)', '\1;\2', ''), ';')
-
-  " all methods matched
-  if empty(a:ti)
-    let methods = s:SearchForName(subs[0], 0, 1)[1]
-  elseif type(a:ti) == type({}) && get(a:ti, 'tag', '') == 'CLASSDEF'
-    let methods = javacomplete#complete#complete#SearchMember(a:ti, subs[0], 1, a:itemkind, 1, 0, a:itemkind == 2)[1]
-  else
-    let methods = []
-  endif
-
-  let method = s:DetermineMethod(methods, subs[1])
-  if !empty(method)
-    return s:ArrayAccess(method.r, subs[0])
-  endif
-  return {}
-endfunction
-
-function! s:ArrayAccess(arraytype, expr)
-  if a:expr =~ g:RE_BRACKETS	| return {} | endif
-  let typename = a:arraytype
-
-  call javacomplete#logger#Log("array access: ". typename)
-
-  let dims = 0
-  if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
-    let dims = javacomplete#util#CountDims(a:expr) - javacomplete#util#CountDims(typename)
-    if dims == 0
-      let typename = typename[0 : stridx(typename, '[') - 1]
-    elseif dims < 0
-      return g:J_ARRAY_TYPE_INFO
-    else
-      "echoerr 'dims exceeds'
-    endif
-  endif
-  if dims == 0
-    if typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
-      return javacomplete#collector#DoGetClassInfo(typename)
-    endif
-  endif
-  return {}
-endfunction
-
-" first		return at once if found one.
-" fullmatch	1 - equal, 0 - match beginning
-" return [types, methods, fields, vars]
-function! javacomplete#complete#complete#SearchForName(name, first, fullmatch)
-  return s:SearchForName(a:name, a:first, a:fullmatch)
-endfunction
-
-function! s:SearchForName(name, first, fullmatch)
-  let result = [[], [], [], []]
-  if javacomplete#util#IsKeyword(a:name)
-    return result
-  endif
-
-  let unit = javacomplete#parseradapter#Parse()
-  let targetPos = java_parser#MakePos(line('.')-1, col('.')-1)
-  let trees = javacomplete#parseradapter#SearchNameInAST(unit, a:name, targetPos, a:fullmatch)
-  for tree in trees
-    if tree.tag == 'VARDEF'
-      call add(result[2], tree)
-    elseif tree.tag == 'METHODDEF'
-      call add(result[1], tree)
-    elseif tree.tag == 'CLASSDEF'
-      call add(result[0], tree.name)
-    elseif tree.tag == 'LAMBDA'
-      let t = s:DetermineLambdaArguments(unit, tree, a:name)
-      if !empty(t)
-        call add(result[2], t)
-      endif
-    endif
-  endfor
-
-  if a:first && result != [[], [], [], []]	| return result | endif
-
-  " Accessible inherited members
-  let type = get(javacomplete#parseradapter#SearchTypeAt(unit, targetPos), -1, {})
-  if !empty(type)
-    let members = javacomplete#complete#complete#SearchMember(type, a:name, a:fullmatch, 2, 1, 0, 1)
-    let result[0] += members[0]
-    let result[1] += members[1]
-    let result[2] += members[2]
-  endif
-
-  " static import
-  let si = javacomplete#imports#SearchStaticImports(a:name, a:fullmatch)
-  let result[0] += si[0]
-  let result[1] += si[1]
-  let result[2] += si[2]
-
-  return result
-endfunction
-
-function! s:DetermineLambdaArguments(unit, ti, name)
-  let nameInLambda = 0
-  let argIdx = 0 " argument index in methods arguments declaration
-  let argPos = 0
-  if type(a:ti.args) == type({})
-    if a:name == a:ti.args.name
-      let nameInLambda = 1
-    endif
-  elseif type(a:ti.args) == type([])
-    for arg in a:ti.args
-      if arg.name == a:name
-        let nameInLambda = 1
-        let argPos = arg.pos
-        break
-      endif
-      let argIdx += 1
-    endfor
-  endif
-
-  if !nameInLambda
-    return {}
-  endif
-
-  let methods = []
-  let t = a:ti
-  let type = ''
-  if has_key(t, 'meth') && !empty(t.meth)
-    let result = []
-    while 1
-      if has_key(t, 'meth')
-        let t = t.meth
-      elseif t.tag == 'SELECT' && has_key(t, 'selected')
-        call add(result, t.name. '()')
-        let t = t.selected
-      elseif t.tag == 'IDENT'
-        call add(result, t.name)
-        break
-      endif
-    endwhile
-
-    let items = reverse(result)
-    let typename = s:GetDeclaredClassName(items[0], 1)
-    let ti = {}
-    if (typename != '')
-      if typename[1] == '[' || typename[-1:] == ']'
-        let ti = g:J_ARRAY_TYPE_INFO
-      elseif typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
-        let ti = javacomplete#collector#DoGetClassInfo(typename)
-      endif
-    else " It can be static request."
-      let ti = javacomplete#collector#DoGetClassInfo(items[0])
-    endif
-
-    let ii = 1
-    while !empty(ti) && ii < len(items) - 1
-      " method invocation:	"PrimaryExpr.method(parameters)[].|"
-      if items[ii] =~ '^\s*' . g:RE_IDENTIFIER . '\s*('
-        let ti = s:MethodInvocation(items[ii], ti, 0)
-      endif
-      let ii += 1
-    endwhile
-
-    if has_key(ti, 'methods')
-      let itemName = split(items[-1], '(')[0]
-      for m in ti.methods
-        if m.n == itemName
-          call add(methods, m)
-        endif
-      endfor
-
-    endif
-  elseif has_key(t, 'stats') && !empty(t.stats)
-    if t.stats.tag == 'VARDEF'
-      let type = t.stats.t
-    elseif t.stats.tag == 'RETURN'
-      for ty in a:unit.types
-        for def in ty.defs
-          if def.tag == 'METHODDEF'
-            if t.stats.pos >= def.body.pos && t.stats.endpos <= def.body.endpos
-              let type = def.r
-            endif
-          endif
-        endfor
-      endfor
-
-    endif
-  endif
-
-  for method in methods
-    if a:ti.idx < len(method.p)
-      let type = method.p[a:ti.idx]
-    endif
-    let res = s:GetLambdaParameterType(type, a:name, argIdx, argPos)
-    if has_key(res, 'tag')
-      return res
-    endif
-  endfor
-
-  return s:GetLambdaParameterType(type, a:name, argIdx, argPos)
-endfunction
-
-" type should be FunctionInterface, and it contains only one abstract method
-function! s:GetLambdaParameterType(type, name, argIdx, argPos)
-  let pType = ''
-  if !empty(a:type)
-    let matches = matchlist(a:type, '^java.util.function.Function<\(.*\)>')
-    if len(matches) > 0
-      let types = split(matches[1], ',')
-      if !empty(types)
-        let type = javacomplete#scanner#ExtractCleanExpr(types[0])
-        return {'tag': 'VARDEF', 'name': type, 'type': {'tag': 'IDENT', 'name': type}, 'vartype': {'tag': 'IDENT', 'name': type, 'pos': a:argPos}, 'pos': a:argPos}
-      endif
-    else
-      let functionalMembers = javacomplete#collector#DoGetClassInfo(a:type)
-      if has_key(functionalMembers, 'methods')
-        for m in functionalMembers.methods
-          if javacomplete#util#CheckModifier(m.m, s:MODIFIER_ABSTRACT)
-            if a:argIdx < len(m.p)
-              let pType = m.p[a:argIdx]
-              break
-            endif
-          endif
-        endfor
-
-        if !empty(pType)
-          return {'tag': 'VARDEF', 'name': a:name, 'type': {'tag': 'IDENT', 'name': pType}, 'vartype': {'tag': 'IDENT', 'name': pType, 'pos': a:argPos}, 'pos': a:argPos}
-        endif
-      endif
-    endif
-  endif
-  return {}
-endfunction
-
-" determine overloaded method by parameters count
-function! s:DetermineMethod(methods, parameters)
-  let parameters = substitute(a:parameters, '(\(.*\))', '\1', '')
-  let paramsCount = len(split(parameters, ','))
-  for m in a:methods
-    if len(get(m, 'p', [])) == paramsCount
-      return m
-    endif
-  endfor
-  return get(a:methods, -1, {})
-endfunction
-
-" Used in jsp files to find last declaration of object 'name'
-function! s:FastBackwardDeclarationSearch(name)
-  let lines = reverse(getline(0, '.'))
-  for line in lines
-    let splittedLine = split(line, ';')
-    for l in splittedLine
-      let l = javacomplete#util#Trim(l)
-      let matches = matchlist(l, '^\('. g:RE_QUALID. '\)\s\+'. a:name)
-      if len(matches) > 0
-        return matches[1]
-      endif
-    endfor
-  endfor
-  return ''
-endfunction
-
-" Parser.GetType() in insenvim
-" a:1 - include related type
-function! s:GetDeclaredClassName(var, ...)
-  let var = javacomplete#util#Trim(a:var)
-  call javacomplete#logger#Log('GetDeclaredClassName for "' . var . '"')
-  if var =~# '^\(this\|super\)$'
-    return var
-  endif
-
-
-  " Special handling for objects in JSP
-  if &ft == 'jsp'
-    if get(g:J_JSP_BUILTIN_OBJECTS, a:var, '') != ''
-      return g:J_JSP_BUILTIN_OBJECTS[a:var]
-    endif
-    return s:FastBackwardDeclarationSearch(a:var)
-  endif
-
-  let result = s:SearchForName(var, 1, 1)
-  let variable = get(result[2], -1, {})
-  if get(variable, 'tag', '') == 'VARDEF'
-    if has_key(variable, 't')
-      let splitted = split(variable.t, '\.')
-
-      if len(splitted) == 1
-        let rootClassName = s:SearchForRootClassName(variable)
-        if len(rootClassName) > 0
-          call insert(splitted, rootClassName)
-        endif
-      endif
-
-      if len(splitted) > 1
-        let directFqn = javacomplete#imports#SearchSingleTypeImport(splitted[0], javacomplete#imports#GetImports('imports_fqn', javacomplete#GetCurrentFileKey()))
-        if empty(directFqn) 
-          return variable.t
-        endif
-      else
-        return variable.t
-      endif
-      return substitute(join(splitted, '.'), '\.', '\$', 'g')
-    endif
-    return java_parser#type2Str(variable.vartype)
-  endif
-
-  if has_key(variable, 't')
-    return variable.t
-  endif
-
-  if a:0 > 0 
-    let class = get(result[0], -1, {})
-    if get(class, 'tag', '') == 'CLASSDEF'
-      if has_key(class, 'name')
-        return class.name
-      endif
-    endif
-  endif
-
-  return ''
-endfunction
-
-function! s:SearchForRootClassName(variable)
-  call javacomplete#logger#Log(a:variable)
-  if has_key(a:variable, 'vartype') && type(a:variable.vartype) == type({})
-    if has_key(a:variable.vartype, 'tag') && a:variable.vartype.tag == 'TYPEAPPLY'
-      if has_key(a:variable.vartype, 'clazz') && a:variable.vartype.clazz.tag == 'SELECT'
-        let clazz = a:variable.vartype.clazz
-        if has_key(clazz, 'selected') && has_key(clazz.selected, 'name')
-          return clazz.selected.name
-        endif
-      endif
-    endif
-  endif
-
-  return ""
 endfunction
 
 function! s:GetSourceDirs(filepath, ...)
@@ -821,10 +483,35 @@ function! javacomplete#complete#complete#GetPackageName()
   return javacomplete#collector#GetPackageName()
 endfunction
 
+function! javacomplete#complete#complete#ArrayAccess(arraytype, expr)
+  if a:expr =~ g:RE_BRACKETS	| return {} | endif
+  let typename = a:arraytype
+
+  call javacomplete#logger#Log("array access: ". typename)
+
+  let dims = 0
+  if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
+    let dims = javacomplete#util#CountDims(a:expr) - javacomplete#util#CountDims(typename)
+    if dims == 0
+      let typename = typename[0 : stridx(typename, '[') - 1]
+    elseif dims < 0
+      return g:J_ARRAY_TYPE_INFO
+    else
+      "echoerr 'dims exceeds'
+    endif
+  endif
+  if dims == 0
+    if typename != 'void' && !javacomplete#util#IsBuiltinType(typename)
+      return javacomplete#collector#DoGetClassInfo(typename)
+    endif
+  endif
+  return {}
+endfunction
+
 
 function! s:CanAccess(mods, kind, outputkind)
   if a:outputkind == 14
-    return javacomplete#util#CheckModifier(a:mods, [s:MODIFIER_PUBLIC, s:MODIFIER_PROTECTED, s:MODIFIER_ABSTRACT]) && !javacomplete#util#CheckModifier(a:mods, s:MODIFIER_FINAL)
+    return javacomplete#util#CheckModifier(a:mods, [g:JC_MODIFIER_PUBLIC, g:JC_MODIFIER_PROTECTED, g:JC_MODIFIER_ABSTRACT]) && !javacomplete#util#CheckModifier(a:mods, g:JC_MODIFIER_FINAL)
   endif
   if a:outputkind == 15
     return javacomplete#util#IsStatic(a:mods)
