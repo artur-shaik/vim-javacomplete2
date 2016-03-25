@@ -8,7 +8,8 @@ let b:incomplete = ''
 let b:errormsg = ''
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[complete] ". string(a:log))
+  let log = type(a:log) == type("") ? a:log : string(a:log)
+  call javacomplete#logger#Log("[complete] ". a:log)
 endfunction
 
 function! s:Init()

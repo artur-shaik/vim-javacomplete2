@@ -6,7 +6,8 @@
 let s:serverStartBlocked = 0
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[server] ". string(a:log))
+  let log = type(a:log) == type("") ? a:log : string(a:log)
+  call javacomplete#logger#Log("[server] ". log)
 endfunction
 
 function! javacomplete#server#BlockStart()

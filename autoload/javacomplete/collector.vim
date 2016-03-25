@@ -4,7 +4,8 @@
 " This file contains everything related to collecting source data
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[collector] ". string(a:log))
+  let log = type(a:log) == type("") ? a:log : string(a:log)
+  call javacomplete#logger#Log("[collector] ". a:log)
 endfunction
 
 " a:1 -	filepath
