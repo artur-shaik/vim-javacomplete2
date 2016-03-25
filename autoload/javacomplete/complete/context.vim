@@ -11,7 +11,7 @@ let g:JC__CONTEXT_COMPLETE_ON_OVERRIDE  = 11
 let g:JC__CONTEXT_OTHER 		        = 0
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[context] ". a:log)
+  call javacomplete#logger#Log("[context] ". string(a:log))
 endfunction
 
 function! s:ContextType2Str(type)

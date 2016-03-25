@@ -6,7 +6,7 @@
 let s:serverStartBlocked = 0
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[server] ". a:log)
+  call javacomplete#logger#Log("[server] ". string(a:log))
 endfunction
 
 function! javacomplete#server#BlockStart()

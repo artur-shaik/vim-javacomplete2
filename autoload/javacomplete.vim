@@ -15,7 +15,7 @@ else
 endif
 
 function! s:Log(log)
-  call javacomplete#logger#Log("[javacomplete] ". a:log)
+  call javacomplete#logger#Log("[javacomplete] ". string(a:log))
 endfunction
 
 let g:J_ARRAY_TYPE_MEMBERS = [

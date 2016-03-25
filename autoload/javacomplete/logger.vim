@@ -27,6 +27,6 @@ endfunction
 
 function! javacomplete#logger#Log(key)
     if 0 >= s:loglevel
-        call add(s:log, reltimestr(reltime(s:startupDate)). " ". copy(a:key))
+        call add(s:log, reltimestr(reltime(s:startupDate)). " ". string(a:key))
     endif
 endfunction
