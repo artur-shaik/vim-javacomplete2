@@ -34,7 +34,6 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
       if type(t.extends[0]) == type("")
         let extends = t.extends[0] . '$'. a:class
       elseif type(t.extends[0]) == type({})
-        call javacomplete#logger#Log(t)
         if has_key(t.extends[0], 'name')
           let className = t.extends[0].name
         elseif has_key(t.extends[0], 'clazz')
