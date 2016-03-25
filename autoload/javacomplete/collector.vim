@@ -30,13 +30,26 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let pos = java_parser#MakePos(line('.') - 1, col('.') - 1)
   let t = get(javacomplete#parseradapter#SearchTypeAt(unit, pos), -1, {})
   if has_key(t, 'extends')
-    if type(t.extends) == type({})
-      let className = t.extends[0].clazz.name
-      let imports = javacomplete#imports#GetImports('imports_fqn', filekey)
-      let fqn = javacomplete#imports#SearchSingleTypeImport(className, imports)
-      let extends = fqn. '$'. a:class
-    elseif type(t.extends) == type([])
-      let extends = t.extends[1]. '$'. a:class
+    if type(t.extends) == type([]) && len(t.extends) > 0
+      if type(t.extends[0]) == type("")
+        let extends = t.extends[0] . '$'. a:class
+      elseif type(t.extends[0]) == type({})
+        call javacomplete#logger#Log(t)
+        if has_key(t.extends[0], 'name')
+          let className = t.extends[0].name
+        elseif has_key(t.extends[0], 'clazz')
+          let className = t.extends[0].clazz.name
+        else
+          let className = ''
+        endif
+        if !empty(className)
+          let imports = javacomplete#imports#GetImports('imports_fqn', filekey)
+          let fqn = javacomplete#imports#SearchSingleTypeImport(className, imports)
+          let extends = fqn. '$'. a:class
+        endif
+      else
+        let extends = ''
+      endif
     else
       let extends = ''
     endif
