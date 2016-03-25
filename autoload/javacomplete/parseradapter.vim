@@ -139,7 +139,6 @@ function! javacomplete#parseradapter#SearchNameInAST(tree, name, targetPos, full
 
   let result = []
   call s:TreeVisitor.visit(a:tree, {'result': result, 'pos': a:targetPos, 'name': a:name}, {})
-  " call javacomplete#logger#Log(a:name . ' ' . string(result) . ' line: ' . line('.') . ' col: ' . col('.'))
   return result
 endfunction
 

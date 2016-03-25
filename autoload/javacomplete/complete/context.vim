@@ -10,6 +10,35 @@ let g:JC__CONTEXT_ANNOTATION_FIELDS     = 10
 let g:JC__CONTEXT_COMPLETE_ON_OVERRIDE  = 11
 let g:JC__CONTEXT_OTHER 		        = 0
 
+function! s:Log(log)
+  call javacomplete#logger#Log("[context] ". a:log)
+endfunction
+
+function! s:ContextType2Str(type)
+  if a:type == g:JC__CONTEXT_COMPLETE_ON_OVERRIDE
+    return "CONTEXT_COMPLETE_ON_OVERRIDE"
+  elseif a:type == g:JC__CONTEXT_IMPORT
+    return "CONTEXT_IMPORT"
+  elseif a:type == g:JC__CONTEXT_AFTER_DOT
+    return "CONTEXT_AFTER_DOT"
+  elseif a:type == g:JC__CONTEXT_NEED_TYPE
+    return "CONTEXT_NEED_TYPE"
+  elseif a:type == g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS
+    return "CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS"
+  elseif a:type == g:JC__CONTEXT_METHOD_PARAM
+    return "CONTEXT_METHOD_PARAM"
+  elseif a:type == g:JC__CONTEXT_PACKAGE_DECL
+    return "CONTEXT_PACKAGE_DECL"
+  elseif a:type == g:JC__CONTEXT_IMPORT_STATIC
+    return "CONTEXT_IMPORT_STATIC"
+  elseif a:type == g:JC__CONTEXT_METHOD_REFERENCE
+    return "CONTEXT_METHOD_REFERENCE"
+  elseif a:type == g:JC__CONTEXT_ANNOTATION_FIELDS
+    return "CONTEXT_ANNOTATION_FIELDS"
+  endif
+  return "CONTEXT_OTHER"
+endfunction
+
 function! javacomplete#complete#context#FindContext()
   let statement = javacomplete#scanner#GetStatement()
 
@@ -170,12 +199,12 @@ endfunction
 function! javacomplete#complete#context#ExecuteContext(base)
   let result = []
 
-  call javacomplete#logger#Log("Context: ". b:context_type)
+  call s:Log("context: ". s:ContextType2Str(b:context_type))
   if len(b:incomplete) > 0
-    call javacomplete#logger#Log("Incomplete: ". b:incomplete)
+    call s:Log("incomplete: ". b:incomplete)
   endif
   if len(b:dotexpr) > 0
-    call javacomplete#logger#Log("DotExpr: ". b:dotexpr)
+    call s:Log("dot expression: ". b:dotexpr)
   endif
   
   " Try to complete incomplete class name

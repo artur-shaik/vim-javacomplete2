@@ -5,6 +5,10 @@
 
 let s:log = []
 let s:loglevel = 1
+if !exists('s:startupDate')
+    let s:startupDate = reltime()
+endif
+
 function! javacomplete#logger#Enable()
     let s:loglevel = 0
 endfunction
@@ -23,6 +27,6 @@ endfunction
 
 function! javacomplete#logger#Log(key)
     if 0 >= s:loglevel
-        call add(s:log, a:key)
+        call add(s:log, reltimestr(reltime(s:startupDate)). " ". copy(a:key))
     endif
 endfunction

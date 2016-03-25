@@ -14,6 +14,10 @@ else
   finish
 endif
 
+function! s:Log(log)
+  call javacomplete#logger#Log("[javacomplete] ". a:log)
+endfunction
+
 let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm',		'word': 'clone(',	'abbr': 'clone()',	'menu': 'Object clone()', },
       \	{'kind': 'm',		'word': 'equals(',	'abbr': 'equals()',	'menu': 'boolean equals(Object)', },
@@ -215,7 +219,7 @@ augroup END
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE_SEP. '?')
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), "p")
 
-call javacomplete#logger#Log("JavaComplete_Home: ". g:JavaComplete_Home)
+call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
 let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', '')
 let s:sources = s:GlobPathList(getcwd(), 'src', 0)
@@ -236,7 +240,7 @@ if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
   endfor
 endif
 
-call javacomplete#logger#Log("Default sources: ". g:JavaComplete_SourcesPath)
+call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
 
 if exists('g:JavaComplete_LibsPath')
   let g:JavaComplete_LibsPath .= g:PATH_SEP

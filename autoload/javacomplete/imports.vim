@@ -129,7 +129,6 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   let result = [[], [], []]
   let candidates = [] " list of the canonical name
   for item in javacomplete#imports#GetImports('imports_static')
-    call javacomplete#logger#Log(item)
     if item[-1:] == '*' " static import on demand
       call add(candidates, item[:-3])
     elseif item[strridx(item, '.')+1:] ==# a:name

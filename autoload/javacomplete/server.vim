@@ -5,6 +5,10 @@
 
 let s:serverStartBlocked = 0
 
+function! s:Log(log)
+  call javacomplete#logger#Log("[server] ". a:log)
+endfunction
+
 function! javacomplete#server#BlockStart()
   let s:serverStartBlocked = 1
 endfunction
@@ -16,7 +20,7 @@ endfunction
 function! s:System(cmd, caller)
   let t = reltime()
   let res = system(a:cmd)
-  call javacomplete#logger#Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
+  call s:Log(reltimestr(reltime(t)) . 's to exec "' . a:cmd . '" by ' . a:caller)
   return res
 endfunction
 
@@ -41,7 +45,7 @@ endfunction
 
 function! javacomplete#server#Start()
   if s:Poll() == 0 && s:serverStartBlocked == 0
-    call javacomplete#logger#Log("Start server")
+    call s:Log("start server")
 
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
     let sources = ''
@@ -61,8 +65,8 @@ function! javacomplete#server#Start()
     if !empty(g:JavaComplete_ProjectKey)
       let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'
     endif
-    call javacomplete#logger#Log("Server classpath: -cp ". classpath)
-    call javacomplete#logger#Log("Server arguments:". args)
+    call s:Log("server classpath: -cp ". classpath)
+    call s:Log("server arguments:". args)
 
     let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"
     execute "JavacompletePyfile ". file
@@ -171,13 +175,13 @@ function! javacomplete#server#Communicate(option, args, log)
       let args = ''
     endif
     let cmd = a:option. args
-    call javacomplete#logger#Log("Communicate: ". cmd. " [". a:log. "]")
+    call s:Log("communicate: ". cmd. " [". a:log. "]")
     let result = ""
 JavacompletePy << EOPC
 vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
 EOPC
 
-    call javacomplete#logger#Log(result)
+    call s:Log(result)
     if result =~ '^message:'
       echom result
       return "[]"
@@ -199,17 +203,17 @@ function! javacomplete#server#GetClassPath()
   endif
 
   if exists('b:classpath') && b:classpath !~ '^\s*$'
-    call javacomplete#logger#Log(b:classpath)
+    call s:Log(b:classpath)
     return path . b:classpath
   endif
 
   if exists('s:classpath')
-    call javacomplete#logger#Log(s:classpath)
+    call s:Log(s:classpath)
     return path . javacomplete#GetClassPath()
   endif
 
   if exists('g:java_classpath') && g:java_classpath !~ '^\s*$'
-    call javacomplete#logger#Log(g:java_classpath)
+    call s:Log(g:java_classpath)
     return path . g:java_classpath
   endif
 

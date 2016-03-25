@@ -7,6 +7,10 @@ let b:dotexpr = ''
 let b:incomplete = ''
 let b:errormsg = ''
 
+function! s:Log(log)
+  call javacomplete#logger#Log("[complete] ". a:log)
+endfunction
+
 function! s:Init()
   let g:JC_ClassnameCompletedFlag = 0
   let b:dotexpr = ''
@@ -41,7 +45,7 @@ function! javacomplete#complete#complete#Complete(findstart, base)
     endif
 
     if type(result) == type([])
-      call javacomplete#logger#Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
+      call s:Log('finish completion' . reltimestr(reltime(s:et_whole)) . 's')
       return result
     endif
   endif
@@ -55,10 +59,13 @@ function! javacomplete#complete#complete#Complete(findstart, base)
 endfunction
 
 function! javacomplete#complete#complete#CompleteAfterOverride()
+  call s:Log("complete after override")
+
   let ti = javacomplete#collector#DoGetClassInfo('this')
   let s = ''
   for i in get(ti, 'extends', [])
-    let members = javacomplete#complete#complete#SearchMember(javacomplete#collector#DoGetClassInfo(i), '', 1, 1, 1, 14, 0)
+    let parentInfo = javacomplete#collector#DoGetClassInfo(i)
+    let members = javacomplete#complete#complete#SearchMember(parentInfo, '', 1, 1, 1, 14, 0)
     let s .= s:DoGetMethodList(members[1], 14, 0)
     unlet i
   endfor
@@ -72,6 +79,8 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
 endfunction
 
 function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(base)
+  call s:Log("complete similar and local fields. base: ". a:base)
+
   let result = []
   if a:base =~ g:RE_ANNOTATION || a:base == '@'
     let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
@@ -91,6 +100,8 @@ function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(b
 endfunction
 
 function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
+  call s:Log("complete annotation parameters. name: ". a:name)
+
   let result = []
   let last = split(a:name, '@')[-1]
   let identList = matchlist(last, '\('. g:RE_IDENTIFIER. '\)\((\|$\)')
@@ -115,6 +126,8 @@ endfunction
 " Precondition:	expr must end with '.'
 " return members of the value of expression
 function! javacomplete#complete#complete#CompleteAfterDot(expr)
+  call s:Log("complete after dot. expr: ". a:expr)
+
   let items = javacomplete#scanner#ParseExpr(a:expr)		" TODO: return a dict containing more than items
   if empty(items)
     return []
@@ -123,7 +136,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
   " 0. String literal
   if items[-1] =~  '\("\|"\.\)$'
-    call javacomplete#logger#Log('P1. "str".|')
+    call s:Log('P1. "str".|')
     return s:GetMemberList("java.lang.String")
   endif
 
@@ -151,7 +164,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
   if i > 1
     " cases: "this.|", "super.|", "ClassName.this.|", "ClassName.super.|", "TypeName.class.|"
     if items[k] ==# 'class' || items[k] ==# 'this' || items[k] ==# 'super'
-      call javacomplete#logger#Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
+      call s:Log('O1. ' . items[k] . ' ' . join(items[:k-1], '.'))
       let ti = javacomplete#collector#DoGetClassInfo(items[k] == 'class' ? 'java.lang.Class' : join(items[:k-1], '.'))
       if !empty(ti)
         let itemkind = items[k] ==# 'this' ? 1 : items[k] ==# 'super' ? 2 : 0
@@ -164,7 +177,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
     else
       let fqn = join(items[:i-1], '.')
       let srcpath = join(s:GetSourceDirs(expand('%:p'), javacomplete#collector#GetPackageName()), ',')
-      call javacomplete#logger#Log('O2. ' . fqn)
+      call s:Log('O2. ' . fqn)
       call javacomplete#collector#FetchClassInfo(fqn)
       if get(get(g:JavaComplete_Cache, fqn, {}), 'tag', '') == 'CLASSDEF'
         let ti = g:JavaComplete_Cache[fqn]
@@ -195,13 +208,13 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
       if javacomplete#util#IsKeyword(ident)
         " 1)
-        call javacomplete#logger#Log('F1. "' . ident . '.|"')
+        call s:Log('F1. "' . ident . '.|"')
         if ident ==# 'void' || javacomplete#util#IsBuiltinType(ident)
           let ti = g:J_PRIMITIVE_TYPE_INFO
           let itemkind = 11
 
           " 2)
-          call javacomplete#logger#Log('F2. "' . ident . '.|"')
+          call s:Log('F2. "' . ident . '.|"')
         elseif ident ==# 'this' || ident ==# 'super'
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ti = javacomplete#collector#DoGetClassInfo(ident)
@@ -210,7 +223,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       else
         " 3)
         let typename = javacomplete#collector#GetDeclaredClassName(ident)
-        call javacomplete#logger#Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
+        call s:Log('F3. "' . ident . '.|"  typename: "' . typename . '"')
         if (typename != '')
           if typename[0] == '[' || typename[-1:] == ']'
             let ti = g:J_ARRAY_TYPE_INFO
@@ -220,7 +233,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
         else
           " 4)
-          call javacomplete#logger#Log('F4. "TypeName.|"')
+          call s:Log('F4. "TypeName.|"')
           let ti = javacomplete#collector#DoGetClassInfo(ident)
           let itemkind = 11
 
@@ -231,7 +244,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
           " 5)
           if empty(ti)
-            call javacomplete#logger#Log('F5. "package.|"')
+            call s:Log('F5. "package.|"')
             unlet ti
             let ti = s:GetMembers(ident)	" s:DoGetPackegInfo(ident)
             if empty(ti)
@@ -246,7 +259,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
       " array type, return `class`: "int[] [].|", "java.lang.String[].|", "NestedClass[].|"
     elseif items[0] =~# g:RE_ARRAY_TYPE
-      call javacomplete#logger#Log('array type. "' . items[0] . '"')
+      call s:Log('array type. "' . items[0] . '"')
       let qid = substitute(items[0], g:RE_ARRAY_TYPE, '\1', '')
       if javacomplete#util#IsBuiltinType(qid) || (!javacomplete#util#HasKeyword(qid) && !empty(javacomplete#collector#DoGetClassInfo(qid)))
         let ti = g:J_PRIMITIVE_TYPE_INFO
@@ -257,7 +270,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       " array creation expr:	"new int[i=1] [val()].|", "new java.lang.String[].|"
     elseif items[0] =~ '^\s*new\s\+'
       let joinedItems = join(items,'.')
-      call javacomplete#logger#Log('creation expr. "' . joinedItems . '"')
+      call s:Log('creation expr. "' . joinedItems . '"')
       let subs = split(substitute(joinedItems, '^\s*new\s\+\(' .g:RE_QUALID. '\)\s*\([<([]\|\)', '\1;\2', ''), ';')
       if len(subs) == 1
         let ti = javacomplete#collector#DoGetClassInfo(subs[0])
@@ -291,7 +304,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
       " casting conversion:	"(Object)o.|"
     elseif items[0] =~ g:RE_CASTING
-      call javacomplete#logger#Log('Casting conversion. "' . items[0] . '"')
+      call s:Log('Casting conversion. "' . items[0] . '"')
       let subs = split(substitute(items[0], g:RE_CASTING, '\1;\2', ''), ';')
       let ti = javacomplete#collector#DoGetClassInfo(subs[0])
 
@@ -303,7 +316,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         if type(typename) == type([])
           let typename = typename[0]
         endif
-        call javacomplete#logger#Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
+        call s:Log('ArrayAccess. "' .items[0]. '.|"  typename: "' . typename . '"')
         if (typename != '')
           let ti = javacomplete#complete#complete#ArrayAccess(typename, items[0])
         endif
@@ -336,7 +349,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
       " package members
       if itemkind/10 == 2 && empty(brackets) && !javacomplete#util#IsKeyword(ident)
         let qn = join(items[:ii], '.')
-        call javacomplete#logger#Log("package members: ". qn)
+        call s:Log("package members: ". qn)
         if type(ti) == type([])
           let idx = javacomplete#util#Index(ti, ident, 'word')
           if idx >= 0
@@ -359,7 +372,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         " type members
       elseif itemkind/10 == 1 && empty(brackets)
         if ident ==# 'class' || ident ==# 'this' || ident ==# 'super'
-          call javacomplete#logger#Log("type members: ". ident)
+          call s:Log("type members: ". ident)
           let ti = javacomplete#collector#DoGetClassInfo(ident == 'class' ? 'java.lang.Class' : join(items[:ii-1], '.'))
           let itemkind = ident ==# 'this' ? 1 : ident ==# 'super' ? 2 : 0
           let ii += 1
@@ -367,7 +380,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
         elseif !javacomplete#util#IsKeyword(ident) && type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
           " accessible static field
-          call javacomplete#logger#Log("static fields: ". ident)
+          call s:Log("static fields: ". ident)
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           if !empty(members[2])
             let ti = javacomplete#complete#complete#ArrayAccess(members[2][0].t, items[ii])
@@ -406,7 +419,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         " instance members
       elseif itemkind/10 == 0 && !javacomplete#util#IsKeyword(ident)
         if type(ti) == type({}) && get(ti, 'tag', '') == 'CLASSDEF'
-          call javacomplete#logger#Log("instance members")
+          call s:Log("instance members")
           let members = javacomplete#complete#complete#SearchMember(ti, ident, 1, itemkind, 1, 0)
           let itemkind = 0
           if !empty(members[2])
@@ -446,6 +459,8 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 endfunction
 
 function! s:GetSourceDirs(filepath, ...)
+  call s:Log("get source dirs. filepath: ". a:filepath)
+
   let dirs = exists('s:sourcepath') ? s:sourcepath : []
 
   if !empty(a:filepath)
@@ -484,10 +499,10 @@ function! javacomplete#complete#complete#GetPackageName()
 endfunction
 
 function! javacomplete#complete#complete#ArrayAccess(arraytype, expr)
+  call s:Log("array access. typename: ". a:arraytype. ", expr: ". a:expr)
+
   if a:expr =~ g:RE_BRACKETS	| return {} | endif
   let typename = a:arraytype
-
-  call javacomplete#logger#Log("array access: ". typename)
 
   let dims = 0
   if typename[0] == '[' || typename[-1:] == ']' || a:expr[-1:] == ']'
@@ -508,7 +523,6 @@ function! javacomplete#complete#complete#ArrayAccess(arraytype, expr)
   return {}
 endfunction
 
-
 function! s:CanAccess(mods, kind, outputkind)
   if a:outputkind == 14
     return javacomplete#util#CheckModifier(a:mods, [g:JC_MODIFIER_PUBLIC, g:JC_MODIFIER_PROTECTED, g:JC_MODIFIER_ABSTRACT]) && !javacomplete#util#CheckModifier(a:mods, g:JC_MODIFIER_FINAL)
@@ -523,6 +537,8 @@ function! s:CanAccess(mods, kind, outputkind)
 endfunction
 
 function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, outputkind, ...)
+  call s:Log("search member. name: ". a:name. ", kind: ". a:kind. ", outputkind: ". a:outputkind)
+
   let result = [[], [], [], []]
 
   if a:kind != 13
@@ -600,7 +616,6 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
   return result
 endfunction
 
-" generate member list							{{{2
 function! s:DoGetNestedList(classes)
   let s = ''
   let useFQN = javacomplete#UseFQN()
@@ -724,6 +739,8 @@ endfunction
 "   14 - for public, protected methods of extends/implements. abstract first.
 "	20 - for package
 function! s:DoGetMemberList(ci, outputkind)
+  call s:Log("get member list. outputkind: ". a:outputkind)
+
   let kind = a:outputkind
   let outputkind = a:outputkind
   if type(a:ci) != type({}) || a:ci == {}
@@ -840,6 +857,8 @@ function! javacomplete#complete#complete#GetMembers(fqn, ...)
 endfunction
 
 function! s:GetMembers(fqn, ...)
+  call s:Log("get members. fqn: ". a:fqn)
+
   let list = []
   let isClass = 0
 
@@ -883,9 +902,11 @@ function! s:GetMembers(fqn, ...)
   return list
 endfunction
 
-" a:1		incomplete mode
+" a:1 - incomplete mode
 " return packages in classes directories or source pathes
 function! s:DoGetPackageInfoInDirs(package, onlyPackages, ...)
+  call s:Log("package info in directories. package: ". a:package)
+
   let list = []
 
   let pathes = s:GetSourceDirs(expand('%:p'))

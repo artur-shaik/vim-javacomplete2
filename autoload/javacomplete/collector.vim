@@ -3,15 +3,20 @@
 "
 " This file contains everything related to collecting source data
 
+function! s:Log(log)
+  call javacomplete#logger#Log("[collector] ". a:log)
+endfunction
+
 " a:1 -	filepath
 " a:2 -	package name
 function! javacomplete#collector#DoGetClassInfo(class, ...)
   let class = type(a:class) == type({}) ? a:class.name : a:class
+  call s:Log("get class info. class: ". class)
+
   if has_key(g:JavaComplete_Cache, class)
+    call s:Log("class info from cache")
     return g:JavaComplete_Cache[class]
   endif
-
-  call javacomplete#logger#Log("DoGetClassInfo: ". class)
 
   " array type:	TypeName[] or '[I' or '[[Ljava.lang.String;'
   if class[-1:] == ']' || class[0] == '['
@@ -44,7 +49,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
       return ci
     endif
 
-    call javacomplete#logger#Log('A0. ' . class)
+    call s:Log('A0. ' . class)
     if !empty(t)
       return javacomplete#util#Sort(s:Tree2ClassInfo(t))
     endif
@@ -69,7 +74,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   
   let hasKeyword = javacomplete#util#HasKeyword(typename)
   if typename !~ '^\s*' . g:RE_QUALID . '\s*$' || hasKeyword
-    call javacomplete#logger#Log("No qualid: ". typename)
+    call s:Log("no qualid: ". typename)
     return {}
   endif
 
@@ -324,11 +329,10 @@ endfunction
 " a:1 - include related type
 function! javacomplete#collector#GetDeclaredClassName(var, ...)
   let var = javacomplete#util#Trim(a:var)
-  call javacomplete#logger#Log('GetDeclaredClassName for "' . var . '"')
+  call s:Log('get declared class name for: "' . var . '"')
   if var =~# '^\(this\|super\)$'
     return var
   endif
-
 
   " Special handling for objects in JSP
   if &ft == 'jsp'

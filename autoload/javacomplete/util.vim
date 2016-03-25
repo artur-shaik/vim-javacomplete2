@@ -147,7 +147,6 @@ function! javacomplete#util#GetClassNameWithScope(...)
 
   let c = curline[word_l : word_r]
 
-  call javacomplete#logger#Log(c)
   return c
 endfunction
 
