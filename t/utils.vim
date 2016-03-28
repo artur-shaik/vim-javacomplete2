@@ -58,4 +58,8 @@ describe 'javacomplete utils test'
         Expect Call('javacomplete#util#Prune', ' 	sb. /* block comment*/ append( "stringliteral" ) // comment ') == 'sb.   append( "" ) '
         Expect Call('javacomplete#util#Prune', ' 	list.stream(\n\t\ts -> {System.out.println(s)}).') == 'list.stream(\n\t\ts -> {System.out.println(s)}). '
     end
+
+    it 'HasKeyword test'
+        Expect Call('javacomplete#util#HasKeyword', 'java.util.function.ToIntFunction') == 0
+    end
 end
