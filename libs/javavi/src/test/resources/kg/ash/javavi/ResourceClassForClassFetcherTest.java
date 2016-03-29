@@ -29,11 +29,18 @@ import org.apache.log4j.Logger;
  */
 
 @WebService(serviceName = "ResourceClassForClassFetcherTest")
+@InterceptorRefs({
+    @InterceptorRef("authStack"),
+    @InterceptorRef("loggingStack")
+})
 public class ResourceClassForClassFetcherTest {
 
     @Resource(attr = Attr.SOME_ATTR)
     private UserTransaction tx;
 
+    @ParentAnnotation({
+        @ChildAnnotation
+    })
 	private static final Logger logger = Logger.getLogger(ResourceClassForClassFetcherTest.class.getName());
     private static final HashMap<String, Long> hashMap1 = new HashMap();
     private static final HashMap<String, Long> hashMap2 = new HashMap();
