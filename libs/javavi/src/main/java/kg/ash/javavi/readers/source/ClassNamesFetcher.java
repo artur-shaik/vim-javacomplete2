@@ -17,6 +17,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,10 @@ public class ClassNamesFetcher {
             if (type.getAnnotations() != null) {
                 for (AnnotationExpr expr : type.getAnnotations()) {
                     resultList.add(expr.getName().getName());
+                    List<Node> children = expr.getChildrenNodes();
+                    for (Node node : children.subList(1, children.size())) {
+                        new DeepVisitor(this, arg).visitDepthFirst(node);
+                    }
                 }
             }
         }
@@ -57,25 +62,29 @@ public class ClassNamesFetcher {
 
     private class AnnotationsVisitor extends VoidVisitorAdapter<Object> {
 
-        private void addAnnotations(List<AnnotationExpr> annotations) {
+        private void addAnnotations(List<AnnotationExpr> annotations, Object arg) {
             if (annotations != null) {
                 for (AnnotationExpr expr : annotations) {
                     resultList.add(expr.getName().getName());
+                    List<Node> children = expr.getChildrenNodes();
+                    for (Node node : children.subList(1, children.size())) {
+                        new DeepVisitor(this, arg).visitDepthFirst(node);
+                    }
                 }
             }
         }
 
         @Override
         public void visit(FieldDeclaration type, Object arg) {
-            addAnnotations(type.getAnnotations());
+            addAnnotations(type.getAnnotations(), arg);
         }
 
         @Override
         public void visit(MethodDeclaration type, Object arg) {
-            addAnnotations(type.getAnnotations());
+            addAnnotations(type.getAnnotations(), arg);
             if (type.getParameters() != null) {
                 for (Parameter param : type.getParameters()) {
-                    addAnnotations(param.getAnnotations());
+                    addAnnotations(param.getAnnotations(), arg);
                 }
             }
 
@@ -92,29 +101,7 @@ public class ClassNamesFetcher {
 
         @Override
         public void visit(BlockStmt type, Object arg) {
-            TypesVisitor t = this;
-            TreeVisitor tv = new TreeVisitor() {
-                public void process(Node node) {
-                    if (node instanceof ClassOrInterfaceType) {
-                        t.visit((ClassOrInterfaceType)node, arg);
-                    } else if (node instanceof NameExpr) {
-
-                        // javaparser has no difference on 'method call' expression,
-                        // so class name with static method call look the same as
-                        // object method call. that's why we check here for usual
-                        // class name type with upper case letter at the beginning.
-                        // it can miss some unusual class names with lower case at
-                        // the beginning.
-                        String name = ((NameExpr) node).getName();
-                        if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
-                            resultList.add(name);
-                        }
-                    } else if (node instanceof MultiTypeParameter) {
-                        ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
-                    }
-                }
-            };
-            tv.visitDepthFirst(type);
+            new DeepVisitor(this, arg).visitDepthFirst(type);
         }
 
         @Override
@@ -162,4 +149,34 @@ public class ClassNamesFetcher {
 
     }
 
+    private class DeepVisitor extends TreeVisitor {
+
+        private VoidVisitorAdapter adapter;
+        private Object arg;
+
+        public DeepVisitor(VoidVisitorAdapter adapter, Object arg) {
+            this.adapter = adapter;
+            this.arg = arg;
+        }
+
+        public void process(Node node) {
+            if (node instanceof ClassOrInterfaceType) {
+                adapter.visit((ClassOrInterfaceType)node, arg);
+            } else if (node instanceof NameExpr) {
+
+                // javaparser has no difference on 'method call' expression,
+                // so class name with static method call look the same as
+                // object method call. that's why we check here for usual
+                // class name type with upper case letter at the beginning.
+                // it can miss some unusual class names with lower case at
+                // the beginning.
+                String name = ((NameExpr) node).getName();
+                if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
+                    resultList.add(name);
+                }
+            } else if (node instanceof MultiTypeParameter) {
+                ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
+            }
+        }
+    }
 }
