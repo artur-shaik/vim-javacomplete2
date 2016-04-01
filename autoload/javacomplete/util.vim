@@ -352,8 +352,7 @@ function! javacomplete#util#GenMethodParamsDeclaration(method)
         call add(paramNames, match[1])
         call add(ds, p. ' '. match[1]. (countVar > 0 ? countVar : ""))
       endfor
-      let d .= join(ds, ', '). ')'. throws. ' {'
-      return d
+      return d. join(ds, ', '). ')'. throws. ' {'
     endif
   endif
   return a:method.d . ' {'
