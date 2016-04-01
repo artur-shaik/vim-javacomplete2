@@ -8,11 +8,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -206,6 +209,12 @@ public class Parser implements ClassReader {
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
                     method.addTypeParameter(new ClassTypeParameter(parameter.getName()));
+                }
+            }
+
+            if (n.getParameters() != null) {
+                for (Parameter parameter : n.getParameters()) {
+                    method.addTypeParameter(new ClassTypeParameter(parameter.getType().toStringWithoutComments()));
                 }
             }
             clazz.addMethod(method);

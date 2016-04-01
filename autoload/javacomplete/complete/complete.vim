@@ -9,7 +9,7 @@ let b:errormsg = ''
 
 function! s:Log(log)
   let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[complete] ". a:log)
+  call javacomplete#logger#Log("[complete] ". log)
 endfunction
 
 function! s:Init()
@@ -687,26 +687,8 @@ endfunction
 
 function! s:GenWord(method, kind, paren)
   if a:kind == 14 
-    if has_key(a:method, 'p')
-      let match = matchlist(a:method.d, '^\(.*(\)')
-      if len(match) > 0
-        let d = match[1]
-        let ds = []
-        for p in a:method.p
-          if index(g:J_PRIMITIVE_TYPES, p) >= 0
-            let var = p[0]
-          else
-            let p = javacomplete#util#CleanFQN(p)
-            let var = tolower(p)
-          endif
-          let match = matchlist(var, '^\([a-z0-9]\+\)\A*')
-          call add(ds, p . ' ' . match[1])
-        endfor
-        let d .= join(ds, ', ') . ') {'
-        return d
-      endif
-    endif
-    return a:method.d . ' {'
+
+    return javacomplete#util#GenMethodParamsDeclaration(a:method)
   else
     if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       if !empty(a:paren)

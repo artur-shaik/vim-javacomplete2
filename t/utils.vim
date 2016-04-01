@@ -62,4 +62,24 @@ describe 'javacomplete utils test'
     it 'HasKeyword test'
         Expect Call('javacomplete#util#HasKeyword', 'java.util.function.ToIntFunction') == 0
     end
+
+    it 'GenMethodParamsDeclaration test'
+        let m = {'p': ['int', 'int'], 'r': 'java.util.List<java.lang.Object>', 'c': 'java.util.List<java.lang.Object>', 'd': 'public abstract java.util.List<java.lang.Object> java.util.List.subList(int,int)', 'm': '10000000001', 'n': 'subList'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract java.util.List<java.lang.Object> java.util.List.subList(int i1, int i2) {'
+
+        let m = {'p': ['java.lang.Object'], 'r': 'int', 'c': 'int', 'd': 'public abstract int java.util.List.indexOf(java.lang.Object)', 'm': '10000000001', 'n': 'indexOf'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract int java.util.List.indexOf(Object object) {'
+
+        let m = {'p': ['java.util.Collection<? extends java.lang.Object>'], 'r': 'boolean', 'c': 'boolean', 'd': 'public abstract boolean java.util.List.addAll(java.util.Collection<? extends java.lang.Object>)', 'm': '10000000001', 'n': 'addAll'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract boolean java.util.List.addAll(Collection<? extends Object> collection) {'
+
+        let m = {'p': ['T[]'], 'r': 'T[]', 'c': 'T[]', 'd': 'public abstract <T> T[] java.util.List.toArray(T[])', 'm': '10000000001', 'n': 'toArray'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract <T> T[] java.util.List.toArray(T[] t) {'
+
+        let m = {'p': ['java.math.BigDecimal', 'java.math.BigDecimal'], 'r': 'int', 'c': 'int', 'd': 'public abstract int indexOf(java.math.BigDecimal,java.math.BigDecimal)', 'm': '10000000001', 'n': 'indexOf'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract int indexOf(BigDecimal bigDecimal1, BigDecimal bigDecimal2) {'
+
+        let m = {'p': ['java.math.BigDecimal', 'java.math.BigDecimal'], 'r': 'int', 'c': 'int', 'd': 'public abstract int indexOf(java.math.BigDecimal,java.math.BigDecimal) throws java.lang.Exception', 'm': '10000000001', 'n': 'indexOf'}
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract int indexOf(BigDecimal bigDecimal1, BigDecimal bigDecimal2) throws java.lang.Exception {'
+    end
 end

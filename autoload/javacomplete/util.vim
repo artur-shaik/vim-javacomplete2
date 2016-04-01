@@ -329,4 +329,34 @@ function! javacomplete#util#CheckModifier(modifier, condition)
   endif
 endfunction
 
+function! javacomplete#util#GenMethodParamsDeclaration(method)
+  if has_key(a:method, 'p')
+    let match = matchlist(a:method.d, '^\(.*(\)')
+    if len(match) > 0
+      let d = match[1]
+      let match = matchlist(a:method.d, '.*)\(.*\)$')
+      let throws = len(match) > 0 ?  substitute(match[1], ',', ', ', 'g') : ''
+
+      let ds = []
+      let paramNames = []
+      for p in a:method.p
+        let repeats = count(a:method.p, p) > 1 ? 1 : 0
+        if index(g:J_PRIMITIVE_TYPES, p) >= 0
+          let var = p[0]
+        else
+          let p = javacomplete#util#CleanFQN(p)
+          let var = tolower(p[0]). p[1:]
+        endif
+        let match = matchlist(var, '^\([a-zA-Z0-9]\+\)\A*')
+        let countVar = count(paramNames, match[1]) + repeats
+        call add(paramNames, match[1])
+        call add(ds, p. ' '. match[1]. (countVar > 0 ? countVar : ""))
+      endfor
+      let d .= join(ds, ', '). ')'. throws. ' {'
+      return d
+    endif
+  endif
+  return a:method.d . ' {'
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:
