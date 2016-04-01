@@ -5,7 +5,7 @@
 
 function! s:Log(log)
   let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[collector] ". a:log)
+  call javacomplete#logger#Log("[collector] ". log)
 endfunction
 
 " a:1 -	filepath
@@ -284,6 +284,7 @@ function! s:Tree2ClassInfo(t)
     endif
     let i += 1
   endwhile
+  let t.extends = uniq(extends)
 
   return t
 endfunction
