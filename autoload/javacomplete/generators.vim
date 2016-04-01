@@ -82,7 +82,6 @@ function! s:CheckImplementationExistense(ti, publicMethods, method)
       endif
       if paramsList == paramsList2
         return 1
-        break
       endif
     endif
   endfor
