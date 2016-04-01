@@ -57,9 +57,11 @@ endfunction
 function! s:CheckImplementationExistense(ti, publicMethods, method) 
   let methodDeclaration = javacomplete#util#CleanFQN(a:method.r . ' '. a:method.n)
   let paramsList = []
-  for p in a:method.p
-    call add(paramsList, javacomplete#util#CleanFQN(p))
-  endfor
+  if has_key(a:method, 'p')
+    for p in a:method.p
+      call add(paramsList, javacomplete#util#CleanFQN(p))
+    endfor
+  endif
   let methods = a:ti.methods
   call extend(methods, a:publicMethods)
   for em in methods
