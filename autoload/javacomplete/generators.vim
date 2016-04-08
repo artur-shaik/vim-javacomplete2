@@ -34,16 +34,40 @@ function! javacomplete#generators#AbstractDeclaration()
     let declaration = javacomplete#util#GenMethodParamsDeclaration(m)
     let declaration = substitute(declaration, '\<\(abstract\|default\|native\)\s\+', '', 'g')
     let declaration = javacomplete#util#CleanFQN(declaration)
+    call add(result, "")
     call add(result, "@Override")
     call add(result, declaration)
     call add(result, "throw new UnsupportedOperationException();")
     call add(result, "}")
-    call add(result, "")
   endfor
 
   if len(result) > 0
+    let t = javacomplete#collector#CurrentFileInfo()
+    let currentLine = line('.')
+    let currentCol = col('.')
+    let posResult = {}
+    for clazz in values(t)
+      if currentLine > clazz.pos[0] && currentLine <= clazz.endpos[0]
+        let posResult[clazz.endpos[0] - clazz.pos[0]] = clazz.endpos
+      endif
+    endfor
+
     let saveCursor = getpos('.')
-    let endline = java_parser#DecodePos(ti.endpos).line
+    if len(posResult) > 0
+      let pos = posResult[min(keys(posResult))]
+      let endline = pos[0]
+      if pos[1] > 1 && !empty(javacomplete#util#Trim(getline(pos[0])[:pos[1] - 2]))
+        let endline += 1
+        call cursor(pos[0], pos[1])
+        execute "normal! i\r"
+      endif
+    else
+      let endline = java_parser#DecodePos(ti.endpos).line
+    endif
+
+    if empty(javacomplete#util#Trim(getline(endline - 1)))
+      let result = result[1:]
+    endif
     call append(endline - 1, result)
     call cursor(endline - 1, 1)
     execute "normal! =G"

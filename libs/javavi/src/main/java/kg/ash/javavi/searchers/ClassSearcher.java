@@ -27,6 +27,7 @@ public class ClassSearcher {
                 if (targetClass.contains("$")) {
                     targetClass = targetClass.split("\\$")[0];
                 }
+                targetClass = targetClass.replaceAll("[\\[\\]]", "");
                 SourceFileVisitor visitor = new SourceFileVisitor(targetClass);
                 try {
                     Files.walkFileTree(Paths.get(sourceDir), visitor);

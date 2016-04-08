@@ -22,6 +22,8 @@ public class SourceClass {
 
     private List<String> nestedClasses = new ArrayList<>();
 
+    private CodeRegion region = new CodeRegion();
+
     public String getName() {
         String args = "";
         for (String type : typeArguments) {
@@ -142,5 +144,17 @@ public class SourceClass {
 
     public List<String> getNestedClasses() {
         return nestedClasses;
+    }
+
+    public void setRegion(int beginLine, int beginColumn, int endLine, int endColumn) {
+        setRegion(new CodeRegion(beginLine, beginColumn, endLine, endColumn));
+    }
+
+    public void setRegion(CodeRegion region) {
+        this.region = region;
+    }
+
+    public CodeRegion getRegion() {
+        return region;
     }
 }
