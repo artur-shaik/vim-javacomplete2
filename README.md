@@ -209,3 +209,7 @@ To remove all missing imports with F7:
 ## FeedBack
 
 Any problems, bugs or suggestions are welcome to send to ashaihullin@gmail.com
+
+## Donation
+
+If you would like to speed up development, you can support me on: [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=y79z9e&url=https://github.com/artur-shaik/vim-javacomplete2/&title=vim-javacomplete2&language=en_GB&tags=github&category=software)
