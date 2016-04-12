@@ -93,8 +93,20 @@ function! s:CheckImplementationExistense(ti, publicMethods, method)
       let paramsList2 = []
       if has_key(em, 'params')
         for param in em.params
-          if type(param) == type({}) && has_key(param, 'type') && has_key(param.type, 'name')
-            call add(paramsList2, javacomplete#util#CleanFQN(param.type.name))
+          if type(param) == type({}) && has_key(param, 'type') 
+            if has_key(param.type, 'name')
+              call add(paramsList2, javacomplete#util#CleanFQN(param.type.name))
+            elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
+              let name = javacomplete#util#CleanFQN(param.type.clazz.name)
+              if has_key(param.type, 'arguments')
+                let args = []
+                for arg in param.type.arguments
+                  call add(args, arg.name)
+                endfor
+                let name .= '<'. join(args, ',\s*'). '>'
+              endif
+              call add(paramsList2, name)
+            endif
           endif
         endfor
       elseif has_key(em, 'p')
@@ -104,9 +116,21 @@ function! s:CheckImplementationExistense(ti, publicMethods, method)
           endif
         endfor
       endif
-      if paramsList == paramsList2
-        return 1
-      endif
+
+      " compare parameters need to be done with regexp because of separator of
+      " arguments if paramater has generic arguments
+      let i = 0
+      for p in paramsList
+        if i < len(paramsList2)
+          if p !~ paramsList2[i]
+            return 0
+          endif
+        else
+          return 0;
+        endif
+        let i += 1
+      endfor
+      return 1
     endif
   endfor
 
