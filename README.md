@@ -160,6 +160,9 @@ To remove all missing imports with F7:
 `JCimportAddSmart` - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing).
 
 
+`JCgenerateAbtractMethods` - generate methods that need to be implemented;
+
+
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
 
 `JCserverShowPID` - show server process identificator;
@@ -176,7 +179,6 @@ To remove all missing imports with F7:
 `JCdebugDisableLogs` - disable logs;
 
 `JCdebugGetLogContent` - get debug logs;
-
 
 `JCcacheClear` - clear cache manually.
 

@@ -284,6 +284,8 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCimportsRemoveUnused - remove all unsused 'imports';
     JCimportAdd - add 'import' for classname that is under cursor, or before it;
     JCimportAddSmart - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing);
+
+    JCfgenerateAbstractMethods - generate methods that need to be implemented;
     
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
