@@ -38,7 +38,8 @@ Features:
 - Adding imports automatically, includes `static` imports and imports of nested classes;
 - Complete methods declaration after '@Override';
 - Jsp support, without taglibs;
-- Cross-session cache.
+- Cross-session cache;
+- Auto insert methods that need to be implemented.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
