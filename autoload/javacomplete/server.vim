@@ -39,9 +39,9 @@ EOPC
 endfunction
 
 function! javacomplete#server#Terminate()
-  if s:Poll() != 0
+  " if s:Poll() != 0
     JavacompletePy bridgeState.terminateServer()
-  endif
+  " endif
 endfunction
 
 function! javacomplete#server#Start()

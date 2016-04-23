@@ -69,8 +69,9 @@ class JavaviBridge():
             return 0
 
     def terminateServer(self):
-        self.popen.terminate()
-        self.popen.wait()
+        if self.popen:
+            self.popen.terminate()
+            self.popen.wait()
 
         if self.logfile:
             self.logfile.close()
