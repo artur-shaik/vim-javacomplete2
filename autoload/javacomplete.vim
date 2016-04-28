@@ -206,6 +206,7 @@ augroup javacomplete
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
   autocmd BufWritePost *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
+	autocmd VimLeavePre * call javacomplete#server#Stop()
 
   if v:version > 704 || v:version == 704 && has('patch143')
     autocmd TextChangedI *.java,*.jsp call s:HandleTextChangedI()
