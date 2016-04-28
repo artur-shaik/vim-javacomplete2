@@ -121,7 +121,7 @@ To remove all missing imports with F7:
 
 `imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
-Default mapping for accsessors generation:
+Default mapping for accessors generation:
 
 ```
 nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
