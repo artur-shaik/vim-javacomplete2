@@ -39,7 +39,8 @@ Features:
 - Complete methods declaration after '@Override';
 - Jsp support, without taglibs;
 - Cross-session cache;
-- Auto insert methods that need to be implemented.
+- Auto insert methods that need to be implemented;
+- Accessors generation.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -120,6 +121,19 @@ To remove all missing imports with F7:
 
 `imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
+Default mapping for accsessors generation:
+
+```
+nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+nmap <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+nmap <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+nmap <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+imap <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+imap <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+```
+
 ### Optional
 
 `g:JavaComplete_LibsPath` - path to additional jar files. This path appends with you libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
@@ -162,6 +176,14 @@ To remove all missing imports with F7:
 
 
 `JCgenerateAbtractMethods` - generate methods that need to be implemented;
+
+`JCgenerateAccessors` - generate getters and setters for all fields;
+
+`JCgenerateAccessorSetter` - generate setter for field under cursor;
+
+`JCgenerateAccessorGetter` - generate getter for field under cursor;
+
+`JCgenerateAccessorSetterGetter` - generate getter and setter for field under cursor;
 
 
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
