@@ -61,6 +61,10 @@ command! JCcacheClear call javacomplete#ClearCache()
 command! JCstart call javacomplete#Start()
 
 command! JCgenerateAbstractMethods call javacomplete#generators#AbstractDeclaration() 
+command! JCgenerateAccessors call javacomplete#generators#Accessors() 
+command! JCgenerateAccessorSetter call javacomplete#generators#Accessor('s')
+command! JCgenerateAccessorGetter call javacomplete#generators#Accessor('g')
+command! JCgenerateAccessorSetterGetter call javacomplete#generators#Accessor('sg')
 
 autocmd Filetype java,jsp JCstart
 
@@ -78,8 +82,23 @@ nnoremap <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)
 inoremap <Plug>(JavaComplete-Imports-AddSmart) <c-r>=<SID>nop(javacomplete#imports#Add(1))<cr>
 nnoremap <Plug>(JavaComplete-Generate-AbstractMethods) :call javacomplete#generators#AbstractDeclaration()<cr>
 inoremap <Plug>(JavaComplete-Generate-AbstractMethods) <c-r>=<SID>nop(javacomplete#generators#AbstractDeclaration())<cr>
+nnoremap <Plug>(JavaComplete-Generate-Accessors) :call javacomplete#generators#Accessors()<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('s'))<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
 
+" default mappings
+nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+nmap <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+nmap <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+nmap <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
 
+imap <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+imap <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
