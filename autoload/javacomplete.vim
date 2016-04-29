@@ -212,9 +212,9 @@ function! s:DefaultMappings()
   imap <silent> <buffer> <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
   imap <silent> <buffer> <C-j>ii <Plug>(JavaComplete-Imports-Add)
 
-  nmap <silent> <buffer> <leader>jM <Plug>(JavaComplete-Generate-Accessors)
+  nmap <silent> <buffer> <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
 
-  imap <silent> <buffer> <C-j>jM <Plug>(JavaComplete-Generate-Accessors)
+  imap <silent> <buffer> <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
 
   nmap <silent> <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
   nmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
