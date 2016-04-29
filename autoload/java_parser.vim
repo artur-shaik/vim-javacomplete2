@@ -1080,7 +1080,10 @@ endfu
 
 " conversion between position and (line, col)				{{{2
 fu! java_parser#MakePos(line, col)
-  return b:idxes[a:line] + a:col
+  if exists('b:idxes') && len(b:idxes) >= a:line
+    return b:idxes[a:line] + a:col
+  endif
+  return 0
 endfu
 
 fu! java_parser#DecodePos(pos)
