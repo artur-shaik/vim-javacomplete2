@@ -89,6 +89,9 @@ nnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#g
 inoremap <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('s'))<cr>
 inoremap <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
 inoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

@@ -206,11 +206,17 @@ function! <SID>generateAccessors(...)
 
     execute "bwipeout!"
   else
-    let currentLine = line('.') - 1
+    let [lnum1, col1] = getpos("'<")[1:2]
+    if lnum1 == 0
+      let currentLines = [line('.') - 1]
+    else
+      let [lnum2, col2] = getpos("'>")[1:2]
+      let currentLines = range(lnum1 - 1, lnum2 - 1)
+    endif
     for d in s:ti.defs
       if d.tag == 'VARDEF'
         let line = java_parser#DecodePos(d.pos).line
-        if line == currentLine
+        if index(currentLines, line) >= 0
           let varNameSubs = toupper(d.name[0]). d.name[1:]
           let getMethodName = d.t . " get". varNameSubs . "()"
           let setMethodName = "set". varNameSubs . "(". d.t . " ". d.name . ")"

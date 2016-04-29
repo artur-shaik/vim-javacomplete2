@@ -224,6 +224,10 @@ function! s:DefaultMappings()
   imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
   imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
   imap <silent> <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
 endfunction 
 
 augroup javacomplete
