@@ -65,6 +65,8 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
     call s:Log('A0. ' . class)
     if !empty(t)
       return javacomplete#util#Sort(s:Tree2ClassInfo(t))
+    else
+      return {}
     endif
   endif
 
