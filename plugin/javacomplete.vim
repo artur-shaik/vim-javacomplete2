@@ -90,16 +90,6 @@ inoremap <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplet
 inoremap <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
 inoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
 
-" default mappings
-nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
-nmap <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
-nmap <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
-nmap <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
-
-imap <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
-imap <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
-imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
-
 let &cpo = s:save_cpo
 unlet s:save_cpo
 " vim:set fdm=marker sw=2 nowrap:
