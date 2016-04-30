@@ -190,6 +190,7 @@ endfunction
 function! <SID>generateAccessors(...)
   let result = ['class tmp {']
   if bufname('%') == "__AccessorsBuffer__"
+    call s:Log("generate accessor for selected fields")
     let currentBuf = getline(1,'$')
     for line in currentBuf
       if line =~ '^\(g\|s\)[0-9]\+.*'
@@ -206,12 +207,15 @@ function! <SID>generateAccessors(...)
 
     execute "bwipeout!"
   else
-    let [lnum1, col1] = getpos("'<")[1:2]
-    if lnum1 == 0
+    call s:Log("generate accessor for fields under cursor")
+    if mode() == 'n'
       let currentLines = [line('.') - 1]
-    else
+    elseif mode() == 'v'
+      let [lnum1, col1] = getpos("'<")[1:2]
       let [lnum2, col2] = getpos("'>")[1:2]
       let currentLines = range(lnum1 - 1, lnum2 - 1)
+    else
+      let currentLines = []
     endif
     for d in s:ti.defs
       if d.tag == 'VARDEF'

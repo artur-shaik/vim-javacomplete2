@@ -14,7 +14,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let class = type(a:class) == type({}) ? a:class.name : a:class
   call s:Log("get class info. class: ". class)
 
-  if has_key(g:JavaComplete_Cache, class)
+  if class != 'this' && class != 'super' && has_key(g:JavaComplete_Cache, class)
     call s:Log("class info from cache")
     return g:JavaComplete_Cache[class]
   endif
