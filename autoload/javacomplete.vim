@@ -202,6 +202,10 @@ function! s:RemoveCurrentFromCache()
 endfunction
 
 function! s:DefaultMappings()
+  if !get(g:, "JavaComplete_EnableDefaultMappings", 1)
+    return
+  endif
+
   nmap <silent> <buffer> <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
   nmap <silent> <buffer> <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
   nmap <silent> <buffer> <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
