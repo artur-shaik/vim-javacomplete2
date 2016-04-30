@@ -45,9 +45,9 @@ function! javacomplete#server#Terminate()
 endfunction
 
 function! javacomplete#server#Stop()
-	if s:Poll()
-		JavacompltePy vim.command('!kill %d'%(bridgeState.pid()+1))
-	endif
+  if s:Poll()
+    JavacompltePy vim.command('!kill %d'%(bridgeState.pid()+1))
+  endif
 endfunction
 
 function! javacomplete#server#Start()
