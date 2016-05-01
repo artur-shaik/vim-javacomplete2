@@ -27,7 +27,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let filekey = a:0 > 0 && len(a:1) > 0 ? a:1 : javacomplete#GetCurrentFileKey()
   let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : javacomplete#collector#GetPackageName()
 
-  let unit = javacomplete#parseradapter#Parse()
+  let unit = javacomplete#parseradapter#Parse(filekey)
   let pos = java_parser#MakePos(line('.') - 1, col('.') - 1)
   let t = get(javacomplete#parseradapter#SearchTypeAt(unit, pos), -1, {})
   if has_key(t, 'extends')
@@ -239,11 +239,12 @@ function! s:Tree2ClassInfo(t)
       let def = tmp
       unlet tmp
     endif
-    if def.tag == 'METHODDEF'
+    let tag = get(def, 'tag', '')
+    if tag == 'METHODDEF'
       call add(def.n == t.name ? t.ctors : t.methods, def)
-    elseif def.tag == 'VARDEF'
+    elseif tag == 'VARDEF'
       call add(t.fields, def)
-    elseif def.tag == 'CLASSDEF'
+    elseif tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
     unlet def

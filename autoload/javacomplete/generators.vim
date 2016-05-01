@@ -146,7 +146,7 @@ function! javacomplete#generators#Accessors()
     let b:currentFileVars = []
     for d in s:ti.defs
       if d.tag == 'VARDEF'
-        let var = {'n': d.name, 't': d.t}
+        let var = s:GetVariable(s:ti.name, d)
         call add(b:currentFileVars, var)
       endif
     endfor
@@ -157,7 +157,9 @@ function! javacomplete#generators#Accessors()
       let var = b:currentFileVars[idx]
       let varNameSubs = toupper(var.n[0]). var.n[1:]
       let lines = lines. "\n". "g". idx. " --> ". var.t . " get". varNameSubs . "()"
-      let lines = lines. "\n". "s". idx. " --> ". "set". varNameSubs . "(". var.t . " ". var.n. ")"
+      if !var.final
+        let lines = lines. "\n". "s". idx. " --> ". "set". varNameSubs . "(". var.t . " ". var.n. ")"
+      endif
       let lines = lines. "\n"
 
       let idx += 1
@@ -174,17 +176,34 @@ function! javacomplete#generators#Accessor(...)
 endfunction
 
 function! s:AddSetter(result, var, declaration)
+  let static = a:var.static ? "static " : ""
+  let body = a:var.static
+        \ ? (a:var.className . '.'. a:var.n . ' = '. a:var.n . ';')
+        \ : ('this.'. a:var.n . ' = '. a:var.n . ';')
   call add(a:result, '')
-  call add(a:result, a:declaration. ' {')
-  call add(a:result, 'this.'. a:var.n . ' = '. a:var.n . ';')
+  call add(a:result, 'public '. static. 'void '. a:declaration. ' {')
+  call add(a:result, body)
   call add(a:result, '}')
 endfunction
 
 function! s:AddGetter(result, var, declaration)
+  let static = a:var.static ? "static " : ""
+  let body = 'return '. (a:var.static ? a:var.n : 'this.'. a:var.n). ';'
   call add(a:result, '')
-  call add(a:result, a:declaration. ' {')
-  call add(a:result, 'return this.'. a:var.n . ';')
+  call add(a:result, 'public '. static. a:declaration. ' {')
+  call add(a:result, body)
   call add(a:result, '}')
+endfunction
+
+function! s:GetVariable(className, def)
+  let var = {
+    \ 'n': a:def.name, 
+    \ 't': a:def.t, 
+    \ 'className': a:className, 
+    \ 'static': javacomplete#util#IsStatic(a:def.m),
+    \ 'final': javacomplete#util#CheckModifier(a:def.m, g:JC_MODIFIER_FINAL)}
+
+  return var
 endfunction
 
 function! <SID>generateAccessors(...)
@@ -198,9 +217,9 @@ function! <SID>generateAccessors(...)
         let idx = line[1:stridx(line, ' ')-1]
         let var = b:currentFileVars[idx]
         if cmd == 's'
-          call s:AddSetter(result, var, 'public void '. line[stridx(line, ' ') + 5:])
+          call s:AddSetter(result, var, line[stridx(line, ' ') + 5:])
         elseif cmd == 'g'
-          call s:AddGetter(result, var, 'public '. line[stridx(line, ' ') + 5:])
+          call s:AddGetter(result, var, line[stridx(line, ' ') + 5:])
         endif
       endif
     endfor
@@ -218,25 +237,25 @@ function! <SID>generateAccessors(...)
       let currentLines = []
     endif
     for d in s:ti.defs
-      if d.tag == 'VARDEF'
+      if get(d, 'tag', '') == 'VARDEF'
         let line = java_parser#DecodePos(d.pos).line
         if index(currentLines, line) >= 0
           let varNameSubs = toupper(d.name[0]). d.name[1:]
           let getMethodName = d.t . " get". varNameSubs . "()"
           let setMethodName = "set". varNameSubs . "(". d.t . " ". d.name . ")"
-          let var = {'n': d.name, 't': d.t}
+          let var = s:GetVariable(s:ti.name, d)
 
           let cmd = 'sg'
           if len(a:1) > 0
             let cmd = a:1[0]
           endif
 
-          if stridx(cmd, 's') > -1
-            call s:AddSetter(result, var, 'public void '. setMethodName)
+          if !var.final && stridx(cmd, 's') > -1
+            call s:AddSetter(result, var, setMethodName)
           endif
 
           if stridx(cmd, 'g') > -1
-            call s:AddGetter(result, var, 'public '. getMethodName)
+            call s:AddGetter(result, var, getMethodName)
           endif
         endif
       endif
@@ -251,12 +270,12 @@ function! <SID>generateAccessors(...)
   endif
   silent! split __tmp_buffer__
   call append(0, result)
-  let tmpClassInfo = javacomplete#collector#DoGetClassInfo('this')
+  let tmpClassInfo = javacomplete#collector#DoGetClassInfo('this', '__tmp_buffer__')
 
   let resultMethods = []
   if has_key(tmpClassInfo, 'defs')
     for def in tmpClassInfo.defs
-      if def.tag == 'METHODDEF'
+      if get(def, 'tag', '') == 'METHODDEF'
         if s:CheckImplementationExistense(s:ti, [], def)
           continue
         endif
