@@ -44,6 +44,12 @@ function! javacomplete#server#Terminate()
   endif
 endfunction
 
+function! javacomplete#server#Stop()
+  if s:Poll()
+    JavacompltePy vim.command('!kill %d'%(bridgeState.pid()+1))
+  endif
+endfunction
+
 function! javacomplete#server#Start()
   if s:Poll() == 0 && s:serverStartBlocked == 0
     call s:Log("start server")
