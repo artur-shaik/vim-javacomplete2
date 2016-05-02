@@ -322,7 +322,7 @@ function! s:InsertResults(result)
     endif
     call append(endline - 1, result)
     call cursor(endline - 1, 1)
-    execute "normal! =G"
+    silent execute "normal! =G"
     call setpos('.', saveCursor)
   endif
 endfunction
