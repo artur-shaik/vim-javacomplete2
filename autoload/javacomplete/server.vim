@@ -41,9 +41,7 @@ endfunction
 function! javacomplete#server#Terminate()
   if s:Poll()
     JavacompletePy bridgeState.terminateServer()
-  endif
 
-  if s:Poll()
     let pid = 0
     JavacompletePy vim.command('let pid = %d' % bridgeState.pid())
     if pid > 1
