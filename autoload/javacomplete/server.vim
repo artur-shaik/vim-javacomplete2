@@ -39,8 +39,18 @@ EOPC
 endfunction
 
 function! javacomplete#server#Terminate()
-  if s:Poll() != 0
+  if s:Poll()
     JavacompletePy bridgeState.terminateServer()
+
+    let pid = 0
+    JavacompletePy vim.command('let pid = %d' % bridgeState.pid())
+    if pid > 1
+      if g:JavaComplete_IsWindows
+        call system('taskkill /t /pid '. pid)
+      else
+        call system('kill '. (pid + 1))
+      endif
+    endif
   endif
 endfunction
 
