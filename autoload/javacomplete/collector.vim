@@ -14,7 +14,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let class = type(a:class) == type({}) ? a:class.name : a:class
   call s:Log("get class info. class: ". class)
 
-  if has_key(g:JavaComplete_Cache, class)
+  if class != 'this' && class != 'super' && has_key(g:JavaComplete_Cache, class)
     call s:Log("class info from cache")
     return g:JavaComplete_Cache[class]
   endif
@@ -27,7 +27,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let filekey = a:0 > 0 && len(a:1) > 0 ? a:1 : javacomplete#GetCurrentFileKey()
   let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : javacomplete#collector#GetPackageName()
 
-  let unit = javacomplete#parseradapter#Parse()
+  let unit = javacomplete#parseradapter#Parse(filekey)
   let pos = java_parser#MakePos(line('.') - 1, col('.') - 1)
   let t = get(javacomplete#parseradapter#SearchTypeAt(unit, pos), -1, {})
   if has_key(t, 'extends')
@@ -65,6 +65,8 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
     call s:Log('A0. ' . class)
     if !empty(t)
       return javacomplete#util#Sort(s:Tree2ClassInfo(t))
+    else
+      return {}
     endif
   endif
 
@@ -237,11 +239,12 @@ function! s:Tree2ClassInfo(t)
       let def = tmp
       unlet tmp
     endif
-    if def.tag == 'METHODDEF'
+    let tag = get(def, 'tag', '')
+    if tag == 'METHODDEF'
       call add(def.n == t.name ? t.ctors : t.methods, def)
-    elseif def.tag == 'VARDEF'
+    elseif tag == 'VARDEF'
       call add(t.fields, def)
-    elseif def.tag == 'CLASSDEF'
+    elseif tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
     unlet def

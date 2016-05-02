@@ -47,7 +47,9 @@ javaparser library and javacomplete.txt.
 - Add import statement for a given class name;
 - Complete methods declaration after '@Override';
 - Support for maven, gradle and Eclipse's '.classpath';
-- Cross-session cache.
+- Cross-session cache;
+- Auto insert methods that need to be implemented;
+- Accessors generation.
 
 1.2 Requirements				*javacomplete-requirements*
 
@@ -90,6 +92,19 @@ For remove all missing imports with <F7>:
 
     nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
     imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
+
+
+Default mapping for accessors generation:
+
+    nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+    nmap <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+    nmap <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+    nmap <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+    imap <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+    imap <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+    imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
@@ -286,7 +301,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCimportAddSmart - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing);
 
     JCfgenerateAbstractMethods - generate methods that need to be implemented;
-    
+    JCgenerateAccessors - generate getters and setters for all fields;
+    JCgenerateAccessorSetter - generate setter for field under cursor;
+    JCgenerateAccessorGetter - generate getter for field under cursor;
+    JCgenerateAccessorSetterGetter - generate getter and setter for field under cursor;
+
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
     JCserverStart - start server manually;
