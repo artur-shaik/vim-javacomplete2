@@ -71,7 +71,7 @@ describe 'javacomplete utils test'
         Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract int java.util.List.indexOf(Object object)'
 
         let m = {'p': ['java.util.Collection<? extends java.lang.Object>'], 'r': 'boolean', 'c': 'boolean', 'd': 'public abstract boolean java.util.List.addAll(java.util.Collection<? extends java.lang.Object>)', 'm': '10000000001', 'n': 'addAll'}
-        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract boolean java.util.List.addAll(Collection<? extends Object> collection) {'
+        Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract boolean java.util.List.addAll(Collection<? extends Object> collection)'
 
         let m = {'p': ['T[]'], 'r': 'T[]', 'c': 'T[]', 'd': 'public abstract <T> T[] java.util.List.toArray(T[])', 'm': '10000000001', 'n': 'toArray'}
         Expect Call('javacomplete#util#GenMethodParamsDeclaration', m) == 'public abstract <T> T[] java.util.List.toArray(T[] t)'
