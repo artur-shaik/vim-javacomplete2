@@ -688,7 +688,7 @@ endfunction
 function! s:GenWord(method, kind, paren)
   if a:kind == 14 
 
-    return javacomplete#util#GenMethodParamsDeclaration(a:method)
+    return javacomplete#util#GenMethodParamsDeclaration(a:method). ' {'
   else
     if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       if !empty(a:paren)

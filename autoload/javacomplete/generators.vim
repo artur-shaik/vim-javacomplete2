@@ -20,6 +20,12 @@ let g:JavaComplete_Templates['getter'] =
   \ "    return %varname%;\n" .
   \ "}"
 
+let g:JavaComplete_Templates['abstractDeclaration'] =
+  \ "@Override\n" .
+  \ "%declaration% {\n" .
+  \ "   throw new UnsupportedOperationException();\n" .
+  \ "}"
+
 function! javacomplete#generators#AbstractDeclaration()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
   let s = ''
@@ -39,6 +45,7 @@ function! javacomplete#generators#AbstractDeclaration()
   endfor
 
   let result = []
+  let method = g:JavaComplete_Templates['abstractDeclaration']
   for m in abstractMethods
     if s:CheckImplementationExistense(s:ti, publicMethods, m)
       continue
@@ -46,11 +53,11 @@ function! javacomplete#generators#AbstractDeclaration()
     let declaration = javacomplete#util#GenMethodParamsDeclaration(m)
     let declaration = substitute(declaration, '\<\(abstract\|default\|native\)\s\+', '', 'g')
     let declaration = javacomplete#util#CleanFQN(declaration)
-    call add(result, "")
-    call add(result, "@Override")
-    call add(result, declaration)
-    call add(result, "throw new UnsupportedOperationException();")
-    call add(result, "}")
+
+    call add(result, '')
+    for line in split(substitute(method, '%declaration%', declaration, 'g'), '\n')
+      call add(result, line)
+    endfor
   endfor
 
   call s:InsertResults(result)

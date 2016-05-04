@@ -352,10 +352,10 @@ function! javacomplete#util#GenMethodParamsDeclaration(method)
         call add(paramNames, match[1])
         call add(ds, p. ' '. match[1]. (countVar > 0 ? countVar : ""))
       endfor
-      return d. join(ds, ', '). ')'. throws. ' {'
+      return d. join(ds, ', '). ')'. throws
     endif
   endif
-  return a:method.d . ' {'
+  return a:method.d
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:
