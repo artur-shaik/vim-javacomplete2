@@ -8,6 +8,18 @@ function! s:Log(log)
   call javacomplete#logger#Log("[generators] ". log)
 endfunction
 
+let g:JavaComplete_Templates = {}
+
+let g:JavaComplete_Templates['setter'] = 
+  \ "%modifiers% void %funcname%(%type% %varname%) {\n" .
+  \ "    %accessor%.%varname% = %varname%;\n" .
+  \ "}"
+
+let g:JavaComplete_Templates['getter'] = 
+  \ "%modifiers% %type% %funcname%() {\n" .
+  \ "    return %varname%;\n" .
+  \ "}"
+
 function! javacomplete#generators#AbstractDeclaration()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
   let s = ''
@@ -175,24 +187,30 @@ function! javacomplete#generators#Accessor(...)
   call <SID>generateAccessors(a:000)
 endfunction
 
-function! s:AddSetter(result, var, declaration)
-  let static = a:var.static ? "static " : ""
-  let body = a:var.static
-        \ ? (a:var.className . '.'. a:var.n . ' = '. a:var.n . ';')
-        \ : ('this.'. a:var.n . ' = '. a:var.n . ';')
-  call add(a:result, '')
-  call add(a:result, 'public '. static. 'void '. a:declaration. ' {')
-  call add(a:result, body)
-  call add(a:result, '}')
-endfunction
+function! s:AddAccessor(map, result, var, declaration, type)
+  let method = g:JavaComplete_Templates[a:type]
 
-function! s:AddGetter(result, var, declaration)
-  let static = a:var.static ? "static " : ""
-  let body = 'return '. (a:var.static ? a:var.n : 'this.'. a:var.n). ';'
+  let mods = "public"
+  if a:var.static
+    let mods = mods . " static"
+    let accessor = a:var.className
+  else
+    let accessor = 'this'
+  endif
+
+  let method = substitute(method, '%type%', a:var.t, 'g')
+  let method = substitute(method, '%varname%', a:var.n, 'g')
+  let method = substitute(method, '%funcname%', a:declaration, 'g')
+  let method = substitute(method, '%modifiers%', mods, 'g')
+  let method = substitute(method, '%accessor%', accessor, 'g')
+
+  let begin = len(a:result)
   call add(a:result, '')
-  call add(a:result, 'public '. static. a:declaration. ' {')
-  call add(a:result, body)
-  call add(a:result, '}')
+  for line in split(method, '\n')
+    call add(a:result, line)
+  endfor
+  let end = len(a:result)
+  call add(a:map, [begin, end])
 endfunction
 
 function! s:GetVariable(className, def)
@@ -206,8 +224,19 @@ function! s:GetVariable(className, def)
   return var
 endfunction
 
+function! s:CreateAccessors(map, result, var, cmd)
+  let varNameSubs = toupper(a:var.n[0]). a:var.n[1:]
+  if !a:var.final && stridx(a:cmd, 's') > -1
+    call s:AddAccessor(a:map, a:result, a:var, "set". varNameSubs, 'setter')
+  endif
+  if stridx(a:cmd, 'g') > -1
+    call s:AddAccessor(a:map, a:result, a:var, "get". varNameSubs, 'getter')
+  endif
+endfunction
+
 function! <SID>generateAccessors(...)
   let result = ['class tmp {']
+  let locationMap = []
   if bufname('%') == "__AccessorsBuffer__"
     call s:Log("generate accessor for selected fields")
     let currentBuf = getline(1,'$')
@@ -216,11 +245,7 @@ function! <SID>generateAccessors(...)
         let cmd = line[0]
         let idx = line[1:stridx(line, ' ')-1]
         let var = b:currentFileVars[idx]
-        if cmd == 's'
-          call s:AddSetter(result, var, line[stridx(line, ' ') + 5:])
-        elseif cmd == 'g'
-          call s:AddGetter(result, var, line[stridx(line, ' ') + 5:])
-        endif
+        call s:CreateAccessors(locationMap, result, var, cmd)
       endif
     endfor
 
@@ -240,23 +265,9 @@ function! <SID>generateAccessors(...)
       if get(d, 'tag', '') == 'VARDEF'
         let line = java_parser#DecodePos(d.pos).line
         if index(currentLines, line) >= 0
-          let varNameSubs = toupper(d.name[0]). d.name[1:]
-          let getMethodName = d.t . " get". varNameSubs . "()"
-          let setMethodName = "set". varNameSubs . "(". d.t . " ". d.name . ")"
+          let cmd = len(a:1) > 0 ? a:1[0] : 'sg'
           let var = s:GetVariable(s:ti.name, d)
-
-          let cmd = 'sg'
-          if len(a:1) > 0
-            let cmd = a:1[0]
-          endif
-
-          if !var.final && stridx(cmd, 's') > -1
-            call s:AddSetter(result, var, setMethodName)
-          endif
-
-          if stridx(cmd, 'g') > -1
-            call s:AddGetter(result, var, getMethodName)
-          endif
+          call s:CreateAccessors(locationMap, result, var, cmd)
         endif
       endif
     endfor
@@ -264,31 +275,42 @@ function! <SID>generateAccessors(...)
   endif
   call add(result, '}')
 
+  call s:InsertResults(s:FilterExistedMethods(locationMap, result))
+endfunction
+
+" create temporary buffer with class declaration, then parse it to get new 
+" methods definitions.
+function! s:FilterExistedMethods(locationMap, result)
   let n = bufwinnr("__tmp_buffer__")
   if n != -1
       execute "bwipeout!"
   endif
   silent! split __tmp_buffer__
-  call append(0, result)
+  call append(0, a:result)
   let tmpClassInfo = javacomplete#collector#DoGetClassInfo('this', '__tmp_buffer__')
 
   let resultMethods = []
-  if has_key(tmpClassInfo, 'defs')
-    for def in tmpClassInfo.defs
-      if get(def, 'tag', '') == 'METHODDEF'
-        if s:CheckImplementationExistense(s:ti, [], def)
-          continue
-        endif
-        let line = java_parser#DecodePos(def.pos).line
-        call add(resultMethods, "")
-        call extend(resultMethods, result[line : line + 2])
+  for def in get(tmpClassInfo, 'defs', [])
+    if get(def, 'tag', '') == 'METHODDEF'
+      if s:CheckImplementationExistense(s:ti, [], def)
+        continue
       endif
-    endfor
-  endif
+      let begin = java_parser#DecodePos(def.pos).line
+      let end = java_parser#DecodePos(def.body.endpos).line
+      for m in a:locationMap 
+        if m[0] <= begin && m[1] >= end
+          let begin = m[0]
+          let end = m[1] - 1
+          break
+        endif
+      endfor
+      call extend(resultMethods, a:result[begin : end])
+    endif
+  endfor
 
   execute "bwipeout!"
 
-  call s:InsertResults(resultMethods)
+  return resultMethods
 endfunction
 
 function! s:InsertResults(result)
