@@ -201,6 +201,24 @@ function! javacomplete#util#FindFile(what) abort
   endtry
 endfunction
 
+function! javacomplete#util#GlobPathList(path, pattern, suf, depth)
+  if v:version > 704 || v:version == 704 && has('patch279')
+    let pathList = globpath(a:path, a:pattern, a:suf, 1)
+  else
+    let pathList = split(globpath(a:path, a:pattern, a:suf), "\n")
+  endif
+  if a:depth > 0
+    let depths = []
+    for i in range(1, a:depth)
+      call add(depths, repeat("*".g:FILE_SEP, i))
+    endfor
+    for i in depths
+      call extend(pathList, javacomplete#util#GlobPathList(a:path, i. a:pattern, 0, 0))
+    endfor
+  endif
+  return pathList
+endfunction
+
 function! javacomplete#util#IsWindows() abort
   return has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
 endfunction

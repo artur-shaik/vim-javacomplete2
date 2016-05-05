@@ -60,8 +60,8 @@ command! JCcacheClear call javacomplete#ClearCache()
 
 command! JCstart call javacomplete#Start()
 
-command! JCgenerateAbstractMethods call javacomplete#generators#AbstractDeclaration() 
-command! JCgenerateAccessors call javacomplete#generators#Accessors() 
+command! JCgenerateAbstractMethods call javacomplete#generators#AbstractDeclaration()
+command! JCgenerateAccessors call javacomplete#generators#Accessors()
 command! JCgenerateAccessorSetter call javacomplete#generators#Accessor('s')
 command! JCgenerateAccessorGetter call javacomplete#generators#Accessor('g')
 command! JCgenerateAccessorSetterGetter call javacomplete#generators#Accessor('sg')
