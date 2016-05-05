@@ -69,6 +69,11 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
       return {}
     endif
   endif
+  for def in get(t, 'defs', [])
+    if def.tag == 'CLASSDEF' && def.name == class
+      return javacomplete#util#Sort(s:Tree2ClassInfo(def))
+    endif
+  endfor
 
   let typename = class
 
