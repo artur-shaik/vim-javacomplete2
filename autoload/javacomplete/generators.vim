@@ -174,10 +174,10 @@ function! javacomplete#generators#Accessors()
     let idx = 0
     while idx < len(b:currentFileVars)
       let var = b:currentFileVars[idx]
-      let varNameSubs = toupper(var.n[0]). var.n[1:]
-      let lines = lines. "\n". "g". idx. " --> ". var.t . " get". varNameSubs . "()"
+      let varName = toupper(var.name[0]). var.name[1:]
+      let lines = lines. "\n". "g". idx. " --> ". var.type . " get". varName . "()"
       if !var.final
-        let lines = lines. "\n". "s". idx. " --> ". "set". varNameSubs . "(". var.t . " ". var.n. ")"
+        let lines = lines. "\n". "s". idx. " --> ". "set". varName . "(". var.type . " ". var.name. ")"
       endif
       let lines = lines. "\n"
 
@@ -205,8 +205,8 @@ function! s:AddAccessor(map, result, var, declaration, type)
     let accessor = 'this'
   endif
 
-  let method = substitute(method, '%type%', a:var.t, 'g')
-  let method = substitute(method, '%varname%', a:var.n, 'g')
+  let method = substitute(method, '%type%', a:var.type, 'g')
+  let method = substitute(method, '%varname%', a:var.name, 'g')
   let method = substitute(method, '%funcname%', a:declaration, 'g')
   let method = substitute(method, '%modifiers%', mods, 'g')
   let method = substitute(method, '%accessor%', accessor, 'g')
@@ -222,8 +222,8 @@ endfunction
 
 function! s:GetVariable(className, def)
   let var = {
-    \ 'n': a:def.name, 
-    \ 't': a:def.t, 
+    \ 'name': a:def.name, 
+    \ 'type': a:def.t, 
     \ 'className': a:className, 
     \ 'static': javacomplete#util#IsStatic(a:def.m),
     \ 'final': javacomplete#util#CheckModifier(a:def.m, g:JC_MODIFIER_FINAL)}
@@ -232,12 +232,12 @@ function! s:GetVariable(className, def)
 endfunction
 
 function! s:CreateAccessors(map, result, var, cmd)
-  let varNameSubs = toupper(a:var.n[0]). a:var.n[1:]
+  let varName = toupper(a:var.name[0]). a:var.name[1:]
   if !a:var.final && stridx(a:cmd, 's') > -1
-    call s:AddAccessor(a:map, a:result, a:var, "set". varNameSubs, 'setter')
+    call s:AddAccessor(a:map, a:result, a:var, "set". varName, 'setter')
   endif
   if stridx(a:cmd, 'g') > -1
-    call s:AddAccessor(a:map, a:result, a:var, "get". varNameSubs, 'getter')
+    call s:AddAccessor(a:map, a:result, a:var, "get". varName, 'getter')
   endif
 endfunction
 
