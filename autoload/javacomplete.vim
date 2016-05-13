@@ -118,20 +118,6 @@ function! javacomplete#Complete(findstart, base)
   return javacomplete#complete#complete#Complete(a:findstart, a:base)
 endfunction
 
-" workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
-" should be removed in future versions
-function! javacomplete#GlobPathList(path, pattern, suf)
-  return s:GlobPathList(a:path, a:pattern, a:suf)
-endfunction
-
-function! s:GlobPathList(path, pattern, suf)
-  if v:version > 704 || v:version == 704 && has('patch279')
-    return globpath(a:path, a:pattern, a:suf, 1)
-  else
-    return split(globpath(a:path, a:pattern, a:suf), "\n")
-  endif
-endfunction
-
 " key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
 function! javacomplete#GetCurrentFileKey()
   return s:GetCurrentFileKey()
