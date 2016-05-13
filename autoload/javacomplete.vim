@@ -32,7 +32,7 @@ let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout) throws InterruptedException', },
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout, int nanos) throws InterruptedException', }]
 
-let g:J_ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [], 
+let g:J_ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [],
       \     'fields': [{'n': 'length', 'm': '1', 't': 'int'}],
       \     'methods':[
       \	{'n': 'clone',	  'm': '1',		'r': 'Object',	'p': [],		'd': 'Object clone()'},
@@ -52,7 +52,7 @@ let g:J_PRIMITIVE_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '!', 'fields': [{'n': 
 let g:J_JSP_BUILTIN_OBJECTS = {'session':	'javax.servlet.http.HttpSession',
       \	'request':	'javax.servlet.http.HttpServletRequest',
       \	'response':	'javax.servlet.http.HttpServletResponse',
-      \	'pageContext':	'javax.servlet.jsp.PageContext', 
+      \	'pageContext':	'javax.servlet.jsp.PageContext',
       \	'application':	'javax.servlet.ServletContext',
       \	'config':	'javax.servlet.ServletConfig',
       \	'out':		'javax.servlet.jsp.JspWriter',
@@ -125,7 +125,7 @@ function! javacomplete#GlobPathList(path, pattern, suf)
 endfunction
 
 function! s:GlobPathList(path, pattern, suf)
-  if has("patch-7.4.279")
+  if v:version > 704 || v:version == 704 && has('patch279')
     return globpath(a:path, a:pattern, a:suf, 1)
   else
     return split(globpath(a:path, a:pattern, a:suf), "\n")
@@ -154,7 +154,7 @@ function! s:HandleTextChangedI()
 
   if get(g:, 'JC_DeclarationCompletedFlag', 0)
     let line = getline('.')
-    if line[col('.') - 2] != ' ' 
+    if line[col('.') - 2] != ' '
       return
     endif
 
@@ -186,7 +186,7 @@ function! s:HandleInsertLeave()
   endif
 endfunction
 
-function! javacomplete#UseFQN() 
+function! javacomplete#UseFQN()
   return get(g:, 'JavaComplete_UseFQN', 0)
 endfunction
 
@@ -232,7 +232,7 @@ function! s:DefaultMappings()
   vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
   vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
-endfunction 
+endfunction
 
 augroup javacomplete
   autocmd!
@@ -252,27 +252,19 @@ augroup javacomplete
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE_SEP. '?')
-let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), "p")
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p")
 
 call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
-let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', '')
-let s:sources = s:GlobPathList(getcwd(), 'src', 0)
-for i in ['*/', '*/*/', '*/*/*/']
-  call extend(s:sources, s:GlobPathList(getcwd(), i. g:FILE_SEP. 'src', 0))
-endfor
-for src in s:sources
-  if match(src, '.*build.*') < 0
-    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.src
-  endif
-endfor
-unlet s:sources
+let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', ''). g:PATH_SEP
+      \. join(filter(javacomplete#util#GlobPathList(getcwd(), 'src', 0, 3), "match(v:val, '.*build.*') < 0"), g:PATH_SEP)
 
 if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
-  let rjava = s:GlobPathList(getcwd(), join(['**', 'build', 'generated', 'source', '**', 'debug'], g:FILE_SEP), 0)
-  for r in rjava
-    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.r
-  endfor
+    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath
+          \. g:PATH_SEP
+          \. join(javacomplete#util#GlobPathList(getcwd()
+          \, join(['**', 'build', 'generated', 'source', '**', 'debug'], g:FILE_SEP), 0, 0)
+          \, g:PATH_SEP)
 endif
 
 call s:Log("Default sources: ". g:JavaComplete_SourcesPath)

@@ -292,7 +292,7 @@ function! s:Tree2ClassInfo(t)
     endif
     let i += 1
   endwhile
-  let t.extends = uniq(extends)
+  let t.extends = javacomplete#util#uniq(extends)
 
   return t
 endfunction
