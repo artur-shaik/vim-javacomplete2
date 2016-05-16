@@ -9,6 +9,7 @@ function! s:Log(log)
 endfunction
 
 let g:JavaComplete_Templates = {}
+let g:JavaComplete_Generators = {}
 
 let g:JavaComplete_Templates['setter'] = 
   \ "$modifiers void $funcname($type $varname) {\n" .
@@ -25,6 +26,99 @@ let g:JavaComplete_Templates['abstractDeclaration'] =
   \ "$declaration {\n" .
     \ "throw new UnsupportedOperationException();\n" .
   \ "}"
+
+let g:JavaComplete_Templates['toString'] =
+  \ "@Override\n" .
+  \ "public String toString() {\n" .
+    \ "$body\n" .
+  \ "}"
+
+" class:
+"   name - name of the class,
+"   fields - fields with class names
+let g:JavaComplete_Generators['toString'] = join([
+  \ 'function! s:__toStringTemplate(class)',
+  \ '   let result = "return \"". a:class.name ."{\" +\n"',
+  \ '   let i = 0',
+  \ '   for f in a:class.fields',
+  \ '       if i > 0',
+  \ '           let result .= "\n\", "',
+  \ '       else',
+  \ '           let result .= "\""',
+  \ '           let i += 1',
+  \ '       endif',
+  \ '       let result .= f." = \" + ". f. " +"',
+  \ '   endfor',
+  \ '   return result . "\n\"}\";"',
+  \ 'endfunction'
+  \], "\n")
+
+function! javacomplete#generators#GenerateToString()
+  let s:ti = javacomplete#collector#DoGetClassInfo('this')
+
+  let commands = [{'key': 's', 'desc': 'generate `toString` method'}]
+  let contentLine = s:CreateBuffer("__toStringBuffer__", "remove unnecessary fields", commands)
+
+  nnoremap <buffer> <silent> s :call <SID>generateToString()<CR>
+
+  let b:currentFileVars = []
+  for d in s:ti.defs
+    if d.tag == 'VARDEF'
+      let var = s:GetVariable(s:ti.name, d)
+      call add(b:currentFileVars, var)
+    endif
+  endfor
+
+  let lines = ""
+  let idx = 0
+  while idx < len(b:currentFileVars)
+    let var = b:currentFileVars[idx]
+    let lines = lines. "\n". "ts". idx. " --> ". var.type . " ". var.name
+    let idx += 1
+  endwhile
+  silent put = lines
+
+  call cursor(contentLine + 1, 0)
+
+endfunction
+
+function! <SID>generateToString()
+  if bufname('%') == "__toStringBuffer__"
+    call s:Log("generate `toString` method")
+
+    let currentBuf = getline(1,'$')
+    let fields = []
+    for line in currentBuf
+      if line =~ '^ts[0-9]\+.*'
+        let cmd = line[0]
+        let idx = line[2:stridx(line, ' ')-1]
+        let var = b:currentFileVars[idx]
+        call add(fields, var.name)
+      endif
+    endfor
+
+    let result = []
+    if len(fields) > 0
+      execute g:JavaComplete_Generators['toString']
+
+      let class = {"name": b:currentFileVars[0].className, "fields": fields}
+      let ToString = function('s:__toStringTemplate', [class])
+
+      let method = g:JavaComplete_Templates['toString']
+      call add(result, '')
+      for line in split(substitute(method, '$body', ToString(), 'g'), '\n')
+        call add(result, line)
+      endfor
+
+    endif
+
+    execute "bwipeout!"
+
+    if len(result) > 0
+      call s:InsertResults(result)
+    endif
+  endif
+endfunction
 
 function! javacomplete#generators#AbstractDeclaration()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
@@ -126,66 +220,66 @@ function! s:CheckImplementationExistense(ti, publicMethods, method)
 endfunction
 
 function! s:CreateBuffer(name, title, commands)
-	let n = bufwinnr(a:name)
-	if n != -1
-		execute "bwipeout!"
-	endif
-	exec 'silent! split '. a:name
+  let n = bufwinnr(a:name)
+  if n != -1
+      execute "bwipeout!"
+  endif
+  exec 'silent! split '. a:name
 
-	" Mark the buffer as scratch
-	setlocal buftype=nofile
-	setlocal bufhidden=wipe
-	setlocal noswapfile
-	setlocal nowrap
-	setlocal nobuflisted
+  " Mark the buffer as scratch
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal nowrap
+  setlocal nobuflisted
 
-	nnoremap <buffer> <silent> q :bwipeout!<CR>
+  nnoremap <buffer> <silent> q :bwipeout!<CR>
 
-	syn match Comment "^\".*"
-	put = '\"-----------------------------------------------------'
-	put = '\" '. a:title
-	put = '\" '
-	put = '\" q                      - close this window'
-    for command in a:commands
-      put = '\" '. command.key . '                      - '. command.desc
-    endfor
-	put = '\"-----------------------------------------------------'
+  syn match Comment "^\".*"
+  put = '\"-----------------------------------------------------'
+  put = '\" '. a:title
+  put = '\" '
+  put = '\" q                      - close this window'
+  for command in a:commands
+    put = '\" '. command.key . '                      - '. command.desc
+  endfor
+  put = '\"-----------------------------------------------------'
 
-	return line(".") + 1
+  return line(".") + 1
 endfunction
 
 function! javacomplete#generators#Accessors()
-    let s:ti = javacomplete#collector#DoGetClassInfo('this')
+  let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
-    let commands = [{'key': 's', 'desc': 'generate accessors'}]
-    let contentLine = s:CreateBuffer("__AccessorsBuffer__", "remove unnecessary accessors", commands)
+  let commands = [{'key': 's', 'desc': 'generate accessors'}]
+  let contentLine = s:CreateBuffer("__AccessorsBuffer__", "remove unnecessary accessors", commands)
 
-	nnoremap <buffer> <silent> s :call <SID>generateAccessors()<CR>
-     
-    let b:currentFileVars = []
-    for d in s:ti.defs
-      if d.tag == 'VARDEF'
-        let var = s:GetVariable(s:ti.name, d)
-        call add(b:currentFileVars, var)
-      endif
-    endfor
+  nnoremap <buffer> <silent> s :call <SID>generateAccessors()<CR>
+   
+  let b:currentFileVars = []
+  for d in s:ti.defs
+    if d.tag == 'VARDEF'
+      let var = s:GetVariable(s:ti.name, d)
+      call add(b:currentFileVars, var)
+    endif
+  endfor
 
-    let lines = ""
-    let idx = 0
-    while idx < len(b:currentFileVars)
-      let var = b:currentFileVars[idx]
-      let varName = toupper(var.name[0]). var.name[1:]
-      let lines = lines. "\n". "g". idx. " --> ". var.type . " get". varName . "()"
-      if !var.final
-        let lines = lines. "\n". "s". idx. " --> ". "set". varName . "(". var.type . " ". var.name. ")"
-      endif
-      let lines = lines. "\n"
+  let lines = ""
+  let idx = 0
+  while idx < len(b:currentFileVars)
+    let var = b:currentFileVars[idx]
+    let varName = toupper(var.name[0]). var.name[1:]
+    let lines = lines. "\n". "g". idx. " --> ". var.type . " get". varName . "()"
+    if !var.final
+      let lines = lines. "\n". "s". idx. " --> ". "set". varName . "(". var.type . " ". var.name. ")"
+    endif
+    let lines = lines. "\n"
 
-      let idx += 1
-    endwhile
-    silent put = lines
+    let idx += 1
+  endwhile
+  silent put = lines
 
-    call cursor(contentLine + 1, 0)
+  call cursor(contentLine + 1, 0)
 
 endfunction
 
