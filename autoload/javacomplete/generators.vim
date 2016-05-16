@@ -271,11 +271,18 @@ function! <SID>generateAccessors(...)
     for d in s:ti.defs
       if get(d, 'tag', '') == 'VARDEF'
         let line = java_parser#DecodePos(d.pos).line
-        if index(currentLines, line) >= 0
-          let cmd = len(a:1) > 0 ? a:1[0] : 'sg'
-          let var = s:GetVariable(s:ti.name, d)
-          call s:CreateAccessors(locationMap, result, var, cmd)
+        if has_key(d, 'endpos')
+          let endline = java_parser#DecodePos(d.endpos).line
+        else
+          let endline = line
         endif
+        for l in currentLines
+          if l >= line && l <= endline
+            let cmd = len(a:1) > 0 ? a:1[0] : 'sg'
+            let var = s:GetVariable(s:ti.name, d)
+            call s:CreateAccessors(locationMap, result, var, cmd)
+          endif
+        endfor
       endif
     endfor
 
