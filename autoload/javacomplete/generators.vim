@@ -11,19 +11,19 @@ endfunction
 let g:JavaComplete_Templates = {}
 
 let g:JavaComplete_Templates['setter'] = 
-  \ "%modifiers% void %funcname%(%type% %varname%) {\n" .
-  \ "    %accessor%.%varname% = %varname%;\n" .
+  \ "$modifiers void $funcname($type $varname) {\n" .
+    \ "$accessor.$varname = $varname;\n" .
   \ "}"
 
 let g:JavaComplete_Templates['getter'] = 
-  \ "%modifiers% %type% %funcname%() {\n" .
-  \ "    return %varname%;\n" .
+  \ "$modifiers $type $funcname() {\n" .
+    \ "return $varname;\n" .
   \ "}"
 
 let g:JavaComplete_Templates['abstractDeclaration'] =
   \ "@Override\n" .
-  \ "%declaration% {\n" .
-  \ "   throw new UnsupportedOperationException();\n" .
+  \ "$declaration {\n" .
+    \ "throw new UnsupportedOperationException();\n" .
   \ "}"
 
 function! javacomplete#generators#AbstractDeclaration()
@@ -55,7 +55,7 @@ function! javacomplete#generators#AbstractDeclaration()
     let declaration = javacomplete#util#CleanFQN(declaration)
 
     call add(result, '')
-    for line in split(substitute(method, '%declaration%', declaration, 'g'), '\n')
+    for line in split(substitute(method, '$declaration', declaration, 'g'), '\n')
       call add(result, line)
     endfor
   endfor
@@ -205,11 +205,11 @@ function! s:AddAccessor(map, result, var, declaration, type)
     let accessor = 'this'
   endif
 
-  let method = substitute(method, '%type%', a:var.type, 'g')
-  let method = substitute(method, '%varname%', a:var.name, 'g')
-  let method = substitute(method, '%funcname%', a:declaration, 'g')
-  let method = substitute(method, '%modifiers%', mods, 'g')
-  let method = substitute(method, '%accessor%', accessor, 'g')
+  let method = substitute(method, '$type', a:var.type, 'g')
+  let method = substitute(method, '$varname', a:var.name, 'g')
+  let method = substitute(method, '$funcname', a:declaration, 'g')
+  let method = substitute(method, '$modifiers', mods, 'g')
+  let method = substitute(method, '$accessor', accessor, 'g')
 
   let begin = len(a:result)
   call add(a:result, '')
