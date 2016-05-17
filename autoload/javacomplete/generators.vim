@@ -41,6 +41,7 @@ let g:JavaComplete_Templates['toString'] =
 "       static
 "       final
 "       isArray
+"       getter
 let g:JavaComplete_Generators['toString_body'] = join([
   \ 'function! s:__toString_body(class)',
   \ '   let result = "return \"". a:class.name ."{\" +\n"',
@@ -52,7 +53,12 @@ let g:JavaComplete_Generators['toString_body'] = join([
   \ '           let result .= "\""',
   \ '           let i += 1',
   \ '       endif',
-  \ '       let f = field.isArray ? "java.util.Arrays.toString(". field.name .")" : field.name',
+  \ '       if has_key(field, "getter")',
+  \ '           let f = field.getter',
+  \ '       else',
+  \ '           let f = field.name',
+  \ '       endif',
+  \ '       let f = field.isArray ? "java.util.Arrays.toString(". f .")" : f',
   \ '       let result .= field.name ." = \" + ". f. " +"',
   \ '   endfor',
   \ '   return result . "\n\"}\";"',
@@ -338,6 +344,15 @@ function! s:GetVariable(className, def)
     \ 'final': javacomplete#util#CheckModifier(a:def.m, g:JC_MODIFIER_FINAL),
     \ 'isArray': a:def.t =~# g:RE_ARRAY_TYPE}
 
+  let varName = toupper(var.name[0]). var.name[1:]
+  for def in get(s:ti, 'defs', [])
+    if get(def, 'tag', '') == 'METHODDEF'
+      if stridx(get(def, 'd', ''), var.type. ' get'. varName. '()') > -1
+        let var.getter = 'get'. varName. '()'
+        break;
+      endif
+    endif
+  endfor
   return var
 endfunction
 
