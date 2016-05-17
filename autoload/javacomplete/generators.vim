@@ -42,8 +42,8 @@ let g:JavaComplete_Templates['toString'] =
 "       final
 "       isArray
 "       getter
-let g:JavaComplete_Generators['toString_body'] = join([
-  \ 'function! s:__toString_body(class)',
+let g:JavaComplete_Generators['toString_body_concat'] = join([
+  \ 'function! s:__toString_body_concat(class)',
   \ '   let result = "return \"". a:class.name ."{\" +\n"',
   \ '   let i = 0',
   \ '   for field in a:class.fields',
@@ -65,13 +65,40 @@ let g:JavaComplete_Generators['toString_body'] = join([
   \ 'endfunction'
   \], "\n")
 
+let g:JavaComplete_Generators['toString_body_StringBuilder'] = join([
+  \ 'function! s:__toString_body_StringBuilder(class)',
+  \ '   let result = "final StringBuilder sb = new StringBuilder(\"". a:class.name . "{\");\n"',
+  \ '   let i = 0',
+  \ '   for field in a:class.fields',
+  \ '       if i > 0',
+  \ '           let result .= "\nsb.append(\", "',
+  \ '       else',
+  \ '           let result .= "sb.append(\""',
+  \ '           let i += 1',
+  \ '       endif',
+  \ '       if has_key(field, "getter")',
+  \ '           let f = field.getter',
+  \ '       else',
+  \ '           let f = field.name',
+  \ '       endif',
+  \ '       let f = field.isArray ? "java.util.Arrays.toString(". f .")" : f',
+  \ '       let result .= field.name ." = \").append(". f. ");"',
+  \ '   endfor',
+  \ '   return result . "\nreturn sb.append(\"}\").toString();"',
+  \ 'endfunction'
+  \], "\n")
+
 function! javacomplete#generators#GenerateToString()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
-  let commands = [{'key': 's', 'desc': 'generate `toString` method'}]
+  let commands = [
+        \ {'key': '1', 'desc': 'generate `toString` method using simpe concatination'},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder'}
+        \ ]
   let contentLine = s:CreateBuffer("__toStringBuffer__", "remove unnecessary fields", commands)
 
-  nnoremap <buffer> <silent> s :call <SID>generateToString()<CR>
+  nnoremap <buffer> <silent> 1 :call <SID>generateToString("concat")<CR>
+  nnoremap <buffer> <silent> 2 :call <SID>generateToString("StringBuilder")<CR>
 
   let b:currentFileVars = []
   for d in s:ti.defs
@@ -94,7 +121,7 @@ function! javacomplete#generators#GenerateToString()
 
 endfunction
 
-function! <SID>generateToString()
+function! <SID>generateToString(template)
   if bufname('%') == "__toStringBuffer__"
     call s:Log("generate `toString` method")
 
@@ -111,10 +138,10 @@ function! <SID>generateToString()
 
     let result = ['']
     if len(fields) > 0
-      execute g:JavaComplete_Generators['toString_body']
+      execute g:JavaComplete_Generators['toString_body_'. a:template]
 
       let class = {"name": b:currentFileVars[0].className, "fields": fields}
-      let ToString = function('s:__toString_body', [class])
+      let ToString = function('s:__toString_body_'. a:template, [class])
 
       let method = g:JavaComplete_Templates['toString']
       for line in split(substitute(method, '$body', ToString(), 'g'), '\n')
@@ -349,7 +376,7 @@ function! s:GetVariable(className, def)
     if get(def, 'tag', '') == 'METHODDEF'
       if stridx(get(def, 'd', ''), var.type. ' get'. varName. '()') > -1
         let var.getter = 'get'. varName. '()'
-        break;
+        break
       endif
     endif
   endfor
