@@ -88,25 +88,27 @@ let g:JavaComplete_Generators['toString_body_StringBuilder'] = join([
   \ 'endfunction'
   \], "\n")
 
+function! s:CollectVars()
+  let currentFileVars = []
+  for d in s:ti.defs
+    if d.tag == 'VARDEF'
+      let var = s:GetVariable(s:ti.name, d)
+      call add(currentFileVars, var)
+    endif
+  endfor
+  return currentFileVars
+endfunction
+
 function! javacomplete#generators#GenerateToString()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using simpe concatination'},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder'}
+        \ {'key': '1', 'desc': 'generate `toString` method using simpe concatination', 'call': '<SID>generateToString("concat")<CR>'},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateToString("StringBuilder")<CR>'}
         \ ]
   let contentLine = s:CreateBuffer("__toStringBuffer__", "remove unnecessary fields", commands)
 
-  nnoremap <buffer> <silent> 1 :call <SID>generateToString("concat")<CR>
-  nnoremap <buffer> <silent> 2 :call <SID>generateToString("StringBuilder")<CR>
-
-  let b:currentFileVars = []
-  for d in s:ti.defs
-    if d.tag == 'VARDEF'
-      let var = s:GetVariable(s:ti.name, d)
-      call add(b:currentFileVars, var)
-    endif
-  endfor
+  let b:currentFileVars = s:CollectVars()
 
   let lines = ""
   let idx = 0
@@ -290,6 +292,9 @@ function! s:CreateBuffer(name, title, commands)
   put = '\" q                      - close this window'
   for command in a:commands
     put = '\" '. command.key . '                      - '. command.desc
+    if has_key(command, 'call')
+      exec "nnoremap <buffer> <silent> ". command.key . " :call ". command.call
+    endif
   endfor
   put = '\"-----------------------------------------------------'
 
@@ -299,18 +304,10 @@ endfunction
 function! javacomplete#generators#Accessors()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
-  let commands = [{'key': 's', 'desc': 'generate accessors'}]
+  let commands = [{'key': 's', 'desc': 'generate accessors', 'call': '<SID>generateAccessors()<CR>'}]
   let contentLine = s:CreateBuffer("__AccessorsBuffer__", "remove unnecessary accessors", commands)
 
-  nnoremap <buffer> <silent> s :call <SID>generateAccessors()<CR>
-   
-  let b:currentFileVars = []
-  for d in s:ti.defs
-    if d.tag == 'VARDEF'
-      let var = s:GetVariable(s:ti.name, d)
-      call add(b:currentFileVars, var)
-    endif
-  endfor
+  let b:currentFileVars = s:CollectVars()
 
   let lines = ""
   let idx = 0
