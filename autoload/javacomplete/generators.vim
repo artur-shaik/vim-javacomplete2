@@ -36,8 +36,8 @@ let g:JavaComplete_Templates['toString'] =
 " class:
 "   name - name of the class,
 "   fields - fields with class names
-let g:JavaComplete_Generators['toString'] = join([
-  \ 'function! s:__toStringTemplate(class)',
+let g:JavaComplete_Generators['toString_body'] = join([
+  \ 'function! s:__toString_body(class)',
   \ '   let result = "return \"". a:class.name ."{\" +\n"',
   \ '   let i = 0',
   \ '   for f in a:class.fields',
@@ -97,24 +97,33 @@ function! <SID>generateToString()
       endif
     endfor
 
-    let result = []
+    let result = ['']
     if len(fields) > 0
-      execute g:JavaComplete_Generators['toString']
+      execute g:JavaComplete_Generators['toString_body']
 
       let class = {"name": b:currentFileVars[0].className, "fields": fields}
-      let ToString = function('s:__toStringTemplate', [class])
+      let ToString = function('s:__toString_body', [class])
 
       let method = g:JavaComplete_Templates['toString']
-      call add(result, '')
       for line in split(substitute(method, '$body', ToString(), 'g'), '\n')
         call add(result, line)
       endfor
-
     endif
 
     execute "bwipeout!"
 
-    if len(result) > 0
+    if len(result) > 1
+      for def in s:ti.defs
+        if get(def, 'tag', '') == 'METHODDEF' 
+          \ && get(def, 'd', '') == 'String toString()'
+          \ && has_key(def, 'body') && has_key(def.body, 'endpos')
+
+          let startline = java_parser#DecodePos(def.pos).line + 1
+          let endline = java_parser#DecodePos(def.body.endpos).line + 1
+          silent! execute startline.','.endline. 'delete _'
+          let s:ti = javacomplete#collector#DoGetClassInfo('this')
+        endif
+      endfor
       call s:InsertResults(result)
     endif
   endif
