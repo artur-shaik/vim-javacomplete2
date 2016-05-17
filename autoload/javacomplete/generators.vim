@@ -103,7 +103,7 @@ function! javacomplete#generators#GenerateToString()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using simpe concatination', 'call': '<SID>generateToString("concat")<CR>'},
+        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateToString("concat")<CR>'},
         \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateToString("StringBuilder")<CR>'}
         \ ]
   let contentLine = s:CreateBuffer("__toStringBuffer__", "remove unnecessary fields", commands)
