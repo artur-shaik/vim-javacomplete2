@@ -35,19 +35,25 @@ let g:JavaComplete_Templates['toString'] =
 
 " class:
 "   name - name of the class,
-"   fields - fields with class names
+"   fields:
+"       name
+"       type
+"       static
+"       final
+"       isArray
 let g:JavaComplete_Generators['toString_body'] = join([
   \ 'function! s:__toString_body(class)',
   \ '   let result = "return \"". a:class.name ."{\" +\n"',
   \ '   let i = 0',
-  \ '   for f in a:class.fields',
+  \ '   for field in a:class.fields',
   \ '       if i > 0',
   \ '           let result .= "\n\", "',
   \ '       else',
   \ '           let result .= "\""',
   \ '           let i += 1',
   \ '       endif',
-  \ '       let result .= f." = \" + ". f. " +"',
+  \ '       let f = field.isArray ? "java.util.Arrays.toString(". field.name .")" : field.name',
+  \ '       let result .= field.name ." = \" + ". f. " +"',
   \ '   endfor',
   \ '   return result . "\n\"}\";"',
   \ 'endfunction'
@@ -93,7 +99,7 @@ function! <SID>generateToString()
         let cmd = line[0]
         let idx = line[2:stridx(line, ' ')-1]
         let var = b:currentFileVars[idx]
-        call add(fields, var.name)
+        call add(fields, var)
       endif
     endfor
 
@@ -329,7 +335,8 @@ function! s:GetVariable(className, def)
     \ 'type': a:def.t, 
     \ 'className': a:className, 
     \ 'static': javacomplete#util#IsStatic(a:def.m),
-    \ 'final': javacomplete#util#CheckModifier(a:def.m, g:JC_MODIFIER_FINAL)}
+    \ 'final': javacomplete#util#CheckModifier(a:def.m, g:JC_MODIFIER_FINAL),
+    \ 'isArray': a:def.t =~# g:RE_ARRAY_TYPE}
 
   return var
 endfunction
