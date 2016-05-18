@@ -27,12 +27,6 @@ let g:JavaComplete_Templates['abstractDeclaration'] =
     \ "throw new UnsupportedOperationException();\n" .
   \ "}"
 
-let g:JavaComplete_Templates['toString'] =
-  \ "@Override\n" .
-  \ "public String toString() {\n" .
-    \ "$body\n" .
-  \ "}"
-
 " class:
 "   name - name of the class,
 "   fields:
@@ -42,9 +36,11 @@ let g:JavaComplete_Templates['toString'] =
 "       final
 "       isArray
 "       getter
-let g:JavaComplete_Generators['toString_body_concat'] = join([
+let g:JavaComplete_Generators['toString_concat'] = join([
   \ 'function! s:__toString_body_concat(class)',
-  \ '   let result = "return \"". a:class.name ."{\" +\n"',
+  \ '   let result = "@Override\n"',
+  \ '   let result .= "public String toString() {\n"',
+  \ '   let result .= "return \"". a:class.name ."{\" +\n"',
   \ '   let i = 0',
   \ '   for field in a:class.fields',
   \ '       if i > 0',
@@ -61,13 +57,15 @@ let g:JavaComplete_Generators['toString_body_concat'] = join([
   \ '       let f = field.isArray ? "java.util.Arrays.toString(". f .")" : f',
   \ '       let result .= field.name ." = \" + ". f. " +"',
   \ '   endfor',
-  \ '   return result . "\n\"}\";"',
+  \ '   return result . "\n\"}\";\n}"',
   \ 'endfunction'
   \], "\n")
 
-let g:JavaComplete_Generators['toString_body_StringBuilder'] = join([
+let g:JavaComplete_Generators['toString_StringBuilder'] = join([
   \ 'function! s:__toString_body_StringBuilder(class)',
-  \ '   let result = "final StringBuilder sb = new StringBuilder(\"". a:class.name . "{\");\n"',
+  \ '   let result = "@Override\n"',
+  \ '   let result .= "public String toString() {\n"',
+  \ '   let result .= "final StringBuilder sb = new StringBuilder(\"". a:class.name . "{\");\n"',
   \ '   let i = 0',
   \ '   for field in a:class.fields',
   \ '       if i > 0',
@@ -84,7 +82,36 @@ let g:JavaComplete_Generators['toString_body_StringBuilder'] = join([
   \ '       let f = field.isArray ? "java.util.Arrays.toString(". f .")" : f',
   \ '       let result .= field.name ." = \").append(". f. ");"',
   \ '   endfor',
-  \ '   return result . "\nreturn sb.append(\"}\").toString();"',
+  \ '   return result . "\nreturn sb.append(\"}\").toString();\n}"',
+  \ 'endfunction'
+  \], "\n")
+
+let g:JavaComplete_Generators['hashCode'] = join([
+  \ 'function! s:__hashCode(class)',
+  \ '   let result = "@Override\n"',
+  \ '   let result .= "public int hashCode() {\n"',
+  \ '   let result .= "int result = super.hashCode();\n"',
+  \ '   for field in a:class.fields',
+  \ '       if index(g:J_PRIMITIVE_TYPES, field.type) > -1',
+  \ '           if field.type == "boolean"',
+  \ '               let result .= "result = 31 * result + (". field.name . " ? 0 : 1);\n"',
+  \ '           elseif field.type == "long"',
+  \ '               let result .= "result = 31 * result + (int)(". field.name . " ^ (". field.name . " >>> 32));\n"',
+  \ '           elseif field.type == "float"',
+  \ '               let result .= "result = 31 * result + Float.floatToIntBits(". field.name . ");\n"',
+  \ '           elseif field.type == "double"',
+  \ '               let result .= "long ". field.name . "Long = Double.doubleToLongBits(". field.name .");\n"',
+  \ '               let result .= "result = 31 * result + (int)(". field.name . "Long ^ (". field.name . "Long >>> 32));\n"',
+  \ '           else',
+  \ '               let result .= "result = 31 * result + (int)". field.name . ";\n"',
+  \ '           endif',
+  \ '       elseif field.isArray',
+  \ '           let result .= "result = 31 * result + java.util.Arrays.hashCode(". field.name . ");\n"',
+  \ '       else',
+  \ '           let result .= "result = 31 * result + (". field.name . " != null ? ". field.name .".hashCode() : 0);\n"',
+  \ '       endif',
+  \ '   endfor',
+  \ '   return result. "return result;\n}"',
   \ 'endfunction'
   \], "\n")
 
@@ -99,14 +126,26 @@ function! s:CollectVars()
   return currentFileVars
 endfunction
 
-function! javacomplete#generators#GenerateToString()
-  let s:ti = javacomplete#collector#DoGetClassInfo('this')
-
+function! javacomplete#generators#GenerateEqualsAndHashCode()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateToString("concat")<CR>'},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateToString("StringBuilder")<CR>'}
+        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate("equals", "boolean equals(Object o)")<CR>'},
+        \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate("hashCode", "int hashCode()")<CR>'},
+        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate("StringBuilder")<CR>'}
         \ ]
-  let contentLine = s:CreateBuffer("__toStringBuffer__", "remove unnecessary fields", commands)
+  call s:FieldsListBuffer(commands)
+endfunction
+
+function! javacomplete#generators#GenerateToString()
+  let commands = [
+        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate("toString_concat", "String toString()")<CR>'},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': <SID>generateByTemplate("toString_StringBuilder", "String toString()")<CR>'}
+        \ ]
+  call s:FieldsListBuffer(commands)
+endfunction
+
+function! s:FieldsListBuffer(commands)
+  let s:ti = javacomplete#collector#DoGetClassInfo('this')
+  let contentLine = s:CreateBuffer("__FieldsListBuffer__", "remove unnecessary fields", a:commands)
 
   let b:currentFileVars = s:CollectVars()
 
@@ -114,39 +153,38 @@ function! javacomplete#generators#GenerateToString()
   let idx = 0
   while idx < len(b:currentFileVars)
     let var = b:currentFileVars[idx]
-    let lines = lines. "\n". "ts". idx. " --> ". var.type . " ". var.name
+    let lines = lines. "\n". "f". idx. " --> ". var.type . " ". var.name
     let idx += 1
   endwhile
   silent put = lines
 
   call cursor(contentLine + 1, 0)
-
 endfunction
 
-function! <SID>generateToString(template)
-  if bufname('%') == "__toStringBuffer__"
-    call s:Log("generate `toString` method")
+" a:1 - method declaration to replace
+function! <SID>generateByTemplate(template, ...)
+  if bufname('%') == "__FieldsListBuffer__"
+    call s:Log("generate method with template: ". a:template)
 
     let currentBuf = getline(1,'$')
     let fields = []
     for line in currentBuf
-      if line =~ '^ts[0-9]\+.*'
+      if line =~ '^f[0-9]\+.*'
         let cmd = line[0]
-        let idx = line[2:stridx(line, ' ')-1]
+        let idx = line[1:stridx(line, ' ')-1]
         let var = b:currentFileVars[idx]
         call add(fields, var)
       endif
     endfor
 
     let result = ['']
-    if len(fields) > 0
-      execute g:JavaComplete_Generators['toString_body_'. a:template]
+    if len(fields) > 0 && has_key(g:JavaComplete_Generators, a:template)
+      execute g:JavaComplete_Generators[a:template]
 
       let class = {"name": b:currentFileVars[0].className, "fields": fields}
-      let ToString = function('s:__toString_body_'. a:template, [class])
+      let TemplateFunction = function('s:__'. a:template, [class])
 
-      let method = g:JavaComplete_Templates['toString']
-      for line in split(substitute(method, '$body', ToString(), 'g'), '\n')
+      for line in split(TemplateFunction(), '\n')
         call add(result, line)
       endfor
     endif
@@ -154,17 +192,19 @@ function! <SID>generateToString(template)
     execute "bwipeout!"
 
     if len(result) > 1
-      for def in s:ti.defs
-        if get(def, 'tag', '') == 'METHODDEF' 
-          \ && get(def, 'd', '') == 'String toString()'
-          \ && has_key(def, 'body') && has_key(def.body, 'endpos')
+      if a:0 > 0
+        for def in s:ti.defs
+          if get(def, 'tag', '') == 'METHODDEF' 
+            \ && get(def, 'd', '') == a:1
+            \ && has_key(def, 'body') && has_key(def.body, 'endpos')
 
-          let startline = java_parser#DecodePos(def.pos).line + 1
-          let endline = java_parser#DecodePos(def.body.endpos).line + 1
-          silent! execute startline.','.endline. 'delete _'
-          let s:ti = javacomplete#collector#DoGetClassInfo('this')
-        endif
-      endfor
+            let startline = java_parser#DecodePos(def.pos).line + 1
+            let endline = java_parser#DecodePos(def.body.endpos).line + 1
+            silent! execute startline.','.endline. 'delete _'
+            let s:ti = javacomplete#collector#DoGetClassInfo('this')
+          endif
+        endfor
+      endif
       call s:InsertResults(result)
     endif
   endif
