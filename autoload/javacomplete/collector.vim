@@ -651,12 +651,16 @@ function! javacomplete#collector#CurrentFileInfo()
   let currentBuf = getline(1,'$')
   let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
   let ti = javacomplete#collector#DoGetClassInfo('this')
-  let package = javacomplete#collector#GetPackageName(). '.'. ti.name
+  if has_key(ti, 'name')
+    let package = javacomplete#collector#GetPackageName(). '.'. ti.name
 
-  call javacomplete#server#Communicate('-clear-from-cache', package, 's:CurrentFileInfo')
-  let response = javacomplete#server#Communicate('-class-info-by-content -target '. package. ' -content', base64Content, 'CurrentFileInfo')
-  if response =~ '^{'
-    return eval(response)
+    call javacomplete#server#Communicate('-clear-from-cache', package, 's:CurrentFileInfo')
+    let response = javacomplete#server#Communicate('-class-info-by-content -target '. package. ' -content', base64Content, 'CurrentFileInfo')
+    if response =~ '^{'
+      return eval(response)
+    endif
+  else
+    call s:Log("`this` class parse error [CurrentFileInfo]")
   endif
 
   return {}

@@ -37,7 +37,7 @@ let g:JavaComplete_Templates['abstractDeclaration'] =
 "       isArray
 "       getter
 let g:JavaComplete_Generators['toString_concat'] = join([
-  \ 'function! s:__toString_body_concat(class)',
+  \ 'function! s:__toString_concat(class)',
   \ '   let result = "@Override\n"',
   \ '   let result .= "public String toString() {\n"',
   \ '   let result .= "return \"". a:class.name ."{\" +\n"',
@@ -62,7 +62,7 @@ let g:JavaComplete_Generators['toString_concat'] = join([
   \], "\n")
 
 let g:JavaComplete_Generators['toString_StringBuilder'] = join([
-  \ 'function! s:__toString_body_StringBuilder(class)',
+  \ 'function! s:__toString_StringBuilder(class)',
   \ '   let result = "@Override\n"',
   \ '   let result .= "public String toString() {\n"',
   \ '   let result .= "final StringBuilder sb = new StringBuilder(\"". a:class.name . "{\");\n"',
@@ -115,6 +115,45 @@ let g:JavaComplete_Generators['hashCode'] = join([
   \ 'endfunction'
   \], "\n")
 
+let g:JavaComplete_Generators['equals'] = join([
+  \ 'function! s:__equals(class)',
+  \ '   let result = "@Override\n"',
+  \ '   let result .= "public boolean equals(Object o) {\n"',
+  \ '   let result .= "if (this == o) return true;\n"',
+  \ '   let result .= "if (o == null || getClass() != o.getClass()) return false;\n"',
+  \ '   let result .= "if (!super.equals(o)) return false;\n\n"',
+  \ '   let result .= a:class.name ." object = (". a:class.name .") o;\n\n"',
+  \ '   let idx = 0',
+  \ '   for field in a:class.fields',
+  \ '       if idx != len(a:class.fields) - 1',
+  \ '           let result .= "if "',
+  \ '       else',
+  \ '           let result .= "return "',
+  \ '       endif',
+  \ '       if index(g:J_PRIMITIVE_TYPES, field.type) > -1',
+  \ '           if field.type == "double"',
+  \ '               let result .= "(Double.compare(". field.name .", object.". field.name .") != 0)"',
+  \ '           elseif field.type == "float"',
+  \ '               let result .= "(Float.compare(". field.name .", object.". field.name .") != 0)"',
+  \ '           else',
+  \ '               let result .= "(". field.name ." != object.". field.name .")"',
+  \ '           endif',
+  \ '       elseif field.isArray',
+  \ '           let result .= "(!java.util.Arrays.equals(". field.name .", object.". field.name ."))"',
+  \ '       else',
+  \ '           let result .= "(". field.name ." != null ? !". field.name .".equals(object.". field.name .") : object.". field.name ." != null)"',
+  \ '       endif',
+  \ '       if idx != len(a:class.fields) - 1',
+  \ '           let result .= " return false;\n"',
+  \ '       else',
+  \ '           let result .= ";\n"',
+  \ '       endif',
+  \ '       let idx += 1',
+  \ '   endfor',
+  \ '   return result. "}"',
+  \ 'endfunction'
+  \], "\n")
+
 function! s:CollectVars()
   let currentFileVars = []
   for d in s:ti.defs
@@ -130,7 +169,7 @@ function! javacomplete#generators#GenerateEqualsAndHashCode()
   let commands = [
         \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate("equals", "boolean equals(Object o)")<CR>'},
         \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate("hashCode", "int hashCode()")<CR>'},
-        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate("StringBuilder")<CR>'}
+        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate(["hashCode", "equals"], ["int hashCode()", "boolean equals(Object o)"])<CR>'}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
@@ -138,7 +177,7 @@ endfunction
 function! javacomplete#generators#GenerateToString()
   let commands = [
         \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate("toString_concat", "String toString()")<CR>'},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': <SID>generateByTemplate("toString_StringBuilder", "String toString()")<CR>'}
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate("toString_StringBuilder", "String toString()")<CR>'}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
@@ -162,9 +201,9 @@ function! s:FieldsListBuffer(commands)
 endfunction
 
 " a:1 - method declaration to replace
-function! <SID>generateByTemplate(template, ...)
+function! <SID>generateByTemplate(templates, ...)
   if bufname('%') == "__FieldsListBuffer__"
-    call s:Log("generate method with template: ". a:template)
+    call s:Log("generate method with template: ". string(a:templates))
 
     let currentBuf = getline(1,'$')
     let fields = []
@@ -177,25 +216,31 @@ function! <SID>generateByTemplate(template, ...)
       endif
     endfor
 
-    let result = ['']
-    if len(fields) > 0 && has_key(g:JavaComplete_Generators, a:template)
-      execute g:JavaComplete_Generators[a:template]
-
+    let result = []
+    if len(fields) > 0
+      let templates = type(a:templates) != type([]) ? [a:templates] : a:templates
       let class = {"name": b:currentFileVars[0].className, "fields": fields}
-      let TemplateFunction = function('s:__'. a:template, [class])
+      for template in templates
+        if has_key(g:JavaComplete_Generators, template)
+          execute g:JavaComplete_Generators[template]
 
-      for line in split(TemplateFunction(), '\n')
-        call add(result, line)
+          let TemplateFunction = function('s:__'. template, [class])
+          call add(result, '')
+          for line in split(TemplateFunction(), '\n')
+            call add(result, line)
+          endfor
+        endif
       endfor
     endif
 
     execute "bwipeout!"
 
-    if len(result) > 1
+    if len(result) > 0
       if a:0 > 0
+        let toReplace = type(a:1) != type([]) ? [a:1] : a:1
         for def in s:ti.defs
           if get(def, 'tag', '') == 'METHODDEF' 
-            \ && get(def, 'd', '') == a:1
+            \ && index(toReplace, get(def, 'd', '')) > -1
             \ && has_key(def, 'body') && has_key(def.body, 'endpos')
 
             let startline = java_parser#DecodePos(def.pos).line + 1
@@ -538,8 +583,11 @@ function! s:InsertResults(result)
         call cursor(pos[0], pos[1])
         execute "normal! i\r"
       endif
-    else
+    elseif has_key(s:ti, 'endpos')
       let endline = java_parser#DecodePos(s:ti.endpos).line
+    else
+      call s:Log("cannot find `endpos` [InsertResult]")
+      return
     endif
 
     if empty(javacomplete#util#Trim(getline(endline - 1)))
