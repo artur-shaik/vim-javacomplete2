@@ -40,7 +40,7 @@ Features:
 - Jsp support, without taglibs;
 - Cross-session cache;
 - Auto insert methods that need to be implemented;
-- Accessors generation.
+- `toString`, Accessors generation.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -121,17 +121,36 @@ To remove all missing imports with F7:
 
 `imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
-Default mapping for accessors generation:
+Default mappings:
 
 ```
-nmap <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
-nmap <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
-nmap <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
-nmap <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+  nmap <silent> <buffer> <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
+  nmap <silent> <buffer> <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
+  nmap <silent> <buffer> <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
+  nmap <silent> <buffer> <leader>jii <Plug>(JavaComplete-Imports-Add)
 
-imap <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
-imap <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
-imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+  imap <silent> <buffer> <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
+  imap <silent> <buffer> <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
+  imap <silent> <buffer> <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
+  imap <silent> <buffer> <C-j>ii <Plug>(JavaComplete-Imports-Add)
+
+  nmap <silent> <buffer> <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  imap <silent> <buffer> <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  nmap <silent> <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+  nmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  nmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  nmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+  nmap <silent> <buffer> <leader>jts <Plug>(JavaComplete-Generate-ToString)
+
+  imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+  imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+  imap <silent> <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
 ```
 
 ### Optional
@@ -184,6 +203,8 @@ imap <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
 `JCgenerateAccessorGetter` - generate getter for field under cursor;
 
 `JCgenerateAccessorSetterGetter` - generate getter and setter for field under cursor;
+
+`JCgenerateToString` - generate `toString` method;
 
 
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
