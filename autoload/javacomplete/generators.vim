@@ -184,6 +184,7 @@ endfunction
 
 function! s:FieldsListBuffer(commands)
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
+  let s:savedCursorPosition = getpos('.')
   let contentLine = s:CreateBuffer("__FieldsListBuffer__", "remove unnecessary fields", a:commands)
 
   let b:currentFileVars = s:CollectVars()
@@ -238,7 +239,9 @@ function! <SID>generateByTemplate(templates, ...)
     if len(result) > 0
       if a:0 > 0
         let toReplace = type(a:1) != type([]) ? [a:1] : a:1
-        for def in s:ti.defs
+        let idx = 0
+        while idx < len(s:ti.defs)
+          let def = s:ti.defs[idx]
           if get(def, 'tag', '') == 'METHODDEF' 
             \ && index(toReplace, get(def, 'd', '')) > -1
             \ && has_key(def, 'body') && has_key(def.body, 'endpos')
@@ -246,11 +249,17 @@ function! <SID>generateByTemplate(templates, ...)
             let startline = java_parser#DecodePos(def.pos).line + 1
             let endline = java_parser#DecodePos(def.body.endpos).line + 1
             silent! execute startline.','.endline. 'delete _'
+
+            call setpos('.', s:savedCursorPosition)
             let s:ti = javacomplete#collector#DoGetClassInfo('this')
+            let idx = 0
+          else
+            let idx += 1
           endif
-        endfor
+        endwhile
       endif
       call s:InsertResults(result)
+      call setpos('.', s:savedCursorPosition)
     endif
   endif
 endfunction
