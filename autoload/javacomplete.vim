@@ -211,6 +211,7 @@ function! s:DefaultMappings()
   nmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   nmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
   nmap <silent> <buffer> <leader>jts <Plug>(JavaComplete-Generate-ToString)
+  nmap <silent> <buffer> <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
 
   imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
   imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)

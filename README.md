@@ -40,7 +40,7 @@ Features:
 - Jsp support, without taglibs;
 - Cross-session cache;
 - Auto insert methods that need to be implemented;
-- `toString`, Accessors generation.
+- `toString`, `equals`, `hashCode`, Accessors generation.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -143,6 +143,7 @@ Default mappings:
   nmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   nmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
   nmap <silent> <buffer> <leader>jts <Plug>(JavaComplete-Generate-ToString)
+  nmap <silent> <buffer> <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
 
   imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
   imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
@@ -205,6 +206,8 @@ Default mappings:
 `JCgenerateAccessorSetterGetter` - generate getter and setter for field under cursor;
 
 `JCgenerateToString` - generate `toString` method;
+
+`JCgenerateEqualsAndHashCode` - generate `equals` and `hashCode` methods;
 
 
 `JCserverShowPort` - show port, through which vim plugin communicates with server;

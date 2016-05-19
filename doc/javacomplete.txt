@@ -49,7 +49,7 @@ javaparser library and javacomplete.txt.
 - Support for maven, gradle and Eclipse's '.classpath';
 - Cross-session cache;
 - Auto insert methods that need to be implemented;
-- Accessors generation.
+- `toString`, `equals`, `hashCode`, Accessors generation.
 
 1.2 Requirements				*javacomplete-requirements*
 
@@ -115,6 +115,7 @@ Default mappings:
     nmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
     nmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
     nmap <silent> <buffer> <leader>jts <Plug>(JavaComplete-Generate-ToString)
+    nmap <silent> <buffer> <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
 
     imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
     imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
@@ -325,6 +326,7 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCgenerateAccessorGetter - generate getter for field under cursor;
     JCgenerateAccessorSetterGetter - generate getter and setter for field under cursor;
     JCgenerateToString - generate 'toString' method;
+    JCgenerateEqualsAndHashCode - generate 'equals' and 'hashCode' methods;
 
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;

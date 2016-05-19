@@ -66,6 +66,7 @@ command! JCgenerateAccessorSetter call javacomplete#generators#Accessor('s')
 command! JCgenerateAccessorGetter call javacomplete#generators#Accessor('g')
 command! JCgenerateAccessorSetterGetter call javacomplete#generators#Accessor('sg')
 command! JCgenerateToString call javacomplete#generators#GenerateToString()
+command! JCgenerateEqualsAndHashCode call javacomplete#generators#GenerateEqualsAndHashCode()
 
 autocmd Filetype java,jsp JCstart
 
@@ -94,6 +95,7 @@ vnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generat
 vnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
 vnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
 nnoremap <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#GenerateToString()<cr>
+nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
