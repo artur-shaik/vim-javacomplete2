@@ -246,7 +246,10 @@ function! <SID>generateByTemplate(templates, ...)
             \ && index(toReplace, get(def, 'd', '')) > -1
             \ && has_key(def, 'body') && has_key(def.body, 'endpos')
 
-            let startline = java_parser#DecodePos(def.pos).line + 1
+            let startline = java_parser#DecodePos(def.pos).line
+            if !empty(getline(startline))
+              let startline += 1
+            endif
             let endline = java_parser#DecodePos(def.body.endpos).line + 1
             silent! execute startline.','.endline. 'delete _'
 
