@@ -154,6 +154,27 @@ let g:JavaComplete_Generators['equals'] = join([
   \ 'endfunction'
   \], "\n")
 
+let g:JavaComplete_Generators['constructor'] = join([
+  \ 'function! s:__constructor(class, ...)',
+  \ '   let parameters = ""',
+  \ '   let body = ""',
+  \ '   let idx = 0',
+  \ '   if a:0 == 0 || a:1.default != 1',
+  \ '       for field in a:class.fields',
+  \ '           if idx != 0',
+  \ '               let parameters .= ", "',
+  \ '           endif',
+  \ '           let parameters .= field.type . " ". field.name',
+  \ '           let body .= "this.". field.name ." = ". field.name .";\n"',
+  \ '           let idx += 1',
+  \ '       endfor',
+  \ '   endif',
+  \ '   let result = "public ". a:class.name ."(". parameters. ") {\n"',
+  \ '   let result .= body',
+  \ '   return result . "}"',
+  \ 'endfunction'
+  \], "\n")
+
 function! s:CollectVars()
   let currentFileVars = []
   for d in s:ti.defs
@@ -165,19 +186,34 @@ function! s:CollectVars()
   return currentFileVars
 endfunction
 
+function! javacomplete#generators#GenerateConstructor(default)
+  let defaultConstructorCommand = {'key': '1', 'desc': 'generate default constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'search'}, 'options': {'default': 1}}
+  if a:default == 0
+    let commands = [
+          \ defaultConstructorCommand,
+          \ {'key': '2', 'desc': 'generate constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'search'}}
+          \ ]
+    call s:FieldsListBuffer(commands)
+  else
+    let s:ti = javacomplete#collector#DoGetClassInfo('this')
+    let s:savedCursorPosition = getpos('.')
+    call <SID>generateByTemplate(defaultConstructorCommand)
+  endif
+endfunction
+
 function! javacomplete#generators#GenerateEqualsAndHashCode()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate("equals", "boolean equals(Object o)")<CR>'},
-        \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate("hashCode", "int hashCode()")<CR>'},
-        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate(["hashCode", "equals"], ["int hashCode()", "boolean equals(Object o)"])<CR>'}
+        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate', 'template': 'equals', 'replace': {'type': 'constant', 'value': 'boolean equals(Object o)'}},
+        \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate', 'template': 'hashCode', 'replace': {'type': 'constant', 'value': 'int hashCode()'}},
+        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate', 'template': ['hashCode', 'equals'], 'replace': {'type': 'constant', 'value': ['int hashCode()', 'boolean equals(Object o)']}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
 
 function! javacomplete#generators#GenerateToString()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate("toString_concat", "String toString()")<CR>'},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate("toString_StringBuilder", "String toString()")<CR>'}
+        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate', 'template': 'toString_concat', 'replace': {'type': 'constant', 'value': 'String toString()'}},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate', 'template': 'toString_StringBuilder', 'replace': {'type': 'constant', 'value': 'String toString()'}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
@@ -202,12 +238,12 @@ function! s:FieldsListBuffer(commands)
 endfunction
 
 " a:1 - method declaration to replace
-function! <SID>generateByTemplate(templates, ...)
+function! <SID>generateByTemplate(command)
+  let fields = []
   if bufname('%') == "__FieldsListBuffer__"
-    call s:Log("generate method with template: ". string(a:templates))
+    call s:Log("generate method with template: ". string(a:command.template))
 
     let currentBuf = getline(1,'$')
-    let fields = []
     for line in currentBuf
       if line =~ '^f[0-9]\+.*'
         let cmd = line[0]
@@ -217,53 +253,66 @@ function! <SID>generateByTemplate(templates, ...)
       endif
     endfor
 
-    let result = []
-    if len(fields) > 0
-      let templates = type(a:templates) != type([]) ? [a:templates] : a:templates
-      let class = {"name": b:currentFileVars[0].className, "fields": fields}
-      for template in templates
-        if has_key(g:JavaComplete_Generators, template)
-          execute g:JavaComplete_Generators[template]
+    execute "bwipeout!"
+  endif
 
-          let TemplateFunction = function('s:__'. template, [class])
-          call add(result, '')
-          for line in split(TemplateFunction(), '\n')
-            call add(result, line)
-          endfor
-        endif
+  let result = []
+  let templates = type(a:command.template) != type([]) ? [a:command.template] : a:command.template
+  let class = {"name": s:ti.name, "fields": fields}
+  for template in templates
+    if has_key(g:JavaComplete_Generators, template)
+      execute g:JavaComplete_Generators[template]
+
+      let arguments = [class]
+      if has_key(a:command, 'options')
+        call add(arguments, a:command.options)
+      endif
+      let TemplateFunction = function('s:__'. template, arguments)
+      call add(result, '')
+      for line in split(TemplateFunction(), '\n')
+        call add(result, line)
       endfor
     endif
+  endfor
 
-    execute "bwipeout!"
-
-    if len(result) > 0
-      if a:0 > 0
-        let toReplace = type(a:1) != type([]) ? [a:1] : a:1
-        let idx = 0
-        while idx < len(s:ti.defs)
-          let def = s:ti.defs[idx]
-          if get(def, 'tag', '') == 'METHODDEF' 
-            \ && index(toReplace, get(def, 'd', '')) > -1
-            \ && has_key(def, 'body') && has_key(def.body, 'endpos')
-
-            let startline = java_parser#DecodePos(def.pos).line
-            if !empty(getline(startline))
-              let startline += 1
-            endif
-            let endline = java_parser#DecodePos(def.body.endpos).line + 1
-            silent! execute startline.','.endline. 'delete _'
-
-            call setpos('.', s:savedCursorPosition)
-            let s:ti = javacomplete#collector#DoGetClassInfo('this')
-            let idx = 0
-          else
-            let idx += 1
-          endif
-        endwhile
+  if len(result) > 0
+    if has_key(a:command, 'replace')
+      if a:command.replace.type == 'constant'
+        let toReplace = type(a:command.replace.value) != type([]) ? [a:command.replace.value] : a:command.replace.value
+      elseif a:command.replace.type == 'search'
+        let defs = s:GetNewMethodsDefinitions(result)
+        let toReplace = []
+        for def in defs
+          call add(toReplace, def.d)
+        endfor
+      else
+        let toReplace = []
       endif
-      call s:InsertResults(result)
-      call setpos('.', s:savedCursorPosition)
+
+      let idx = 0
+      while idx < len(s:ti.defs)
+        let def = s:ti.defs[idx]
+        if get(def, 'tag', '') == 'METHODDEF' 
+          \ && index(toReplace, get(def, 'd', '')) > -1
+          \ && has_key(def, 'body') && has_key(def.body, 'endpos')
+
+          let startline = java_parser#DecodePos(def.pos).line
+          if !empty(getline(startline))
+            let startline += 1
+          endif
+          let endline = java_parser#DecodePos(def.body.endpos).line + 1
+          silent! execute startline.','.endline. 'delete _'
+
+          call setpos('.', s:savedCursorPosition)
+          let s:ti = javacomplete#collector#DoGetClassInfo('this')
+          let idx = 0
+        else
+          let idx += 1
+        endif
+      endwhile
     endif
+    call s:InsertResults(result)
+    call setpos('.', s:savedCursorPosition)
   endif
 endfunction
 
@@ -390,7 +439,7 @@ function! s:CreateBuffer(name, title, commands)
   for command in a:commands
     put = '\" '. command.key . '                      - '. command.desc
     if has_key(command, 'call')
-      exec "nnoremap <buffer> <silent> ". command.key . " :call ". command.call
+      exec "nnoremap <buffer> <silent> ". command.key . " :call ". command.call . "(". string(command). ")<CR>"
     endif
   endfor
   put = '\"-----------------------------------------------------'
@@ -488,7 +537,7 @@ function! s:CreateAccessors(map, result, var, cmd)
 endfunction
 
 function! <SID>generateAccessors(...)
-  let result = ['class tmp {']
+  let result = []
   let locationMap = []
   if bufname('%') == "__AccessorsBuffer__"
     call s:Log("generate accessor for selected fields")
@@ -533,44 +582,51 @@ function! <SID>generateAccessors(...)
     endfor
 
   endif
-  call add(result, '}')
 
   call s:InsertResults(s:FilterExistedMethods(locationMap, result))
 endfunction
 
+function! s:FilterExistedMethods(locationMap, result)
+  let resultMethods = []
+  for def in s:GetNewMethodsDefinitions(a:result)
+    if s:CheckImplementationExistense(s:ti, [], def)
+      continue
+    endif
+    for m in a:locationMap 
+      if m[0] <= def.beginline && m[1] >= def.endline
+        call extend(resultMethods, a:result[m[0] : m[1] -1])
+        break
+      endif
+    endfor
+  endfor
+
+  return resultMethods
+endfunction
+
 " create temporary buffer with class declaration, then parse it to get new 
 " methods definitions.
-function! s:FilterExistedMethods(locationMap, result)
+function! s:GetNewMethodsDefinitions(declarations)
   let n = bufwinnr("__tmp_buffer__")
   if n != -1
       execute "bwipeout!"
   endif
   silent! split __tmp_buffer__
-  call append(0, a:result)
+  let result = ['class Tmp {']
+  call extend(result, a:declarations)
+  call add(result, '}')
+  call append(0, result)
   let tmpClassInfo = javacomplete#collector#DoGetClassInfo('this', '__tmp_buffer__')
-
-  let resultMethods = []
+  let defs = []
   for def in get(tmpClassInfo, 'defs', [])
     if get(def, 'tag', '') == 'METHODDEF'
-      if s:CheckImplementationExistense(s:ti, [], def)
-        continue
-      endif
-      let begin = java_parser#DecodePos(def.pos).line
-      let end = java_parser#DecodePos(def.body.endpos).line
-      for m in a:locationMap 
-        if m[0] <= begin && m[1] >= end
-          let begin = m[0]
-          let end = m[1] - 1
-          break
-        endif
-      endfor
-      call extend(resultMethods, a:result[begin : end])
+      let def.beginline = java_parser#DecodePos(def.pos).line
+      let def.endline = java_parser#DecodePos(def.body.endpos).line
+      call add(defs, def)
     endif
   endfor
-
   execute "bwipeout!"
 
-  return resultMethods
+  return defs
 endfunction
 
 function! s:InsertResults(result)
