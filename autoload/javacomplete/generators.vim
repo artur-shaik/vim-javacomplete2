@@ -267,9 +267,9 @@ function! <SID>generateByTemplate(command)
       if has_key(a:command, 'options')
         call add(arguments, a:command.options)
       endif
-      let TemplateFunction = function('s:__'. template, arguments)
+      let TemplateFunction = function('s:__'. template)
       call add(result, '')
-      for line in split(TemplateFunction(), '\n')
+      for line in split(call(TemplateFunction, arguments), '\n')
         call add(result, line)
       endfor
     endif
