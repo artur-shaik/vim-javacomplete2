@@ -450,7 +450,7 @@ endfunction
 function! javacomplete#generators#Accessors()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
 
-  let commands = [{'key': 's', 'desc': 'generate accessors', 'call': '<SID>generateAccessors()<CR>'}]
+  let commands = [{'key': 's', 'desc': 'generate accessors', 'call': '<SID>generateAccessors'}]
   let contentLine = s:CreateBuffer("__AccessorsBuffer__", "remove unnecessary accessors", commands)
 
   let b:currentFileVars = s:CollectVars()
@@ -668,4 +668,4 @@ function! s:InsertResults(result)
   endif
 endfunction
 
-" vim:set fdm=marker sw=2 nowrap:
+" vim:set fdm=marker sw=3 nowrap:
