@@ -134,6 +134,11 @@ call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI()
   if get(g:, 'JC_ClassnameCompletedFlag', 0)
+    let line = getline('.')
+    if line[col('.') - 2] !~ '\v(\s|\.|\()'
+      return
+    endif
+
     let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
   endif
