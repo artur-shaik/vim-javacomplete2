@@ -21,17 +21,20 @@ function! s:Init()
   let s:et_whole = reltime()
 endfunction
 
-function! javacomplete#complete#complete#Complete(findstart, base)
+function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
   if a:findstart
     call s:Init()
     return javacomplete#complete#context#FindContext()
   endif
 
-  let result = javacomplete#complete#context#ExecuteContext(a:base)
+  let base = (a:is_filter) ? a:base :
+        \    (a:base =~ '^@') ? a:base[:2] : a:base[:1]
+  let result = javacomplete#complete#context#ExecuteContext(base)
   if len(result) > 0
     " filter according to b:incomplete
-    if len(b:incomplete) > 0 && b:incomplete != '+'
-      let result = filter(result, "type(v:val) == type('') ? v:val =~ '^" . b:incomplete . "' : v:val['word'] =~ '^" . b:incomplete . "'")
+    if a:is_filter && b:incomplete != '' && b:incomplete != '+'
+      let result = filter(result,
+            \ "type(v:val) == type('') ? v:val =~ '^" . b:incomplete . "' : v:val['word'] =~ '^" . b:incomplete . "'")
     endif
 
     if exists('s:padding') && !empty(s:padding)

@@ -115,7 +115,7 @@ function! javacomplete#ClearCache()
 endfunction
 
 function! javacomplete#Complete(findstart, base)
-  return javacomplete#complete#complete#Complete(a:findstart, a:base)
+  return javacomplete#complete#complete#Complete(a:findstart, a:base, 1)
 endfunction
 
 " key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.

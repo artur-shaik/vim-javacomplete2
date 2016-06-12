@@ -45,7 +45,7 @@ function! javacomplete#complete#context#FindContext()
 
   let start = col('.') - 1
 
-  if javacomplete#util#GetClassNameWithScope() =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
+  if statement =~ '^[@A-Z]\w*$'
     let b:context_type = g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS
 
     let curline = getline(".")
@@ -119,7 +119,7 @@ function! javacomplete#complete#context#FindContext()
       let b:context_type = g:JC__CONTEXT_NEED_TYPE
     else
       let stat = javacomplete#util#Trim(statement)
-      if matchend(stat, '.*@Override$') >= 0
+      if matchend(stat, '.*@Override\%(\s\+\w*\)\?$') >= 0
         let b:context_type = g:JC__CONTEXT_COMPLETE_ON_OVERRIDE
       endif
     endif
