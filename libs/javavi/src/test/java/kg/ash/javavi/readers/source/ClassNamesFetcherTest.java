@@ -10,9 +10,15 @@ import org.junit.Test;
 
 public class ClassNamesFetcherTest {
 
+    private String testClassDeclarationPath = 
+        "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
+    private String fetcherTestClassdeclarationPath = 
+        "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
+
     @Test
     public void testClassnamesFetch() throws Exception {
-        CompilationUnit cu = CompilationUnitCreator.createFromFile("src/test/resources/kg/ash/javavi/ClassWithClasses.java");
+        CompilationUnit cu = CompilationUnitCreator
+            .createFromFile(testClassDeclarationPath);
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 
@@ -26,11 +32,18 @@ public class ClassNamesFetcherTest {
 
     @Test
     public void testClassnamesFetchComplex() {
-        String waitFor = "UserTransaction, TestException, WebService, HashMap, TestResponse, Resource, TestClass, String, Logger, WebMethod, TestClassForbiddenException, Long, EJB, BeanClass1, InterceptorRefs, InterceptorRef, BeanClass2, WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, SomeClass, unusualClassName, FakeAttr, StaticClassName, AnotherStatic, ParentAnnotation, ChildAnnotation";
+        String waitFor = "UserTransaction, TestException, WebService, " 
+            + "HashMap, TestResponse, Resource, TestClass, String, " 
+            + "Logger, WebMethod, TestClassForbiddenException, Long, " 
+            + "EJB, BeanClass1, InterceptorRefs, InterceptorRef, BeanClass2, "
+            + "WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, "
+            + "SomeClass, unusualClassName, FakeAttr, StaticClassName, " 
+            + "AnotherStatic, ParentAnnotation, ChildAnnotation, format";
         Set<String> waitForList = new HashSet<String>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
-        CompilationUnit cu = CompilationUnitCreator.createFromFile("src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java");
+        CompilationUnit cu = CompilationUnitCreator
+            .createFromFile(fetcherTestClassdeclarationPath);
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 

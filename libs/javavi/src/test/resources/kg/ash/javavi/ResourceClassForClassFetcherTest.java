@@ -23,6 +23,7 @@ import javax.transaction.HeuristicMixedException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import static java.text.MessageFormat.format;
 /**
  *
  * @author Artur Shaikhullin <ashaihullin@gmail.com>
@@ -50,7 +51,7 @@ public class ResourceClassForClassFetcherTest {
 
 	private TestClass getTestClass(SomeClass source, String hash) throws TestClassForbiddenException {
 		try {
-            TestClass testClass = bean1.getByUniq(hash);
+            TestClass testClass = bean1.getByUniq(format(hash));
             String result = StaticClassName.staticMethod();
             String result2 = AnotherStatic.staticReference;
             return testClass;

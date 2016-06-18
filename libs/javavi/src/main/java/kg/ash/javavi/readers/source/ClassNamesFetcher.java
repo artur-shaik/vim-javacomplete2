@@ -1,6 +1,7 @@
 package kg.ash.javavi.readers.source;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.TreeVisitor;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -26,7 +27,8 @@ import java.util.Set;
 public class ClassNamesFetcher {
 
     private final CompilationUnit compilationUnit;
-    private final Set<String> resultList = new HashSet<String>();
+    private final Set<String> resultList = new HashSet<>();
+    private List<String> staticImportsList = new ArrayList<>();
 
     public ClassNamesFetcher(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
@@ -34,6 +36,12 @@ public class ClassNamesFetcher {
 
     @SuppressWarnings("unchecked")
     public Set<String> getNames() {
+        for (ImportDeclaration id : compilationUnit.getImports()) {
+            if (id.isStatic()) {
+                String name = id.getName().toString();
+                staticImportsList.add(name.substring(name.lastIndexOf(".") + 1, name.length()));
+            }
+        }
         List<VoidVisitorAdapter> adapters = new ArrayList<>();
         adapters.add(new ClassTypeVisitor());
         adapters.add(new TypesVisitor());
@@ -175,7 +183,14 @@ public class ClassNamesFetcher {
                     resultList.add(name);
                 }
             } else if (node instanceof MultiTypeParameter) {
-                ((MultiTypeParameter)node).getTypes().forEach(t -> resultList.add(t.toStringWithoutComments()));
+                ((MultiTypeParameter)node).getTypes()
+                    .forEach(t -> resultList.add(t.toStringWithoutComments()));
+            } else if (node instanceof MethodCallExpr) {
+                String name = ((MethodCallExpr) node).getName();
+                if (node.getChildrenNodes().size() <= 1
+                        && staticImportsList.contains(name)) {
+                    resultList.add(name);
+                }
             }
         }
     }
