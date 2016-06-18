@@ -186,9 +186,10 @@ public class ClassNamesFetcher {
                 ((MultiTypeParameter)node).getTypes()
                     .forEach(t -> resultList.add(t.toStringWithoutComments()));
             } else if (node instanceof MethodCallExpr) {
-                String name = ((MethodCallExpr) node).getName();
-                if (node.getChildrenNodes().size() <= 1
-                        && staticImportsList.contains(name)) {
+                MethodCallExpr methodCall = ((MethodCallExpr) node);
+                String name = methodCall.getName();
+                List<Node> children = node.getChildrenNodes();
+                if (children.equals(methodCall.getArgs()) && staticImportsList.contains(name)) {
                     resultList.add(name);
                 }
             }
