@@ -189,7 +189,11 @@ public class ClassNamesFetcher {
                 MethodCallExpr methodCall = ((MethodCallExpr) node);
                 String name = methodCall.getName();
                 List<Node> children = node.getChildrenNodes();
-                if (staticImportsList.contains(name) && children.equals(methodCall.getArgs())) {
+                List methodArgs = methodCall.getArgs();
+                if (methodArgs == null) {
+                    methodArgs = new ArrayList();
+                }
+                if (staticImportsList.contains(name) && children.equals(methodArgs)) {
                     resultList.add(name);
                 }
             }
