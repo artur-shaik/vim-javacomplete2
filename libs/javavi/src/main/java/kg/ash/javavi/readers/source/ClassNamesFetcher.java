@@ -32,16 +32,16 @@ public class ClassNamesFetcher {
 
     public ClassNamesFetcher(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Set<String> getNames() {
         for (ImportDeclaration id : compilationUnit.getImports()) {
             if (id.isStatic()) {
                 String name = id.getName().toString();
                 staticImportsList.add(name.substring(name.lastIndexOf(".") + 1, name.length()));
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getNames() {
         List<VoidVisitorAdapter> adapters = new ArrayList<>();
         adapters.add(new ClassTypeVisitor());
         adapters.add(new TypesVisitor());
