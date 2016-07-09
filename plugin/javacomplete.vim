@@ -101,6 +101,9 @@ nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#gene
 nnoremap <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
 nnoremap <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
 
+nnoremap <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
+inoremap <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
 " vim:set fdm=marker sw=2 nowrap:
