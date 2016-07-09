@@ -5,11 +5,11 @@
 
 function! javacomplete#parseradapter#Parse(...)
   let filename = a:0 == 0 ? '%' : a:1
+  let currentFilename = javacomplete#GetCurrentFileKey()
 
   let changed = 0
-  if filename == '%'
-    let filename = javacomplete#GetCurrentFileKey()
-    let props = get(g:JavaComplete_Files, filename, {})
+  if filename == '%' || currentFilename == filename
+    let props = get(g:JavaComplete_Files, currentFilename, {})
     if get(props, 'changedtick', -1) != b:changedtick
       let changed = 1
       let props.changedtick = b:changedtick
@@ -20,7 +20,11 @@ function! javacomplete#parseradapter#Parse(...)
     if get(props, 'modifiedtime', 0) != getftime(filename)
       let changed = 1
       let props.modifiedtime = getftime(filename)
-      let lines = readfile(filename)
+      if filename =~ '^__'
+        let lines = getline('^', '$')
+      else
+        let lines = readfile(filename)
+      endif
     endif
   endif
 
@@ -36,7 +40,9 @@ function! javacomplete#parseradapter#Parse(...)
     let package = has_key(props.unit, 'package') ? props.unit.package . '.' : ''
     call s:UpdateFQN(props.unit, package)
   endif
-  let g:JavaComplete_Files[filename] = props
+  if filename !~ '^__'
+    let g:JavaComplete_Files[filename] = props
+  endif
   return props.unit
 endfunction
 

@@ -60,6 +60,16 @@ command! JCcacheClear call javacomplete#ClearCache()
 
 command! JCstart call javacomplete#Start()
 
+command! JCgenerateAbstractMethods call javacomplete#generators#AbstractDeclaration()
+command! JCgenerateAccessors call javacomplete#generators#Accessors()
+command! JCgenerateAccessorSetter call javacomplete#generators#Accessor('s')
+command! JCgenerateAccessorGetter call javacomplete#generators#Accessor('g')
+command! JCgenerateAccessorSetterGetter call javacomplete#generators#Accessor('sg')
+command! JCgenerateToString call javacomplete#generators#GenerateToString()
+command! JCgenerateEqualsAndHashCode call javacomplete#generators#GenerateEqualsAndHashCode()
+command! JCgenerateConstructor call javacomplete#generators#GenerateConstructor(0)
+command! JCgenerateConstructorDefault call javacomplete#generators#GenerateConstructor(1)
+
 autocmd Filetype java,jsp JCstart
 
 function! s:nop(s)
@@ -71,11 +81,25 @@ inoremap <Plug>(JavaComplete-Imports-AddMissing) <c-r>=<SID>nop(javacomplete#imp
 nnoremap <Plug>(JavaComplete-Imports-RemoveUnused) :call javacomplete#imports#RemoveUnused()<cr>
 inoremap <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#imports#RemoveUnused())<cr>
 nnoremap <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
-nnoremap <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)<cr>
 inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
+nnoremap <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)<cr>
 inoremap <Plug>(JavaComplete-Imports-AddSmart) <c-r>=<SID>nop(javacomplete#imports#Add(1))<cr>
-
-
+nnoremap <Plug>(JavaComplete-Generate-AbstractMethods) :call javacomplete#generators#AbstractDeclaration()<cr>
+inoremap <Plug>(JavaComplete-Generate-AbstractMethods) <c-r>=<SID>nop(javacomplete#generators#AbstractDeclaration())<cr>
+nnoremap <Plug>(JavaComplete-Generate-Accessors) :call javacomplete#generators#Accessors()<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+nnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('s'))<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
+inoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+vnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
+nnoremap <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#GenerateToString()<cr>
+nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
+nnoremap <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
+nnoremap <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

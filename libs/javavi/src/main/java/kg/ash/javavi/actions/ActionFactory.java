@@ -30,6 +30,8 @@ public class ActionFactory {
                 return new CollectPackagesAction();
             case "-fetch-class-archives":
                 return new GetClassesArchiveNamesAction();
+            case "-class-info-by-content":
+                return new ParseByContentAction();
         }
 
         return null;

@@ -38,7 +38,9 @@ Features:
 - Adding imports automatically, includes `static` imports and imports of nested classes;
 - Complete methods declaration after '@Override';
 - Jsp support, without taglibs;
-- Cross-session cache.
+- Cross-session cache;
+- Auto insert methods that need to be implemented;
+- `toString`, `equals`, `hashCode`, Constructors, Accessors generation.
 
 Features (originally existed):
 - List members of a class, including (static) fields, (static) methods and ctors;
@@ -119,6 +121,41 @@ To remove all missing imports with F7:
 
 `imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
+Default mappings:
+
+```
+  nmap <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
+  nmap <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
+  nmap <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
+  nmap <leader>jii <Plug>(JavaComplete-Imports-Add)
+
+  imap <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
+  imap <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
+  imap <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
+  imap <C-j>ii <Plug>(JavaComplete-Imports-Add)
+
+  nmap <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  imap <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  nmap <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+  nmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  nmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  nmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+  nmap <leader>jts <Plug>(JavaComplete-Generate-ToString)
+  nmap <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
+  nmap <leader>jc <Plug>(JavaComplete-Generate-Constructor)
+  nmap <leader>jcc <Plug>(JavaComplete-Generate-DefaultConstructor)
+
+  imap <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+  imap <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+  imap <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  vmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  vmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  vmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+```
+
 ### Optional
 
 `g:JavaComplete_LibsPath` - path to additional jar files. This path appends with you libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
@@ -160,6 +197,25 @@ To remove all missing imports with F7:
 `JCimportAddSmart` - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing).
 
 
+`JCgenerateAbtractMethods` - generate methods that need to be implemented;
+
+`JCgenerateAccessors` - generate getters and setters for all fields;
+
+`JCgenerateAccessorSetter` - generate setter for field under cursor;
+
+`JCgenerateAccessorGetter` - generate getter for field under cursor;
+
+`JCgenerateAccessorSetterGetter` - generate getter and setter for field under cursor;
+
+`JCgenerateToString` - generate `toString` method;
+
+`JCgenerateEqualsAndHashCode` - generate `equals` and `hashCode` methods;
+
+`JCgenerateConstructor` - generate constructor with chosen fields;
+
+`JCgenerateConstructorDefault` - generate default constructor;
+
+
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
 
 `JCserverShowPID` - show server process identificator;
@@ -176,7 +232,6 @@ To remove all missing imports with F7:
 `JCdebugDisableLogs` - disable logs;
 
 `JCdebugGetLogContent` - get debug logs;
-
 
 `JCcacheClear` - clear cache manually.
 
@@ -207,3 +262,7 @@ To remove all missing imports with F7:
 ## FeedBack
 
 Any problems, bugs or suggestions are welcome to send to ashaihullin@gmail.com
+
+## Donation
+
+If you would like to speed up development, you can support me on: [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?fid=y79z9e&url=https://github.com/artur-shaik/vim-javacomplete2/&title=vim-javacomplete2&language=en_GB&tags=github&category=software)

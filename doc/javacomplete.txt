@@ -47,7 +47,9 @@ javaparser library and javacomplete.txt.
 - Add import statement for a given class name;
 - Complete methods declaration after '@Override';
 - Support for maven, gradle and Eclipse's '.classpath';
-- Cross-session cache.
+- Cross-session cache;
+- Auto insert methods that need to be implemented;
+- `toString`, `equals`, `hashCode`, Accessors generation.
 
 1.2 Requirements				*javacomplete-requirements*
 
@@ -90,6 +92,41 @@ For remove all missing imports with <F7>:
 
     nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
     imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
+
+
+Default mappings:
+
+    nmap <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
+    nmap <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
+    nmap <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
+    nmap <leader>jii <Plug>(JavaComplete-Imports-Add)
+
+    imap <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
+    imap <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
+    imap <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
+    imap <C-j>ii <Plug>(JavaComplete-Imports-Add)
+
+    nmap <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+    imap <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+    nmap <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+    nmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+    nmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+    nmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+    nmap <leader>jts <Plug>(JavaComplete-Generate-ToString)
+    nmap <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
+    nmap <leader>jc <Plug>(JavaComplete-Generate-Constructor)
+    nmap <leader>jcc <Plug>(JavaComplete-Generate-DefaultConstructor)
+
+    imap <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+    imap <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+    imap <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+    vmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+    vmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+    vmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
@@ -284,7 +321,17 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCimportsRemoveUnused - remove all unsused 'imports';
     JCimportAdd - add 'import' for classname that is under cursor, or before it;
     JCimportAddSmart - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing);
-    
+
+    JCfgenerateAbstractMethods - generate methods that need to be implemented;
+    JCgenerateAccessors - generate getters and setters for all fields;
+    JCgenerateAccessorSetter - generate setter for field under cursor;
+    JCgenerateAccessorGetter - generate getter for field under cursor;
+    JCgenerateAccessorSetterGetter - generate getter and setter for field under cursor;
+    JCgenerateToString - generate 'toString' method;
+    JCgenerateEqualsAndHashCode - generate 'equals' and 'hashCode' methods;
+    JCgenerateConstructor - generate constructor with chosen fields;
+    JCgenerateConstructorDefault - generate default constructor;
+
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
     JCserverStart - start server manually;

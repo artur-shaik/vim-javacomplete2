@@ -62,6 +62,12 @@ public class OutputClassInfo {
             .append(clazz.getName()).append("',")
             .append(Javavi.NEWLINE)
             .append("'classpath':'1',").append(Javavi.NEWLINE)
+            .append("'pos':[")
+                .append(clazz.getRegion().getBeginLine()).append(",")
+                .append(clazz.getRegion().getBeginColumn()).append("],")
+            .append("'endpos':[")
+                .append(clazz.getRegion().getEndLine()).append(",")
+                .append(clazz.getRegion().getEndColumn()).append("],")
             .append("'fqn':'")
             .append(clazz.getName()).append("',")
             .append(Javavi.NEWLINE);

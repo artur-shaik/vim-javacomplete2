@@ -8,11 +8,14 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -28,12 +31,26 @@ import kg.ash.javavi.searchers.FqnSearcher;
 public class Parser implements ClassReader {
 
     private String sources;
-    private String sourceFile;
+    private String sourceFile = null;
+    private String sourceContent = null;
+    private String targetClass = null;
     private ClassOrInterfaceDeclaration parentClass = null;
+
+    public Parser(String sources) {
+        this.sources = sources.replace('\\', '/');
+    }
 
     public Parser(String sources, String sourceFile) {
         this.sources = sources.replace('\\', '/');
         this.sourceFile = sourceFile.replace('\\', '/');
+    }
+
+    public void setSourceContent(String sourceContent) {
+        this.sourceContent = sourceContent;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     @Override
@@ -44,7 +61,10 @@ public class Parser implements ClassReader {
 
     @Override
     public SourceClass read(String targetClass) {
-        if (sourceFile == null || sourceFile.isEmpty()) return null;
+        if ((sourceFile == null || sourceFile.isEmpty()) && 
+                (sourceContent == null || sourceContent.isEmpty())) {
+            return null;
+        }
 
         Javavi.debug("from sources: " + targetClass);
 
@@ -56,7 +76,11 @@ public class Parser implements ClassReader {
             return Cache.getInstance().getClasses().get(targetClass);
         }
 
-        CompilationUnit cu = CompilationUnitCreator.createFromFile(sourceFile);
+        CompilationUnit cu = 
+            sourceFile != null ? 
+            CompilationUnitCreator.createFromFile(sourceFile) :
+            CompilationUnitCreator.createFromContent(sourceContent);
+
         if (cu == null) {
             return null;
         }
@@ -65,6 +89,7 @@ public class Parser implements ClassReader {
         Cache.getInstance().getClasses().put(targetClass, clazz);
 
         clazz.setPackage(cu.getPackage().getName().toString());
+        clazz.setRegion(cu.getBeginLine(), cu.getBeginColumn(), cu.getEndLine(), cu.getEndColumn());
 
         if (cu.getImports() != null) {
             for (ImportDeclaration id : cu.getImports()) {
@@ -144,6 +169,7 @@ public class Parser implements ClassReader {
             clazz.setName(n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
+            clazz.setRegion(n.getBeginLine(), n.getBeginColumn(), n.getEndLine(), n.getEndColumn());
             if (n.getExtends() != null && n.getExtends().size() > 0) {
                 String className = n.getExtends().get(0).getName();
                 clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
@@ -208,6 +234,12 @@ public class Parser implements ClassReader {
                     method.addTypeParameter(new ClassTypeParameter(parameter.getName()));
                 }
             }
+
+            if (n.getParameters() != null) {
+                for (Parameter parameter : n.getParameters()) {
+                    method.addTypeParameter(new ClassTypeParameter(parameter.getType().toStringWithoutComments()));
+                }
+            }
             clazz.addMethod(method);
         }
 
@@ -231,6 +263,7 @@ public class Parser implements ClassReader {
             clazz.setName(this.clazz.getSimpleName() + "$" + n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
+            clazz.setRegion(n.getBeginLine(), n.getBeginColumn(), n.getEndLine(), n.getEndColumn());
             if (n.getExtends() != null && n.getExtends().size() > 0) {
                 String className = n.getExtends().get(0).getName();
                 clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));

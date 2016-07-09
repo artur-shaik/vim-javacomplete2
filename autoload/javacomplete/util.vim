@@ -201,6 +201,24 @@ function! javacomplete#util#FindFile(what) abort
   endtry
 endfunction
 
+function! javacomplete#util#GlobPathList(path, pattern, suf, depth)
+  if v:version > 704 || v:version == 704 && has('patch279')
+    let pathList = globpath(a:path, a:pattern, a:suf, 1)
+  else
+    let pathList = split(globpath(a:path, a:pattern, a:suf), "\n")
+  endif
+  if a:depth > 0
+    let depths = []
+    for i in range(1, a:depth)
+      call add(depths, repeat("*".g:FILE_SEP, i))
+    endfor
+    for i in depths
+      call extend(pathList, javacomplete#util#GlobPathList(a:path, i. a:pattern, 0, 0))
+    endfor
+  endif
+  return pathList
+endfunction
+
 function! javacomplete#util#IsWindows() abort
   return has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
 endfunction
@@ -327,6 +345,35 @@ function! javacomplete#util#CheckModifier(modifier, condition)
     endif
     return 0
   endif
+endfunction
+
+function! javacomplete#util#GenMethodParamsDeclaration(method)
+  if has_key(a:method, 'p')
+    let match = matchlist(a:method.d, '^\(.*(\)')
+    if len(match) > 0
+      let d = match[1]
+      let match = matchlist(a:method.d, '.*)\(.*\)$')
+      let throws = len(match) > 0 ?  substitute(match[1], ',', ', ', 'g') : ''
+
+      let ds = []
+      let paramNames = []
+      for p in a:method.p
+        let repeats = count(a:method.p, p) > 1 ? 1 : 0
+        if index(g:J_PRIMITIVE_TYPES, p) >= 0
+          let var = p[0]
+        else
+          let p = javacomplete#util#CleanFQN(p)
+          let var = tolower(p[0]). p[1:]
+        endif
+        let match = matchlist(var, '^\([a-zA-Z0-9]\+\)\A*')
+        let countVar = count(paramNames, match[1]) + repeats
+        call add(paramNames, match[1])
+        call add(ds, p. ' '. match[1]. (countVar > 0 ? countVar : ""))
+      endfor
+      return d. join(ds, ', '). ')'. throws
+    endif
+  endif
+  return a:method.d
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

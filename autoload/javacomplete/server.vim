@@ -39,8 +39,18 @@ EOPC
 endfunction
 
 function! javacomplete#server#Terminate()
-  if s:Poll() != 0
+  if s:Poll()
     JavacompletePy bridgeState.terminateServer()
+
+    let pid = 0
+    JavacompletePy vim.command('let pid = %d' % bridgeState.pid())
+    if pid > 1
+      if g:JavaComplete_IsWindows
+        call system('taskkill /t /pid '. pid)
+      else
+        call system('kill '. (pid + 1))
+      endif
+    endif
   endif
 endfunction
 
@@ -154,7 +164,7 @@ fu! s:GetJavaviClassPath()
     call javacomplete#server#Compile()
   endif
 
-  if !empty(javacomplete#GlobPathList(javaviDir. 'target'. g:FILE_SEP. 'classes', '**'. g:FILE_SEP. '*.class', 1))
+  if !empty(javacomplete#util#GlobPathList(javaviDir. 'target'. g:FILE_SEP. 'classes', '**'. g:FILE_SEP. '*.class', 1, 0))
     return javaviDir. "target". g:FILE_SEP. "classes"
   else
     if !get(s:, 'compilationIsRunning', 0)
@@ -281,8 +291,8 @@ endfunction
 
 function! s:ExpandPathToJars(path, ...)
   if isdirectory(a:path)
-    return javacomplete#GlobPathList(a:path, "**5/*.jar", 1)
-    \ + javacomplete#GlobPathList(a:path, "**5/*.zip", 1)
+    return javacomplete#util#GlobPathList(a:path, "**5/*.jar", 1, 0)
+    \ + javacomplete#util#GlobPathList(a:path, "**5/*.zip", 1, 0)
   elseif index(['zip', 'jar'], fnamemodify(a:path, ':e')) != -1
     return [a:path]
   endif

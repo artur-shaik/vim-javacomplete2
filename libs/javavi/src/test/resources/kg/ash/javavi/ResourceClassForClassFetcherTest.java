@@ -23,17 +23,25 @@ import javax.transaction.HeuristicMixedException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import static java.text.MessageFormat.format;
 /**
  *
  * @author Artur Shaikhullin <ashaihullin@gmail.com>
  */
 
 @WebService(serviceName = "ResourceClassForClassFetcherTest")
+@InterceptorRefs({
+    @InterceptorRef("authStack"),
+    @InterceptorRef("loggingStack")
+})
 public class ResourceClassForClassFetcherTest {
 
     @Resource(attr = Attr.SOME_ATTR)
     private UserTransaction tx;
 
+    @ParentAnnotation({
+        @ChildAnnotation
+    })
 	private static final Logger logger = Logger.getLogger(ResourceClassForClassFetcherTest.class.getName());
     private static final HashMap<String, Long> hashMap1 = new HashMap();
     private static final HashMap<String, Long> hashMap2 = new HashMap();
@@ -43,12 +51,12 @@ public class ResourceClassForClassFetcherTest {
 
 	private TestClass getTestClass(SomeClass source, String hash) throws TestClassForbiddenException {
 		try {
-            TestClass testClass = bean1.getByUniq(hash);
+            TestClass testClass = bean1.getByUniq(format());
             String result = StaticClassName.staticMethod();
             String result2 = AnotherStatic.staticReference;
             return testClass;
 		} catch (TestClassForbiddenException ex) {
-			logger.warn(String.format("Wrong testClass: %s %s", hash, source));
+			logger.warn(String.format("Wrong testClass: %s %s", format(hash), source));
 			throw ex;
 		}
 	}

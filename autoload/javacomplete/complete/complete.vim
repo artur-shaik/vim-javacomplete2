@@ -9,7 +9,7 @@ let b:errormsg = ''
 
 function! s:Log(log)
   let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[complete] ". a:log)
+  call javacomplete#logger#Log("[complete] ". log)
 endfunction
 
 function! s:Init()
@@ -21,17 +21,20 @@ function! s:Init()
   let s:et_whole = reltime()
 endfunction
 
-function! javacomplete#complete#complete#Complete(findstart, base)
+function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
   if a:findstart
     call s:Init()
     return javacomplete#complete#context#FindContext()
   endif
 
-  let result = javacomplete#complete#context#ExecuteContext(a:base)
+  let base = (a:is_filter) ? a:base :
+        \    (a:base =~ '^@') ? a:base[:2] : a:base[:1]
+  let result = javacomplete#complete#context#ExecuteContext(base)
   if len(result) > 0
     " filter according to b:incomplete
-    if len(b:incomplete) > 0 && b:incomplete != '+'
-      let result = filter(result, "type(v:val) == type('') ? v:val =~ '^" . b:incomplete . "' : v:val['word'] =~ '^" . b:incomplete . "'")
+    if a:is_filter && b:incomplete != '' && b:incomplete != '+'
+      let result = filter(result,
+            \ "type(v:val) == type('') ? v:val =~ '^" . b:incomplete . "' : v:val['word'] =~ '^" . b:incomplete . "'")
     endif
 
     if exists('s:padding') && !empty(s:padding)
@@ -687,26 +690,8 @@ endfunction
 
 function! s:GenWord(method, kind, paren)
   if a:kind == 14 
-    if has_key(a:method, 'p')
-      let match = matchlist(a:method.d, '^\(.*(\)')
-      if len(match) > 0
-        let d = match[1]
-        let ds = []
-        for p in a:method.p
-          if index(g:J_PRIMITIVE_TYPES, p) >= 0
-            let var = p[0]
-          else
-            let p = javacomplete#util#CleanFQN(p)
-            let var = tolower(p)
-          endif
-          let match = matchlist(var, '^\([a-z0-9]\+\)\A*')
-          call add(ds, p . ' ' . match[1])
-        endfor
-        let d .= join(ds, ', ') . ') {'
-        return d
-      endif
-    endif
-    return a:method.d . ' {'
+
+    return javacomplete#util#GenMethodParamsDeclaration(a:method). ' {'
   else
     if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
       if !empty(a:paren)

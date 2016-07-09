@@ -5,7 +5,7 @@
 
 function! s:Log(log)
   let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[collector] ". a:log)
+  call javacomplete#logger#Log("[collector] ". log)
 endfunction
 
 " a:1 -	filepath
@@ -14,7 +14,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let class = type(a:class) == type({}) ? a:class.name : a:class
   call s:Log("get class info. class: ". class)
 
-  if has_key(g:JavaComplete_Cache, class)
+  if class != 'this' && class != 'super' && has_key(g:JavaComplete_Cache, class)
     call s:Log("class info from cache")
     return g:JavaComplete_Cache[class]
   endif
@@ -27,7 +27,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   let filekey = a:0 > 0 && len(a:1) > 0 ? a:1 : javacomplete#GetCurrentFileKey()
   let packagename = a:0 > 1 && len(a:2) > 0 ? a:2 : javacomplete#collector#GetPackageName()
 
-  let unit = javacomplete#parseradapter#Parse()
+  let unit = javacomplete#parseradapter#Parse(filekey)
   let pos = java_parser#MakePos(line('.') - 1, col('.') - 1)
   let t = get(javacomplete#parseradapter#SearchTypeAt(unit, pos), -1, {})
   if has_key(t, 'extends')
@@ -65,8 +65,15 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
     call s:Log('A0. ' . class)
     if !empty(t)
       return javacomplete#util#Sort(s:Tree2ClassInfo(t))
+    else
+      return {}
     endif
   endif
+  for def in get(t, 'defs', [])
+    if def.tag == 'CLASSDEF' && def.name == class
+      return javacomplete#util#Sort(s:Tree2ClassInfo(def))
+    endif
+  endfor
 
   let typename = class
 
@@ -237,11 +244,12 @@ function! s:Tree2ClassInfo(t)
       let def = tmp
       unlet tmp
     endif
-    if def.tag == 'METHODDEF'
+    let tag = get(def, 'tag', '')
+    if tag == 'METHODDEF'
       call add(def.n == t.name ? t.ctors : t.methods, def)
-    elseif def.tag == 'VARDEF'
+    elseif tag == 'VARDEF'
       call add(t.fields, def)
-    elseif def.tag == 'CLASSDEF'
+    elseif tag == 'CLASSDEF'
       call add(t.classes, t.fqn . '.' . def.name)
     endif
     unlet def
@@ -284,6 +292,7 @@ function! s:Tree2ClassInfo(t)
     endif
     let i += 1
   endwhile
+  let t.extends = javacomplete#util#uniq(extends)
 
   return t
 endfunction
@@ -636,6 +645,25 @@ function! s:DetermineMethod(methods, parameters)
     endif
   endfor
   return get(a:methods, -1, {})
+endfunction
+
+function! javacomplete#collector#CurrentFileInfo()
+  let currentBuf = getline(1,'$')
+  let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
+  let ti = javacomplete#collector#DoGetClassInfo('this')
+  if has_key(ti, 'name')
+    let package = javacomplete#collector#GetPackageName(). '.'. ti.name
+
+    call javacomplete#server#Communicate('-clear-from-cache', package, 's:CurrentFileInfo')
+    let response = javacomplete#server#Communicate('-class-info-by-content -target '. package. ' -content', base64Content, 'CurrentFileInfo')
+    if response =~ '^{'
+      return eval(response)
+    endif
+  else
+    call s:Log("`this` class parse error [CurrentFileInfo]")
+  endif
+
+  return {}
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

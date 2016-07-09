@@ -32,7 +32,7 @@ let g:J_ARRAY_TYPE_MEMBERS = [
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout) throws InterruptedException', },
       \	{'kind': 'm', 'dup': 1, 'word': 'wait(',	'abbr': 'wait()',	'menu': 'void Object.wait(long timeout, int nanos) throws InterruptedException', }]
 
-let g:J_ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [], 
+let g:J_ARRAY_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '[', 'ctors': [],
       \     'fields': [{'n': 'length', 'm': '1', 't': 'int'}],
       \     'methods':[
       \	{'n': 'clone',	  'm': '1',		'r': 'Object',	'p': [],		'd': 'Object clone()'},
@@ -52,7 +52,7 @@ let g:J_PRIMITIVE_TYPE_INFO = {'tag': 'CLASSDEF', 'name': '!', 'fields': [{'n': 
 let g:J_JSP_BUILTIN_OBJECTS = {'session':	'javax.servlet.http.HttpSession',
       \	'request':	'javax.servlet.http.HttpServletRequest',
       \	'response':	'javax.servlet.http.HttpServletResponse',
-      \	'pageContext':	'javax.servlet.jsp.PageContext', 
+      \	'pageContext':	'javax.servlet.jsp.PageContext',
       \	'application':	'javax.servlet.ServletContext',
       \	'config':	'javax.servlet.ServletConfig',
       \	'out':		'javax.servlet.jsp.JspWriter',
@@ -115,21 +115,7 @@ function! javacomplete#ClearCache()
 endfunction
 
 function! javacomplete#Complete(findstart, base)
-  return javacomplete#complete#complete#Complete(a:findstart, a:base)
-endfunction
-
-" workaround for https://github.com/artur-shaik/vim-javacomplete2/issues/20
-" should be removed in future versions
-function! javacomplete#GlobPathList(path, pattern, suf)
-  return s:GlobPathList(a:path, a:pattern, a:suf)
-endfunction
-
-function! s:GlobPathList(path, pattern, suf)
-  if has("patch-7.4.279")
-    return globpath(a:path, a:pattern, a:suf, 1)
-  else
-    return split(globpath(a:path, a:pattern, a:suf), "\n")
-  endif
+  return javacomplete#complete#complete#Complete(a:findstart, a:base, 1)
 endfunction
 
 " key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
@@ -148,13 +134,18 @@ call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI()
   if get(g:, 'JC_ClassnameCompletedFlag', 0)
+    let line = getline('.')
+    if line[col('.') - 2] !~ '\v(\s|\.|\(|\<)'
+      return
+    endif
+
     let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
   endif
 
   if get(g:, 'JC_DeclarationCompletedFlag', 0)
     let line = getline('.')
-    if line[col('.') - 2] != ' ' 
+    if line[col('.') - 2] != ' '
       return
     endif
 
@@ -186,7 +177,7 @@ function! s:HandleInsertLeave()
   endif
 endfunction
 
-function! javacomplete#UseFQN() 
+function! javacomplete#UseFQN()
   return get(g:, 'JavaComplete_UseFQN', 0)
 endfunction
 
@@ -201,9 +192,47 @@ function! s:RemoveCurrentFromCache()
   call javacomplete#server#Communicate('-async -recompile-class', fqn, 's:RemoveCurrentFromCache')
 endfunction
 
+function! s:DefaultMappings()
+  if !get(g:, "JavaComplete_EnableDefaultMappings", 1)
+    return
+  endif
+
+  nmap <silent> <buffer> <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
+  nmap <silent> <buffer> <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
+  nmap <silent> <buffer> <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
+  nmap <silent> <buffer> <leader>jii <Plug>(JavaComplete-Imports-Add)
+
+  imap <silent> <buffer> <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
+  imap <silent> <buffer> <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
+  imap <silent> <buffer> <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
+  imap <silent> <buffer> <C-j>ii <Plug>(JavaComplete-Imports-Add)
+
+  nmap <silent> <buffer> <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  imap <silent> <buffer> <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+
+  nmap <silent> <buffer> <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+  nmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  nmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  nmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+  nmap <silent> <buffer> <leader>jts <Plug>(JavaComplete-Generate-ToString)
+  nmap <silent> <buffer> <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
+  nmap <silent> <buffer> <leader>jc <Plug>(JavaComplete-Generate-Constructor)
+  nmap <silent> <buffer> <leader>jcc <Plug>(JavaComplete-Generate-DefaultConstructor)
+
+  imap <silent> <buffer> <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+  imap <silent> <buffer> <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+  imap <silent> <buffer> <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+  vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+  vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+endfunction
+
 augroup javacomplete
   autocmd!
   autocmd BufEnter *.java,*.jsp call s:SetCurrentFileKey()
+  autocmd BufEnter *.java call s:DefaultMappings()
   autocmd BufWritePost *.java call s:RemoveCurrentFromCache()
   autocmd VimLeave * call javacomplete#server#Terminate()
 
@@ -218,27 +247,19 @@ augroup javacomplete
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE_SEP. '?')
-let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), "p")
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p")
 
 call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
-let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', '')
-let s:sources = s:GlobPathList(getcwd(), 'src', 0)
-for i in ['*/', '*/*/', '*/*/*/']
-  call extend(s:sources, s:GlobPathList(getcwd(), i. g:FILE_SEP. 'src', 0))
-endfor
-for src in s:sources
-  if match(src, '.*build.*') < 0
-    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.src
-  endif
-endfor
-unlet s:sources
+let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', ''). g:PATH_SEP
+      \. join(filter(javacomplete#util#GlobPathList(getcwd(), 'src', 0, 3), "match(v:val, '.*build.*') < 0"), g:PATH_SEP)
 
 if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
-  let rjava = s:GlobPathList(getcwd(), join(['**', 'build', 'generated', 'source', '**', 'debug'], g:FILE_SEP), 0)
-  for r in rjava
-    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath. g:PATH_SEP.r
-  endfor
+    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath
+          \. g:PATH_SEP
+          \. join(javacomplete#util#GlobPathList(getcwd()
+          \, join(['**', 'build', 'generated', 'source', '**', 'debug'], g:FILE_SEP), 0, 0)
+          \, g:PATH_SEP)
 endif
 
 call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
