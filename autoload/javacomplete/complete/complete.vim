@@ -82,21 +82,31 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
   return result
 endfunction
 
-function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(base)
-  call s:Log("complete similar and local fields. base: ". a:base)
+function! javacomplete#complete#complete#CompleteSimilarClasses(base)
+  call s:Log("complete similar classes base: ". a:base)
 
   let result = []
   if a:base =~ g:RE_ANNOTATION || a:base == '@'
     let response = javacomplete#server#Communicate("-similar-annotations", a:base[1:], 'Filter packages by incomplete class name')
   else
     let b:incomplete = a:base
-    let result = s:DoGetMemberList(javacomplete#collector#DoGetClassInfo('this'), 7)
-    
     let response = javacomplete#server#Communicate("-similar-classes", a:base, 'Filter packages by incomplete class name')
   endif
   if response =~ '^['
     call extend(result, eval(response))
   endif
+  if !empty(result)
+    let g:JC_ClassnameCompletedFlag = 1
+  endif
+  return result
+endfunction
+
+function! javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(base)
+  call s:Log("complete similar classes and local fields. base: ". a:base)
+
+  let result =
+        \ javacomplete#complete#complete#CompleteSimilarClasses(a:base) +
+        \ s:DoGetMemberList(javacomplete#collector#DoGetClassInfo('this'), 7)
   if !empty(result)
     let g:JC_ClassnameCompletedFlag = 1
   endif
@@ -112,7 +122,7 @@ function! javacomplete#complete#complete#CompleteAnnotationsParameters(name)
   if !empty(identList)
     let name = identList[1]
     let ti = javacomplete#collector#DoGetClassInfo(name)
-    if has_key(ti, 'methods') 
+    if has_key(ti, 'methods')
       let methods = []
       for m in ti.methods
         if javacomplete#util#CheckModifier(m.m, g:JC_MODIFIER_ABSTRACT) && m.n !~ '^\(toString\|annotationType\|equals\|hashCode\)$'
@@ -289,7 +299,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
         let splitted = split(subs[0], '\.')
         if len(splitted) > 1
           let directFqn = javacomplete#imports#SearchSingleTypeImport(splitted[0], javacomplete#imports#GetImports('imports_fqn', javacomplete#GetCurrentFileKey()))
-          if empty(directFqn) 
+          if empty(directFqn)
             let s = subs[0]
           else
             let s = substitute(subs[0], '\.', '\$', 'g')
@@ -670,7 +680,7 @@ function! s:DoGetMethodList(methods, kind, ...)
   let paren = a:0 == 0 || !a:1 ? '(' : (a:1 == 2) ? ' = ' : ''
 
   let abbrEnd = ''
-  if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE 
+  if b:context_type != g:JC__CONTEXT_METHOD_REFERENCE
     if a:0 == 0 || !a:1
       let abbrEnd = '()'
     endif
@@ -689,7 +699,7 @@ function! s:DoGetMethodList(methods, kind, ...)
 endfunction
 
 function! s:GenWord(method, kind, paren)
-  if a:kind == 14 
+  if a:kind == 14
 
     return javacomplete#util#GenMethodParamsDeclaration(a:method). ' {'
   else

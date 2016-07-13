@@ -3,7 +3,7 @@ let g:JC__CONTEXT_METHOD_PARAM	        = 2
 let g:JC__CONTEXT_IMPORT		        = 3
 let g:JC__CONTEXT_IMPORT_STATIC	        = 4
 let g:JC__CONTEXT_PACKAGE_DECL	        = 6
-let g:JC__CONTEXT_NEED_TYPE		        = 7
+let g:JC__CONTEXT_COMPLETE_CLASSNAME	= 7
 let g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS	    = 8
 let g:JC__CONTEXT_METHOD_REFERENCE      = 9
 let g:JC__CONTEXT_ANNOTATION_FIELDS     = 10
@@ -22,8 +22,8 @@ function! s:ContextType2Str(type)
     return "CONTEXT_IMPORT"
   elseif a:type == g:JC__CONTEXT_AFTER_DOT
     return "CONTEXT_AFTER_DOT"
-  elseif a:type == g:JC__CONTEXT_NEED_TYPE
-    return "CONTEXT_NEED_TYPE"
+  elseif a:type == g:JC__CONTEXT_COMPLETE_CLASSNAME
+    return "CONTEXT_COMPLETE_CLASSNAME"
   elseif a:type == g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS
     return "CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS"
   elseif a:type == g:JC__CONTEXT_METHOD_PARAM
@@ -98,7 +98,7 @@ function! javacomplete#complete#context#FindContext()
         let b:dotexpr = substitute(statement, '\s*package\s\+', '', '')
       endif
 
-      " String literal
+    " String literal
     elseif statement =~  '"\s*\.\s*\(\S*\.\s*\|\S*\|\)$'
       let b:dotexpr = substitute(statement, '\s*\.\s*$', '\.', '')
       let b:dotexpr = b:dotexpr[:strridx(b:dotexpr, '.')]
@@ -108,15 +108,22 @@ function! javacomplete#complete#context#FindContext()
     elseif &ft == 'jsp' && statement =~# '.*page.*import.*'
       let b:context_type = g:JC__CONTEXT_IMPORT
       let b:dotexpr = javacomplete#scanner#ExtractCleanExpr(statement)
-    elseif matchend(statement, '^\s*' . g:RE_TYPE_DECL) != -1
-      " type declaration
 
-      let b:dotexpr = strpart(statement, idx_type)
+    " new
+    elseif matchend(statement, '\<new\s\+' . g:RE_QUALID . '$') != -1
+      let b:incomplete = substitute(statement, '^.*\<new\s\+', '', '')
+      let b:context_type = g:JC__CONTEXT_COMPLETE_CLASSNAME
+      return start - strlen(b:incomplete)
+
+    " type declaration
+    elseif matchend(statement, '^\s*' . g:RE_TYPE_DECL) != -1
+      if !matchend(statement, '\<(extends|implements)\s\+' . g:RE_QUALID . '$')
       " return if not after extends or implements
-      if b:dotexpr !~ '^\(extends\|implements\)\s\+'
         return -1
       endif
-      let b:context_type = g:JC__CONTEXT_NEED_TYPE
+      let b:incomplete = substitute(statement, '^.*\<\(extends\|implements\)\s\+', '', '')
+      let b:context_type = g:JC__CONTEXT_COMPLETE_CLASSNAME
+      return start - strlen(b:incomplete)
     else
       let stat = javacomplete#util#Trim(statement)
       if matchend(stat, '.*@Override\%(\s\+\w*\)\?$') >= 0
@@ -207,10 +214,12 @@ function! javacomplete#complete#context#ExecuteContext(base)
   if len(b:dotexpr) > 0
     call s:Log("dot expression: ". b:dotexpr)
   endif
-  
+
   " Try to complete incomplete class name
   if b:context_type == g:JC__CONTEXT_COMPLETE_CLASSNAME_AND_LOCAL_MEMBERS && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
     let result = javacomplete#complete#complete#CompleteSimilarClassesAndLocalMembers(a:base)
+  elseif b:context_type == g:JC__CONTEXT_COMPLETE_CLASSNAME && a:base =~ '^[@A-Z]\([A-Za-z0-9_]*\|\)$'
+    let result = javacomplete#complete#complete#CompleteSimilarClasses(a:base)
   elseif b:context_type == g:JC__CONTEXT_COMPLETE_ON_OVERRIDE
     let result = javacomplete#complete#complete#CompleteAfterOverride()
   endif
@@ -222,7 +231,7 @@ function! javacomplete#complete#context#ExecuteContext(base)
   if b:dotexpr !~ '^\s*$'
     if b:context_type == g:JC__CONTEXT_AFTER_DOT || b:context_type == g:JC__CONTEXT_METHOD_REFERENCE
       let result = javacomplete#complete#complete#CompleteAfterDot(b:dotexpr)
-    elseif b:context_type == g:JC__CONTEXT_IMPORT || b:context_type == g:JC__CONTEXT_IMPORT_STATIC || b:context_type == g:JC__CONTEXT_PACKAGE_DECL || b:context_type == g:JC__CONTEXT_NEED_TYPE
+    elseif b:context_type == g:JC__CONTEXT_IMPORT || b:context_type == g:JC__CONTEXT_IMPORT_STATIC || b:context_type == g:JC__CONTEXT_PACKAGE_DECL
       let result = javacomplete#complete#complete#GetMembers(b:dotexpr[:-2])
     elseif b:context_type == g:JC__CONTEXT_METHOD_PARAM
       if b:incomplete == '+'
