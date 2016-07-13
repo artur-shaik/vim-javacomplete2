@@ -820,7 +820,7 @@ function! s:GetMemberList(class)
   return s:DoGetMemberList(javacomplete#collector#DoGetClassInfo(a:class), 0)
 endfunction
 
-function! s:GetConstructorList(class)
+function! javacomplete#complete#complete#GetConstructorList(class)
   let ci = javacomplete#collector#DoGetClassInfo(a:class)
   if empty(ci)
     return []
