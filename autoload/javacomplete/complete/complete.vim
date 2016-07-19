@@ -83,7 +83,7 @@ function! javacomplete#complete#complete#CompleteAfterOverride()
 endfunction
 
 function! javacomplete#complete#complete#CompleteSimilarClasses(base)
-  call s:Log("complete similar classes base: ". a:base)
+  call s:Log("complete similar classes. base: ". a:base)
 
   let result = []
   if a:base =~ g:RE_ANNOTATION || a:base == '@'
