@@ -43,6 +43,7 @@ let g:JavaComplete_RegularClasses =
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
+command! JCimportsSort call javacomplete#imports#SortImports()
 command! JCimportAddSmart call javacomplete#imports#Add(1)
 command! JCimportAdd call javacomplete#imports#Add()
 
