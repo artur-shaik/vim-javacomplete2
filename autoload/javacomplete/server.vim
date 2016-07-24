@@ -80,6 +80,7 @@ function! javacomplete#server#Start()
     call s:Log("server arguments:". args)
 
     let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"
+    call s:Log("executing python file: " . file)
     execute "JavacompletePyfile ". file
 
     JavacompletePy import vim
@@ -141,7 +142,7 @@ function! javacomplete#server#Compile()
   call javacomplete#server#Terminate()
 
   let javaviDir = g:JavaComplete_Home. g:FILE_SEP. join(['libs', 'javavi'], g:FILE_SEP). g:FILE_SEP
-  if isdirectory(javaviDir. join(['target', 'classes'], g:FILE_SEP)) 
+  if isdirectory(javaviDir. join(['target', 'classes'], g:FILE_SEP))
     call javacomplete#util#RemoveFile(javaviDir.join(['target', 'classes'], g:FILE_SEP))
   endif
 
@@ -180,7 +181,7 @@ function! javacomplete#server#Communicate(option, args, log)
   endif
 
   if s:Poll()
-    if !empty(a:args) 
+    if !empty(a:args)
       let args = ' "'. substitute(a:args, '"', '\\"', 'g'). '"'
     else
       let args = ''

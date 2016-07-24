@@ -171,7 +171,7 @@ function! javacomplete#imports#SearchStaticImports(name, fullmatch)
   return result
 endfu
 
-function! s:SortImports()
+function! javacomplete#imports#SortImports()
   let imports = javacomplete#imports#GetImports('imports')
   if (len(imports) > 0)
     let beginLine = imports[0][1]
@@ -303,16 +303,32 @@ function! s:SortImportsList(importsList, ...)
   let sortType = a:0 > 0 ? a:1 : g:JavaComplete_ImportSortType
   let importsListSorted = []
   if sortType == 'packageName'
+    let beforeWildcardSorted = []
+    let afterWildcardSorted = ['']
+    let wildcardSeen = 0
     for a in g:JavaComplete_ImportOrder
+      if a ==? '*'
+        let wildcardSeen = 1
+        continue
+      endif
       let l_a = filter(copy(a:importsList),"v:val =~? '^" . substitute(a, '\.', '\\.', 'g') . "'")
       if len(l_a) > 0
         for imp in l_a
           call remove(a:importsList, index(a:importsList, imp))
-          call add(importsListSorted, imp)
+          if wildcardSeen == 0
+            call add(beforeWildcardSorted, imp)
+          else
+            call add(afterWildcardSorted, imp)
+          endif
         endfor
-        call add(importsListSorted, '')
+        if wildcardSeen == 0
+          call add(beforeWildcardSorted, '')
+        else
+          call add(afterWildcardSorted, '')
+        endif
       endif
     endfor
+    let importsListSorted = beforeWildcardSorted + a:importsList + afterWildcardSorted
   else
     let response = javacomplete#server#Communicate("-fetch-class-archives", join(a:importsList, ","), "Fetch imports jar archives")
     if response =~ '^['
@@ -327,14 +343,15 @@ function! s:SortImportsList(importsList, ...)
         call add(importsListSorted, '')
       endfor
     endif
+    if len(a:importsList) > 0
+      for imp in a:importsList
+        call add(importsListSorted, imp)
+      endfor
+    endif
   endif
-  if len(a:importsList) > 0
-    for imp in a:importsList
-      call add(importsListSorted, imp)
-    endfor
-  elseif len(importsListSorted) > 0
+  while (len(importsListSorted) > 0) && (importsListSorted[-1] ==? '')
     call remove(importsListSorted, -1)
-  endif
+  endwhile
   return importsListSorted
 endfunction
 
@@ -377,12 +394,12 @@ function! javacomplete#imports#Add(...)
 
       if !empty(import)
         call s:AddImport(import)
-        call s:SortImports()
+        call javacomplete#imports#SortImports()
       endif
     endif
   else
     call s:AddImport(s:RegularClassesDict[classname])
-    call s:SortImports()
+    call javacomplete#imports#SortImports()
   endif
 endfunction
 
@@ -476,7 +493,7 @@ function! javacomplete#imports#AddMissing()
         call s:AddImport(s:RegularClassesDict[classname])
       endif
     endfor
-    call s:SortImports()
+    call javacomplete#imports#SortImports()
   endif
 endfunction
 
