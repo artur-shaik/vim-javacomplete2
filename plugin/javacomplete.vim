@@ -43,6 +43,7 @@ let g:JavaComplete_RegularClasses =
 
 command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
+command! JCimportsSort call javacomplete#imports#SortImports()
 command! JCimportAddSmart call javacomplete#imports#Add(1)
 command! JCimportAdd call javacomplete#imports#Add()
 
@@ -100,6 +101,9 @@ nnoremap <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#Ge
 nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
 nnoremap <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
 nnoremap <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
+
+nnoremap <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
+inoremap <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

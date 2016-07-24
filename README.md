@@ -182,7 +182,7 @@ Default mappings:
 
 `let g:JavaComplete_ImportSortType = 'jarName'` - imports sorting type. Sorting can be by jar archives `jarName` or by package names `packageName`.
 
-`let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']` - Specifies the order of import groups, when use `packageName` sorting type. An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group.
+`let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']` - Specifies the order of import groups, when use `packageName` sorting type.  An import group is a list of individual import statements that all start with the same beginning of package name surrounded by blank lines above and below the group. A `*` indicates all packages not specified, for 'google style' import ordering, e.g. `let g:JavaComplete_ImportOrder = ['com.google.', *, 'java.', 'javax.']`
 
 `let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']` - Regular class names that will be used automatically when you insert import. You can populate it with your custom classes, or it will be populated automatically when you choose any import option. List will be persisted, so it will be used next time you run the same project.
 
