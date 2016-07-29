@@ -3,7 +3,6 @@ package kg.ash.javavi.readers.source;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.TreeVisitor;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -17,6 +16,7 @@ import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.visitor.TreeVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.ArrayList;
@@ -97,8 +97,8 @@ public class ClassNamesFetcher {
             }
 
             if (type.getThrows() != null) {
-                for (NameExpr expr : type.getThrows()) {
-                    resultList.add(expr.getName());
+                for (Type expr : type.getThrows()) {
+                    resultList.add(expr.toStringWithoutComments());
                 }
             }
         }
@@ -170,31 +170,38 @@ public class ClassNamesFetcher {
         public void process(Node node) {
             if (node instanceof ClassOrInterfaceType) {
                 adapter.visit((ClassOrInterfaceType)node, arg);
+            } else if (node instanceof MultiTypeParameter) {
+                ((MultiTypeParameter)node).getType().getElements()
+                    .forEach(t -> resultList.add(t.toStringWithoutComments()));
+            } else if (node instanceof MethodCallExpr) {
+                MethodCallExpr methodCall = ((MethodCallExpr) node);
+                String name = methodCall.getName();
+                List<Node> children = node.getChildrenNodes();
+                if (staticImportsList.contains(name) && children.get(0).toString().equals("null")) {
+                    resultList.add(name);
+                }
             } else if (node instanceof NameExpr) {
-
                 // javaparser has no difference on 'method call' expression,
                 // so class name with static method call look the same as
                 // object method call. that's why we check here for usual
                 // class name type with upper case letter at the beginning.
                 // it can miss some unusual class names with lower case at
                 // the beginning.
-                String name = ((NameExpr) node).getName();
-                if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
-                    resultList.add(name);
-                }
-            } else if (node instanceof MultiTypeParameter) {
-                ((MultiTypeParameter)node).getTypes()
-                    .forEach(t -> resultList.add(t.toStringWithoutComments()));
-            } else if (node instanceof MethodCallExpr) {
-                MethodCallExpr methodCall = ((MethodCallExpr) node);
-                String name = methodCall.getName();
-                List<Node> children = node.getChildrenNodes();
-                List methodArgs = methodCall.getArgs();
-                if (methodArgs == null) {
-                    methodArgs = new ArrayList();
-                }
-                if (staticImportsList.contains(name) && children.equals(methodArgs)) {
-                    resultList.add(name);
+                NameExpr nameExpr = (NameExpr) node;
+                String parent = "";
+                if (nameExpr.getParentNode() != null) {
+                    parent = nameExpr.getParentNode()
+                        .toStringWithoutComments();
+                } 
+                String name = nameExpr.getName();
+                if (name != null) {
+                    if (!parent.startsWith("@") && !parent.equals(name) && parent.endsWith(name)) {
+                        return;
+                    }
+
+                    if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
+                        resultList.add(name);
+                    }
                 }
             }
         }
