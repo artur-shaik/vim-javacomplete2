@@ -27,7 +27,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 
-      echomsg "Gradle classpath builded successfully"
+      echomsg "Gradle classpath built successfully"
     else
       echohl WarningMsg | echomsg "Failed to build gradle classpath" | echohl None
     endif

@@ -89,7 +89,7 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
       call javacomplete#server#Terminate()
       call javacomplete#server#Start()
 
-      echomsg "Maven classpath builded successfully"
+      echomsg "Maven classpath built successfully"
     else
       echohl WarningMsg | echomsg "Failed to build maven classpath" | echohl None
     endif
