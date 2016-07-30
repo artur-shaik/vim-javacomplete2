@@ -89,7 +89,7 @@ public class Parser implements ClassReader {
         Cache.getInstance().getClasses().put(targetClass, clazz);
 
         clazz.setPackage(cu.getPackage().getName().toString());
-        clazz.setRegion(cu.getBeginLine(), cu.getBeginColumn(), cu.getEndLine(), cu.getEndColumn());
+        clazz.setRegion(cu.getBegin().line, cu.getBegin().column, cu.getEnd().line, cu.getEnd().column);
 
         if (cu.getImports() != null) {
             for (ImportDeclaration id : cu.getImports()) {
@@ -169,7 +169,7 @@ public class Parser implements ClassReader {
             clazz.setName(n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
-            clazz.setRegion(n.getBeginLine(), n.getBeginColumn(), n.getEndLine(), n.getEndColumn());
+            clazz.setRegion(n.getBegin().line, n.getBegin().column, n.getEnd().line, n.getEnd().column);
             if (n.getExtends() != null && n.getExtends().size() > 0) {
                 String className = n.getExtends().get(0).getName();
                 clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
@@ -263,7 +263,7 @@ public class Parser implements ClassReader {
             clazz.setName(this.clazz.getSimpleName() + "$" + n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
-            clazz.setRegion(n.getBeginLine(), n.getBeginColumn(), n.getEndLine(), n.getEndColumn());
+            clazz.setRegion(n.getBegin().line, n.getBegin().column, n.getEnd().line, n.getEnd().column);
             if (n.getExtends() != null && n.getExtends().size() > 0) {
                 String className = n.getExtends().get(0).getName();
                 clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
