@@ -887,7 +887,7 @@ function! s:GetMembers(fqn, ...)
       endfor
     else
       let isClass = 1
-      let list += s:DoGetMemberList(v, b:context_type == g:JC__CONTEXT_IMPORT || b:context_type == g:JC__CONTEXT_NEED_TYPE ? 13 : b:context_type == g:JC__CONTEXT_IMPORT_STATIC ? 12 : 11)
+      let list += s:DoGetMemberList(v, b:context_type == g:JC__CONTEXT_IMPORT || b:context_type == g:JC__CONTEXT_COMPLETE_CLASSNAME ? 13 : b:context_type == g:JC__CONTEXT_IMPORT_STATIC ? 12 : 11)
     endif
   endif
 
