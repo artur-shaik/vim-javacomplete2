@@ -120,7 +120,7 @@ let g:JavaComplete_Generators['equals'] = join([
   \ '   let result = "@Override\n"',
   \ '   let result .= "public boolean equals(Object o) {\n"',
   \ '   let result .= "if (this == o) return true;\n"',
-  \ '   let result .= "if (o == null || getClass() != o.getClass()) return false;\n"',
+  \ '   let result .= "if (o == null || getClass() != o.getClass()) return false;\n\n"',
   \ '   let result .= a:class.name ." object = (". a:class.name .") o;\n\n"',
   \ '   let idx = 0',
   \ '   for field in a:class.fields',
