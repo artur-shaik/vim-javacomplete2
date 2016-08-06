@@ -90,7 +90,7 @@ let g:JavaComplete_Generators['hashCode'] = join([
   \ 'function! s:__hashCode(class)',
   \ '   let result = "@Override\n"',
   \ '   let result .= "public int hashCode() {\n"',
-  \ '   let result .= "int result = 27;\n"',
+  \ '   let result .= "int result = 17;\n"',
   \ '   for field in a:class.fields',
   \ '       if index(g:J_PRIMITIVE_TYPES, field.type) > -1',
   \ '           if field.type == "boolean"',
