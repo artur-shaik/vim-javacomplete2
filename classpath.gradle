@@ -29,7 +29,7 @@ task classpath << {
         }
     }
     if (proj.hasProperty("android")){
-      classpathFiles += proj.android.bootClasspath
+      classpathFiles += proj.android.getBootClasspath()
     }
 
     if (proj.hasProperty("sourceSets")) {
