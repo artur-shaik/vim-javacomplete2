@@ -106,6 +106,14 @@ fu! SScope()
   return s:
 endfu
 
+function! javacomplete#Disable()
+  let g:JavaComplete_Disabled = 1
+endfunction
+
+function! javacomplete#Enable()
+  let g:JavaComplete_Disabled = 0
+endfunction
+
 function! javacomplete#ClearCache()
   let g:JavaComplete_Cache = {}
   let g:JavaComplete_Files = {}

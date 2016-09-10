@@ -22,6 +22,10 @@ function! s:Init()
 endfunction
 
 function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
+  if get(g:, 'JavaComplete_Disabled', 0)
+    return
+  endif
+
   if a:findstart
     call s:Init()
     return javacomplete#complete#context#FindContext()
