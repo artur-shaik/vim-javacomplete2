@@ -70,7 +70,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
     endif
   endif
   for def in get(t, 'defs', [])
-    if def.tag == 'CLASSDEF' && def.name == class
+    if get(def, 'tag', '') == 'CLASSDEF' && get(def, 'name', '') == class
       return javacomplete#util#Sort(s:Tree2ClassInfo(def))
     endif
   endfor
