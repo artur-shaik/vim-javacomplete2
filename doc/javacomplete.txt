@@ -315,6 +315,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_UsePython3 = 1
         an option to make javacomplete2 use python3 interpreter instead of python2, default value is 0.
 
+	Disable javacomplete2 default mappings:
+		let g:JavaComplete_EnableDefaultMappings = 0 
+
+
+
 2.4 Commands					*javacomplete-commands*
 
     JCimportsAddMissing - add all missing 'imports';
