@@ -1,5 +1,6 @@
 let s:pomProperties={}   "maven project properties
 let s:pomTags = ['build', 'properties']
+let s:mavenErrors = []
 
 function! javacomplete#classpath#maven#IfMaven()
   if executable('mvn') && g:JavaComplete_PomPath != ""
@@ -91,6 +92,8 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
 
       echomsg "Maven classpath built successfully"
     else
+      echoerr join(s:mavenErrors, "\n")
+      let s:mavenErrors = []
       echohl WarningMsg | echomsg "Failed to build maven classpath" | echohl None
     endif
 
@@ -108,7 +111,7 @@ function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
     call extend(s:mavenSettingsOutput, a:data)
   elseif a:event == 'stderr'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
-        echoerr data
+      call add(s:mavenErrors, data)
     endfor
   endif
 endfunction
