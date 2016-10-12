@@ -106,15 +106,21 @@ function! s:MergeLines(lnum, col, lnum_old, col_old)
     let str = substitute(str, '\(' . g:RE_TYPE_ARGUMENTS . '\)', '\=repeat("", len(submatch(1)))', 'g')
   endwhile
   let str = substitute(str, '\s\s\+', ' ', 'g')
-  let str = substitute(str, '\([.()]\)[ \t]\+', '\1', 'g')
-  let str = substitute(str, '[ \t]\+\([.()]\)', '\1', 'g')
+  if str !~ '.*'. g:RE_KEYWORDS. '.*'
+    let str = substitute(str, '\([.()]\)[ \t]\+', '\1', 'g')
+    let str = substitute(str, '[ \t]\+\([.()]\)', '\1', 'g')
+  endif
   return javacomplete#util#Trim(str) . matchstr(lastline, '\s*$')
 endfunction
 
 " Extract a clean expr, removing some non-necessary characters. 
 function! javacomplete#scanner#ExtractCleanExpr(expr)
-  let cmd = substitute(a:expr, '[ \t\r\n]\+\([.()[\]]\)', '\1', 'g')
-  let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
+  if a:expr !~ '.*'. g:RE_KEYWORDS. '.*'
+    let cmd = substitute(a:expr, '[ \t\r\n]\+\([.()[\]]\)', '\1', 'g')
+    let cmd = substitute(cmd, '\([.()[\]]\)[ \t\r\n]\+', '\1', 'g')
+  else
+    let cmd = a:expr
+  endif
 
   let pos = strlen(cmd)-1 
   while pos >= 0 && cmd[pos] =~ '[a-zA-Z0-9_.)\]:<>]'
