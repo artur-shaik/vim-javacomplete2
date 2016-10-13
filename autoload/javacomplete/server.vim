@@ -58,6 +58,21 @@ function! javacomplete#server#Start()
   if s:Poll() == 0 && s:serverStartBlocked == 0
     call s:Log("start server")
 
+    JavacompletePy import vim
+    let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"
+    call s:Log("executing python file: " . file)
+    execute "JavacompletePyfile ". file
+
+    let javaProps = []
+    if get(g:, 'JavaComplete_JavaviLogLevel')
+      call add(javaProps, '-Dlog.level='. g:JavaComplete_JavaviLogLevel)
+    endif
+    if get(g:, 'JavaComplete_JavaviLogDirectory', 0)
+      call add(javaProps, '-Dlog.directory='. g:JavaComplete_JavaviLogDirectory')
+    endif
+    JavacompletePy vim.command('let port = "%s"' % SERVER[1])
+    call add(javaProps, '-Ddaemon.port='. port)
+
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
     let sources = ''
     if exists('g:JavaComplete_SourcesPath')
@@ -68,22 +83,16 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_ServerAutoShutdownTime')
       let args .= ' -t '. g:JavaComplete_ServerAutoShutdownTime
     endif
-    if exists('g:JavaComplete_JavaviDebug') && g:JavaComplete_JavaviDebug
-      let args .= ' -d'
-    endif
     let args .= ' -base "'. substitute(javacomplete#util#GetBase(''), '\\', '\\\\', 'g'). '"'
     let args .= ' -compiler "'. substitute(javacomplete#server#GetCompiler(), '\\', '\\\\', 'g'). '"'
     if !empty(g:JavaComplete_ProjectKey)
       let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'
     endif
+
+    let args = join(javaProps, ' '). ' '. args
     call s:Log("server classpath: -cp ". classpath)
     call s:Log("server arguments:". args)
 
-    let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"
-    call s:Log("executing python file: " . file)
-    execute "JavacompletePyfile ". file
-
-    JavacompletePy import vim
     JavacompletePy bridgeState = JavaviBridge()
     JavacompletePy bridgeState.setupServer(vim.eval('javacomplete#server#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
 
@@ -207,7 +216,7 @@ endfunction
 
 function! javacomplete#server#GetClassPath()
   let jars = s:GetExtraPath()
-  let path = s:GetJavaviClassPath() . g:PATH_SEP. s:GetJavaParserClassPath(). g:PATH_SEP
+  let path = s:GetJavaviClassPath() . g:PATH_SEP. s:GetJavaviDeps(). g:PATH_SEP
   let path = path . join(jars, g:PATH_SEP) . g:PATH_SEP
 
   if &ft == 'jsp'
@@ -254,8 +263,12 @@ function! s:ExpandAllPaths(path)
     return result
 endfunction
 
-function! s:GetJavaParserClassPath()
-  let path = g:JavaComplete_JavaParserJar . g:PATH_SEP
+function! s:GetJavaviDeps()
+  let deps = []
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p"))
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'log4j-api.jar'], g:FILE_SEP), ":p"))
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'log4j-core.jar'], g:FILE_SEP), ":p"))
+  let path = join(deps, g:PATH_SEP)
   if exists('b:classpath') && b:classpath !~ '^\s*$'
     return path . b:classpath
   endif

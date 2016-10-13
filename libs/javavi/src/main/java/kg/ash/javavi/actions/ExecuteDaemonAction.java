@@ -14,8 +14,8 @@ public class ExecuteDaemonAction implements Action {
             return "";
         }
 
-        parseArgs(args);
-        if (daemonPort == null) {
+        daemonPort = Integer.valueOf(System.getProperty("daemon.port", "0"));
+        if (daemonPort == 0) {
             return "Error: daemonPort is null";
         }
 
@@ -29,10 +29,6 @@ public class ExecuteDaemonAction implements Action {
     private void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
-                case "-D": {
-                    daemonPort = Integer.parseInt(args[i+1]);
-                    break;
-                }
                 case "-t": {
                     timeoutSeconds = Integer.parseInt(args[i+1]);
                     break;
