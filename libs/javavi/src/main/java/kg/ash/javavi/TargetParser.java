@@ -1,9 +1,10 @@
 package kg.ash.javavi;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.List;
+
 import kg.ash.javavi.searchers.ClassSearcher;
 
 public class TargetParser {
@@ -71,8 +72,6 @@ public class TargetParser {
     }
 
     private String markSplits(String ta) {
-        Javavi.debug("markSplits: " + ta);
-
         int i = 0;
         int lbr = 0;
         while (i < ta.length()) {

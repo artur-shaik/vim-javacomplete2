@@ -10,13 +10,20 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 import java.util.zip.ZipFile;
-import kg.ash.javavi.Javavi;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.searchers.JavaClassMap;
 
 public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
+    public static final Logger logger = LogManager.getLogger();
+
     private ByExtensionVisitor finder 
-        = new ByExtensionVisitor(Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class"));
+        = new ByExtensionVisitor(
+                Arrays.asList(
+                    "*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class"));
     
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
@@ -28,9 +35,15 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     String path = filePath.substring(0, filePath.length() - 6).replaceAll("/", ".");
                     String newPath = path.substring(0, path.lastIndexOf("."));
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
-                    Optional<String> knownPath = knownPaths.parallelStream().filter(s -> newPath.endsWith(s)).findFirst();
+                    Optional<String> knownPath = knownPaths.parallelStream()
+                        .filter(s -> newPath.endsWith(s)).findFirst();
+                    
                     if (knownPath.isPresent()) {
-                        result.add(new PackageEntry(knownPath.get() + File.separator + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                        result.add(new PackageEntry(
+                                    knownPath.get() + File.separator + fileName + ".class", 
+                                    JavaClassMap.SOURCETYPE_CLASSPATH, 
+                                    filePath, 
+                                    PackageEntry.FILETYPE_CLASS));
                         return;
                     }
                     String[] split = path.split("\\.");
@@ -42,7 +55,11 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                         }
                         String pkg = getPackageByFile(path + fileName);
                         if (pkg != null) {
-                            result.add(new PackageEntry(pkg + File.separator + fileName + ".class", JavaClassMap.SOURCETYPE_CLASSPATH, filePath, PackageEntry.FILETYPE_CLASS));
+                            result.add(new PackageEntry(
+                                        pkg + File.separator + fileName + ".class", 
+                                        JavaClassMap.SOURCETYPE_CLASSPATH, 
+                                        filePath, 
+                                        PackageEntry.FILETYPE_CLASS));
                             knownPaths.add(pkg);
                             break;
                         } else {
@@ -56,7 +73,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                             result.add(new PackageEntry(entry, JavaClassMap.SOURCETYPE_CLASSPATH, filePath));
                         }
                     } catch (Exception e) {
-                        Javavi.debug(e);
+                        logger.error(e, e);
                     }
                 }
             });
@@ -102,8 +119,8 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
             try {
                 Files.walkFileTree(Paths.get(dir.getPath()), finder);
                 result.addAll(finder.getResultList());
-            } catch (IOException ex) {
-                Javavi.debug(ex);
+            } catch (IOException e) {
+                logger.error(e, e);
             }
         }
 

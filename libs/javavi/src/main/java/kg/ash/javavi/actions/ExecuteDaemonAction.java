@@ -1,9 +1,14 @@
 package kg.ash.javavi.actions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.Daemon;
 import kg.ash.javavi.Javavi;
 
 public class ExecuteDaemonAction implements Action {
+
+    public static final Logger logger = LogManager.getLogger();
 
     private Integer daemonPort = null;
     private Integer timeoutSeconds = -1;
@@ -19,7 +24,7 @@ public class ExecuteDaemonAction implements Action {
             return "Error: daemonPort is null";
         }
 
-        Javavi.debug("Starting daemon mode");
+        logger.debug("starting daemon mode");
         Javavi.daemon = new Daemon(daemonPort, timeoutSeconds);
         Javavi.daemon.start();
 

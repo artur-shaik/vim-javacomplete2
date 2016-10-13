@@ -4,10 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import kg.ash.javavi.Javavi;
-import kg.ash.javavi.readers.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import kg.ash.javavi.readers.ClassReader;
+import kg.ash.javavi.readers.Parser;
+import kg.ash.javavi.readers.Reflection;
 
 public class ClassSearcher {
+
+    public static final Logger logger = 
+        LogManager.getLogger();
 
     private boolean isReflected = false;
     private boolean isInSource = false;
@@ -15,7 +23,7 @@ public class ClassSearcher {
     private String sourceFile = null;
 
     public boolean find(String targetClass, String sources) {
-        Javavi.debug("Search class: " + targetClass);
+        logger.debug("executing search of \"{}\"", targetClass);
 
         this.sources = sources;
         if (Reflection.exist(targetClass) || Reflection.exist("java.lang." + targetClass)) {
@@ -37,8 +45,8 @@ public class ClassSearcher {
                         isInSource = true;
                         return true;
                     }
-                } catch (IOException ex) {
-                    Javavi.debug(ex);
+                } catch (IOException e) {
+                    logger.error(e, e);
                 }
             }
         }

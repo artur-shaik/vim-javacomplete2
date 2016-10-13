@@ -10,9 +10,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.cache.Cache;
 
 public class Daemon extends Thread {
+
+    public static final Logger logger = 
+        LogManager.getLogger();
 
     private int port;
     private int timeoutSeconds;
@@ -49,8 +56,11 @@ public class Daemon extends Thread {
                 if (timeoutTask != null) timeoutTask.cancel();
 
                 try (
-                    BufferedReader is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    PrintStream os = new PrintStream(clientSocket.getOutputStream())
+                    BufferedReader is = new BufferedReader(
+                        new InputStreamReader(
+                            clientSocket.getInputStream()));
+                    PrintStream os = new PrintStream(
+                        clientSocket.getOutputStream())
                 ) {
                     while (true) {
                         String[] request = parseRequest(is.readLine());
@@ -61,11 +71,10 @@ public class Daemon extends Thread {
                         break;
                     }
                 } catch (Throwable e) {
-                    e.printStackTrace();
-                    Javavi.debug(e);
+                    logger.error(e, e);
                 }
             } catch (IOException e) {
-                Javavi.debug(e);
+                logger.error(e);
                 break;
             }
         }
@@ -129,7 +138,7 @@ public class Daemon extends Thread {
 
     class TimeoutTask extends TimerTask {
         public void run() {
-            System.out.println("Shutdown by timeout timer.");
+            logger.info("Shutdown by timeout timer.");
             System.exit(0);
         }
     }

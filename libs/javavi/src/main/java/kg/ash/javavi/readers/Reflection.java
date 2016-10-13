@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import kg.ash.javavi.Javavi;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -25,6 +28,8 @@ import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.ClassSearcher;
 
 public class Reflection implements ClassReader {
+
+    public static final Logger logger = LogManager.getLogger();
 
     private String sources;
     private List<String> typeArguments = null;
@@ -59,7 +64,9 @@ public class Reflection implements ClassReader {
     @Override
     public SourceClass read(String name) {
         String nameWithArguments = getNameWithArguments(name);
-        Javavi.debug("from reflection: " + nameWithArguments);
+
+        logger.debug("read class with reflections: {}", nameWithArguments);
+
         if (Cache.getInstance().getClasses().containsKey(nameWithArguments)) {
             return Cache.getInstance().getClasses().get(nameWithArguments);
         }
@@ -74,7 +81,7 @@ public class Reflection implements ClassReader {
                 try {
                     return getSourceClass(clazz);
                 } catch (Throwable t) {
-                    Javavi.debug(t);
+                    logger.error(t, t);
                 }
             }
         }
@@ -83,14 +90,14 @@ public class Reflection implements ClassReader {
             Class clazz = Class.forName(name);
             return getSourceClass(clazz);
         } catch (Exception ex) {
-            Javavi.debug(ex);
+            logger.error(ex, ex);
         }
 
         try {
             Class clazz = Class.forName("java.lang." + name);
             return getSourceClass(clazz);
         } catch (Exception ex) {
-            Javavi.debug(ex);
+            logger.error(ex, ex);
         }
 
         String binaryName = name;
@@ -106,7 +113,7 @@ public class Reflection implements ClassReader {
                 Class clazz = Class.forName(binaryName);
                 return getSourceClass(clazz);
             } catch (Exception ex) {
-                Javavi.debug(ex);
+                logger.error(ex, ex);
             }
         }
 

@@ -16,7 +16,9 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import kg.ash.javavi.Javavi;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -29,6 +31,8 @@ import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.FqnSearcher;
 
 public class Parser implements ClassReader {
+
+    public static final Logger logger = LogManager.getLogger();
 
     private String sources;
     private String sourceFile = null;
@@ -66,7 +70,7 @@ public class Parser implements ClassReader {
             return null;
         }
 
-        Javavi.debug("from sources: " + targetClass);
+        logger.debug("read class from sources: {}", targetClass);
 
         if (targetClass.contains("$")) {
             targetClass = targetClass.split("\\$")[0];

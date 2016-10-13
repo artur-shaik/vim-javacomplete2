@@ -2,9 +2,13 @@ package kg.ash.javavi;
 
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.actions.Action;
 import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.clazz.SourceClass;
+
 
 public class Javavi {
 
@@ -12,16 +16,10 @@ public class Javavi {
 
     public static String NEWLINE = "";
 
-    static boolean debugMode = false;
-
-    public static void debug(Object s) {
-        if (debugMode)
-            System.out.println(s);
-    }
+    public static final Logger logger = LogManager.getLogger();
 
     static void output(String s) {
-        if (!debugMode)
-            System.out.print(s);
+        System.out.print(s);
     }
 
     private static void usage() {
@@ -43,10 +41,12 @@ public class Javavi {
     public static HashMap<String,String> system = new HashMap<>();
     public static Daemon daemon = null;
 
-    public static void main( String[] args ) throws Exception {
+    public static void main(String[] args) throws Exception {
+        logger.info("starting javavi server on port: {}", 
+                System.getProperty("daemon.port", "0"));
+
         String response = makeResponse(args);
 
-        debug(response);
         output(response);
     }
 
@@ -56,7 +56,7 @@ public class Javavi {
         boolean asyncRun = false;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            debug(arg);
+            logger.debug("argument: {}", arg);
             switch (arg) {
                 case "-h":
                     usage();
@@ -69,9 +69,6 @@ public class Javavi {
                     break;
                 case "-n":
                     NEWLINE = "\n";
-                    break;
-                case "-d":
-                    Javavi.debugMode = true;
                     break;
                 case "-base":
                     system.put("base", args[++i]);
@@ -98,6 +95,10 @@ public class Javavi {
 
         String result = "";
         if (action != null) {
+            logger.debug("new {} action: \"{}\"", 
+                    asyncRun ? "async" : "", 
+                    action.getClass().getSimpleName());
+
             if (asyncRun) {
                 final Action a = action;
                 new Thread(() -> { a.perform(args); }).start();

@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import kg.ash.javavi.Javavi;
-
 public class ByExtensionVisitor extends SimpleFileVisitor<Path> {
 
     private final List<PathMatcher> matchers = new ArrayList<>();
@@ -57,7 +55,6 @@ public class ByExtensionVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        Javavi.debug(exc);
         return FileVisitResult.CONTINUE;
     }
 }

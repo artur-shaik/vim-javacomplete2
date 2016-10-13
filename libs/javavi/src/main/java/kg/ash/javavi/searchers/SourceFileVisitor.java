@@ -8,8 +8,6 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import kg.ash.javavi.Javavi;
-
 public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
     private final PathMatcher matcher;
@@ -90,7 +88,6 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFileFailed(Path file,
             IOException exc) {
-        Javavi.debug(exc);
         return FileVisitResult.CONTINUE;
     }
 }

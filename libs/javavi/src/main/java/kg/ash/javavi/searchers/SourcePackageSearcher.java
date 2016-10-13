@@ -2,6 +2,7 @@ package kg.ash.javavi.searchers;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,11 +10,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 import java.util.List;
-import kg.ash.javavi.Javavi;
+import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SourcePackageSearcher implements PackageSeacherIFace {
+
+    public static final Logger logger = LogManager.getLogger();
 
     private String sourceDirectories = "";
     private ByExtensionVisitor finder = 
@@ -37,8 +42,8 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
                         result.add(new PackageEntry(packagePath, JavaClassMap.SOURCETYPE_SOURCES, path, PackageEntry.FILETYPE_JAVA));
                     }
                 }
-            } catch (IOException ex) {
-                Javavi.debug(ex);
+            } catch (IOException e) {
+                logger.error(e, e);
             }
         }
         return result;

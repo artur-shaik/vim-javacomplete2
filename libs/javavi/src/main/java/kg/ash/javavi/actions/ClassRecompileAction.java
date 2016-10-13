@@ -1,12 +1,18 @@
 package kg.ash.javavi.actions;
 
 import java.io.File;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.JavaClassMap;
 
 public class ClassRecompileAction extends ActionWithTarget {
+
+    public static final Logger logger = LogManager.getLogger();
 
     @Override 
     public String perform(String[] args) {
@@ -34,12 +40,11 @@ public class ClassRecompileAction extends ActionWithTarget {
     }
 
     private void execute(String command) {
-        Javavi.debug(command);
         try {
             Process p = Runtime.getRuntime().exec(command);
             p.waitFor();
         } catch (Exception e) {
-            Javavi.debug(e);
+            logger.error(e);
         }
     }
 

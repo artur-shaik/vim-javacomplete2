@@ -64,10 +64,10 @@ function! javacomplete#server#Start()
     execute "JavacompletePyfile ". file
 
     let javaProps = []
-    if get(g:, 'JavaComplete_JavaviLogLevel')
+    if exists('g:JavaComplete_JavaviLogLevel')
       call add(javaProps, '-Dlog.level='. g:JavaComplete_JavaviLogLevel)
     endif
-    if get(g:, 'JavaComplete_JavaviLogDirectory', 0)
+    if exists('g:JavaComplete_JavaviLogDirectory')
       call add(javaProps, '-Dlog.directory='. g:JavaComplete_JavaviLogDirectory')
     endif
     JavacompletePy vim.command('let port = "%s"' % SERVER[1])
@@ -89,7 +89,7 @@ function! javacomplete#server#Start()
       let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'
     endif
 
-    let args = join(javaProps, ' '). ' '. args
+    let args = ' '. join(javaProps, ' '). ' '. args
     call s:Log("server classpath: -cp ". classpath)
     call s:Log("server arguments:". args)
 

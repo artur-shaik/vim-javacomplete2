@@ -5,11 +5,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import kg.ash.javavi.Javavi;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.JavaClassMap;
 
 public class GetClassesArchiveNamesAction extends ActionWithTarget {
+
+    public static final Logger logger = LogManager.getLogger();
 
     @Override
     public String perform(String[] string) {
@@ -22,13 +27,13 @@ public class GetClassesArchiveNamesAction extends ActionWithTarget {
             String[] classFqnArray = classFqn.split("\\.");
             String className = classFqnArray[classFqnArray.length - 1];
 
-            Javavi.debug(className);
+            logger.debug("class name: {}", className);
 
             HashMap<String, JavaClassMap> classPackages = getClassPackages();
             if (classPackages.containsKey(className)) {
                 String classPackage = removeLastElementAndJoin(classFqnArray);
 
-                Javavi.debug(classPackage);
+                logger.debug("class name: {}", className);
                 
                 JavaClassMap cm = classPackages.get(className);
                 Arrays.stream(new String[]{"", "$"}).forEach(s -> {
