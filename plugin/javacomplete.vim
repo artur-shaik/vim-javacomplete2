@@ -55,6 +55,8 @@ command! JCserverShowPID call javacomplete#server#ShowPID()
 command! JCserverStart call javacomplete#server#Start()
 command! JCserverTerminate call javacomplete#server#Terminate()
 command! JCserverCompile call javacomplete#server#Compile()
+command! JCserverLog call javacomplete#server#GetLogContent()
+command! JCserverEnableDebug call javacomplete#server#EnableDebug()
 
 command! JCdebugEnableLogs call javacomplete#logger#Enable()
 command! JCdebugDisableLogs call javacomplete#logger#Disable()

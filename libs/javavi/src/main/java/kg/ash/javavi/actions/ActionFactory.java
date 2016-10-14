@@ -32,6 +32,8 @@ public class ActionFactory {
                 return new GetClassesArchiveNamesAction();
             case "-class-info-by-content":
                 return new ParseByContentAction();
+            case "-get-debug-log-path":
+                return new GetDebugLogPath();
         }
 
         return null;

@@ -345,4 +345,34 @@ function! s:GetClassPath()
   return exists('s:classpath') ? join(s:classpath, g:PATH_SEP) : ''
 endfu
 
+function! s:GetDebugLogPath()
+  return javacomplete#server#Communicate('-get-debug-log-path', '', '')
+endfunction
+
+function! javacomplete#server#EnableDebug()
+  let g:JavaComplete_JavaviLogLevel = "debug"
+  JCserverTerminate
+  JCserverStart
+endfunction
+
+function! javacomplete#server#GetLogContent()
+  let bufferName = "__JCServer_Log_Buffer__"
+  let n = bufwinnr(bufferName)
+  if n != -1
+    execute "bwipeout! ". n
+  endif
+  exec 'silent! split '. bufferName
+  set modifiable
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal nowrap
+  setlocal nobuflisted
+  call execute(':.-1read '. s:GetDebugLogPath())
+  execute "normal! G"
+  set nomodifiable
+  set nomodified
+  nnoremap <buffer> <silent> q :bwipeout!<CR>
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:

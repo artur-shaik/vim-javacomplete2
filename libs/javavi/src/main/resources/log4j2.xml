@@ -4,9 +4,10 @@
         <Property name="daemon.port">0</Property>
         <Property name="log.level">off</Property>
         <Property name="log.directory">/tmp/javavi_log</Property>
+        <Property name="log.time_id">${date:yyMMddHHmm}</Property>
     </Properties>
     <Appenders>
-        <File name="Javavi" fileName="${sys:log.directory}/${date:yyMMddHHmm}-${sys:daemon.port}.log" immediateFlush="true" append="true">
+        <File name="Javavi" fileName="${sys:log.directory}/${log.time_id}-${sys:daemon.port}.log" immediateFlush="true" append="true">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
