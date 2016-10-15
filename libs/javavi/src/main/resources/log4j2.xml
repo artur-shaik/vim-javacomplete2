@@ -9,7 +9,7 @@
     <Appenders>
         <File name="Javavi" fileName="${sys:log.directory}/${log.time_id}-${sys:daemon.port}.log" immediateFlush="true" append="true">
             <PatternLayout>
-                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+                <Pattern>%d{MMdd HH:mm:ss.SSS} %p{length=1} [%t] %m [%c{-3}]%n</Pattern>
             </PatternLayout>
         </File>
     </Appenders>
