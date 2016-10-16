@@ -93,6 +93,11 @@ For remove all missing imports with <F7>:
     nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
     imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
 
+For sorting all imports with <F8>:
+
+    nmap <F8> <Plug>(JavaComplete-Imports-SortImports)
+    imap <F8> <Plug>(JavaComplete-Imports-SortImports)
+
 
 Default mappings:
 
@@ -100,6 +105,7 @@ Default mappings:
     nmap <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
     nmap <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
     nmap <leader>jii <Plug>(JavaComplete-Imports-Add)
+    nmap <Leader>jis <Plug>(JavaComplete-Imports-SortImports)
 
     imap <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
     imap <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
@@ -328,6 +334,7 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCimportsRemoveUnused - remove all unsused 'imports';
     JCimportAdd - add 'import' for classname that is under cursor, or before it;
     JCimportAddSmart - add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing);
+    JCimportsSort - sort all 'imports'
 
     JCfgenerateAbstractMethods - generate methods that need to be implemented;
     JCgenerateAccessors - generate getters and setters for all fields;
