@@ -357,11 +357,12 @@ endfunction
 
 function! javacomplete#server#GetLogContent()
   let bufferName = "__JCServer_Log_Buffer__"
-  let n = bufwinnr(bufferName)
+  let n = bufnr(bufferName)
   if n != -1
     execute "bwipeout! ". n
   endif
-  exec 'silent! split '. bufferName
+  let curWin = winnr("#")
+  execute 'silent! split '. bufferName
   set modifiable
   setlocal buftype=nofile
   setlocal bufhidden=wipe
@@ -370,9 +371,9 @@ function! javacomplete#server#GetLogContent()
   setlocal nobuflisted
   call execute(':.-1read '. s:GetDebugLogPath())
   execute "normal! G"
-  set nomodifiable
   set nomodified
   nnoremap <buffer> <silent> q :bwipeout!<CR>
+  execute curWin. 'wincmd w'
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:
