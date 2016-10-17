@@ -562,7 +562,7 @@ function! <SID>generateAccessors(...)
     else
       let currentLines = []
     endif
-    for d in s:ti.defs
+    for d in get(s:ti, 'defs', [])
       if get(d, 'tag', '') == 'VARDEF'
         let line = java_parser#DecodePos(d.pos).line
         if has_key(d, 'endpos')
