@@ -209,6 +209,7 @@ function! s:DefaultMappings()
   nmap <silent> <buffer> <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
   nmap <silent> <buffer> <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
   nmap <silent> <buffer> <leader>jii <Plug>(JavaComplete-Imports-Add)
+  nmap <silent> <buffer> <leader>jis <Plug>(JavaComplete-Imports-SortImports)
 
   imap <silent> <buffer> <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
   imap <silent> <buffer> <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
