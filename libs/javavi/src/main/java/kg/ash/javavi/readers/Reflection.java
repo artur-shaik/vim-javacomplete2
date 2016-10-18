@@ -7,15 +7,15 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import java.util.function.Function;
+import java.util.stream.Stream;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -26,6 +26,8 @@ import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.FileClassLoader;
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.ClassSearcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Reflection implements ClassReader {
 
@@ -33,6 +35,8 @@ public class Reflection implements ClassReader {
 
     private String sources;
     private List<String> typeArguments = null;
+
+    private List<String> knownClasses = new ArrayList<>();
 
     @Override
     public ClassReader setTypeArguments(List<String> typeArguments) {
@@ -45,12 +49,12 @@ public class Reflection implements ClassReader {
     }
 
     public static boolean exist(String name) {
-        boolean result = false;
         try {
             Class.forName(name);
-            result = true;
-        } catch (Exception | NoClassDefFoundError ex) {}
-        return result;
+            return true;
+        } catch (Exception | NoClassDefFoundError ex) {
+            return false;
+        }
     }
 
     private String getNameWithArguments(String name) {
@@ -67,207 +71,239 @@ public class Reflection implements ClassReader {
 
         logger.debug("read class with reflections: {}", nameWithArguments);
 
-        if (Cache.getInstance().getClasses().containsKey(nameWithArguments)) {
-            return Cache.getInstance().getClasses().get(nameWithArguments);
+        HashMap<String, SourceClass> cachedClasses = 
+            Cache.getInstance().getClasses();
+        if (cachedClasses.containsKey(nameWithArguments)) {
+            return cachedClasses.get(nameWithArguments);
         }
 
-        String[] splitted = name.split("\\.");
-        ClassNameMap classMap = (ClassNameMap) Cache.getInstance().getClassPackages().get(getNameWithArguments(splitted[splitted.length - 1]));
-        if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
-            ClassLoader parentClassLoader = FileClassLoader.class.getClassLoader();
-            FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader, classMap.getClassFile());
-            Class clazz = fileClassLoader.loadClass(name);
-            if (clazz != null) {
-                try {
-                    return getSourceClass(clazz);
-                } catch (Throwable t) {
-                    logger.error(t, t);
-                }
-            }
+        SourceClass result = loadFromCompiledSource(name);
+        if (result == null) {
+            result = lookup(name);
         }
-
-        try {
-            Class clazz = Class.forName(name);
-            return getSourceClass(clazz);
-        } catch (Exception ex) {
-            logger.error(ex, ex);
-        }
-
-        try {
-            Class clazz = Class.forName("java.lang." + name);
-            return getSourceClass(clazz);
-        } catch (Exception ex) {
-            logger.error(ex, ex);
+        if (result == null && !name.startsWith("java.lang.")) {
+            result = lookup("java.lang." + name);
         }
 
         String binaryName = name;
-        while (true) {
-            try {
-                int lastDotPos = binaryName.lastIndexOf('.');
-                if (lastDotPos == -1) break;
+        while (result == null) {
+            int lastDotPos = binaryName.lastIndexOf('.');
+            if (lastDotPos == -1) break;
 
-                binaryName = String.format("%s$%s",
-                        binaryName.substring(0, lastDotPos),
-                        binaryName.substring(lastDotPos+1, binaryName.length()));
+            binaryName = String.format("%s$%s",
+                    binaryName.substring(0, lastDotPos),
+                    binaryName.substring(lastDotPos+1, binaryName.length()));
 
-                Class clazz = Class.forName(binaryName);
-                return getSourceClass(clazz);
-            } catch (Exception ex) {
-                logger.error(ex, ex);
-            }
+            result = lookup(binaryName);
         }
 
+        return result;
+    }
+
+    private SourceClass loadFromCompiledSource(String name) {
+        String last = name.substring(name.lastIndexOf(".") + 1);
+        ClassNameMap classMap = (ClassNameMap) Cache.getInstance()
+            .getClassPackages().get(getNameWithArguments(last));
+        if (classMap != null) {
+            if (classMap.getClassFile() != null && classMap.getJavaFile() != null) {
+                logger.debug("loading class from compiled source: {}", classMap);
+
+                ClassLoader parentClassLoader = FileClassLoader.class.getClassLoader();
+                FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader, classMap.getClassFile());
+                Class clazz = fileClassLoader.loadClass(name);
+                if (clazz != null) {
+                    try {
+                        return getSourceClass(clazz);
+                    } catch (Throwable t) {
+                        logger.error(t, t);
+                    }
+                }
+            }
+        }
         return null;
     }
 
-    private List<String> classes = new ArrayList<>();
+    private SourceClass lookup(String className) {
+        try {
+            logger.debug("lookup class name: {}", className);
+
+            Class clazz = Class.forName(className);
+            return getSourceClass(clazz);
+        } catch (Exception ex) {
+            logger.debug(ex);
+            return null;
+        }
+    }
+
+    private String popTypeArgument(List<String> arguments) {
+        if (!arguments.isEmpty()) {
+            String argument = arguments.get(0);
+            arguments.remove(0);
+            return argument;
+        }
+
+        return "java.lang.Object";
+    }
+
+    private String getGenericName(
+            TreeMap<String,String> taa, 
+            String genericName) {
+
+        if (typeArguments.isEmpty()) return genericName;
+        for (Entry<String, String> kv : taa.entrySet()) {
+            genericName = genericName
+                .replaceAll(
+                        String.format("\\b%s\\b", kv.getKey()), 
+                        kv.getValue());
+        }
+        return genericName;
+    }
 
     @SuppressWarnings("unchecked")
     public SourceClass getSourceClass(Class cls) {
-        TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
+        logger.debug("class loaded: {}", cls.getName());
 
-        SourceClass clazz = new SourceClass();
         String name = cls.getName();
+        knownClasses.add(name);
         if (name.contains(".")) {
             name = name.substring(name.lastIndexOf(".") + 1);
         }
+
+        SourceClass clazz = new SourceClass();
         clazz.setName(name);
         clazz.setModifiers(cls.getModifiers());
         clazz.setIsInterface(cls.isInterface());
         clazz.setPackage(cls.getPackage().getName());
 
-        for (int i = 0; i < cls.getTypeParameters().length; i++) {
-            Type type = cls.getTypeParameters()[i];
-            if (i < typeArguments.size()) {
-                typeArgumentsAccordance.put(type.getTypeName(), typeArguments.get(i));
-                clazz.addTypeArgument(typeArguments.get(i));
-            } else {
-                typeArgumentsAccordance.put(type.getTypeName(), "java.lang.Object");
-            }
+        TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
+        if (!typeArguments.isEmpty()) {
+            List<String> arguments = new ArrayList<>(typeArguments);
+            Stream.of(cls.getTypeParameters()).forEachOrdered(type -> {
+                typeArgumentsAccordance.put(type.getTypeName(), popTypeArgument(arguments));
+                clazz.addTypeArgument(typeArgumentsAccordance.get(type.getTypeName()));
+            });
         }
 
-        List<Class> linkedClasses = new ArrayList<>();
-        for (Class c : cls.getDeclaredClasses()) {
-            clazz.addNestedClass(c.getName());
-            linkedClasses.add(c);
-        }
+        List<Class> linked = new ArrayList<>();
+        Stream.of(cls.getDeclaredClasses())
+            .forEach(c -> {
+                linked.add(c);
+                clazz.addNestedClass(c.getName());
+            });
 
-        Class superclass = cls.getSuperclass();
-        if (superclass != null) {
-            clazz.setSuperclass(superclass.getName());
-            linkedClasses.add(superclass);
-        }
+        Optional.ofNullable(cls.getSuperclass())
+            .ifPresent(c -> {
+                linked.add(c);
+                clazz.setSuperclass(c.getName());
+            });
 
-        Type[] interfaces = cls.getGenericInterfaces();
+        Stream.of(cls.getGenericInterfaces())
+            .map(i -> getGenericName(typeArgumentsAccordance, i.getTypeName()))
+            .forEach(clazz::addInterface);
+
         ClassSearcher seacher = new ClassSearcher();
-        for (Type iface : interfaces) {
-            String genericName = iface.getTypeName();
-            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
-                genericName = genericName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-            }
-            clazz.addInterface(genericName);
+        clazz.getInterfaces().stream()
+            .forEach(i -> {
+                TargetParser parser = new TargetParser(sources);
+                String ifaceClassName = parser.parse(i);
+                if (seacher.find(ifaceClassName, sources)) {
+                    clazz.addLinkedClass(
+                        seacher.getReader()
+                            .setTypeArguments(parser.getTypeArguments())
+                            .read(i));
+                }
+            });
 
-            TargetParser parser = new TargetParser(sources);
-            String ifaceClassName = parser.parse(genericName);
-            if (seacher.find(ifaceClassName, sources)) {
-                clazz.addLinkedClass(seacher.getReader().setTypeArguments(parser.getTypeArguments()).read(genericName));
-            }
-        }
+        linked.stream()
+            .filter(c -> !knownClasses.contains(c.getName()))
+            .map(this::getSourceClass)
+            .forEach(clazz::addLinkedClass);
 
-        for (Class linkedClass : linkedClasses) {
-            if (classes.contains(linkedClass.getName())) continue;
-            classes.add(linkedClass.getName());
-            clazz.addLinkedClass(getSourceClass(linkedClass));
-        }
-
-        Constructor[] constructors = cls.getConstructors();
-        for (Constructor ctor : constructors) {
+        Stream.of(cls.getConstructors()).forEachOrdered(ctor -> {
             ClassConstructor constructor = new ClassConstructor();
 
-            String genericDeclaration = ctor.toGenericString();
-            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
-                genericDeclaration = genericDeclaration.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-            }
+            String genericDeclaration = 
+                getGenericName(
+                        typeArgumentsAccordance, 
+                        ctor.toGenericString());
             constructor.setDeclaration(genericDeclaration);
-
             constructor.setModifiers(ctor.getModifiers());
 
-            Type[] parameterTypes = ctor.getGenericParameterTypes();
-            for (Type t : parameterTypes) {
-                String typeName = t.getTypeName();
-                for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
-                    typeName = typeName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-                }
-                constructor.addTypeParameter(new ClassTypeParameter(typeName));
-            }
+            Stream.of(ctor.getGenericParameterTypes())
+                .map(t -> 
+                        getGenericName(
+                            typeArgumentsAccordance, t.getTypeName()))
+                .forEach(t -> 
+                        constructor.addTypeParameter(
+                            new ClassTypeParameter(t)));
 
             clazz.addConstructor(constructor);
-        }
+        });
 
         Set<Field> fieldsSet = new HashSet<>();
         fieldsSet.addAll(Arrays.asList(cls.getDeclaredFields()));
         fieldsSet.addAll(Arrays.asList(cls.getFields()));
-        for (Field f : fieldsSet) {
+        fieldsSet.forEach(f -> {
             ClassField field = new ClassField();
             field.setName(f.getName());
             field.setModifiers(f.getModifiers());
 
-            String genericType = f.getGenericType().getTypeName();
-            for (Entry<String,String> kv : typeArgumentsAccordance.entrySet()) {
-                genericType = genericType.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-            }
+            String genericType = getGenericName(
+                    typeArgumentsAccordance, 
+                    f.getGenericType().getTypeName());
             field.setTypeName(genericType);
 
             clazz.addField(field);
-        }
+        });
 
         Set<Method> methodsSet = new HashSet<>();
         methodsSet.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methodsSet.addAll(Arrays.asList(cls.getMethods()));
-        for (Method m : methodsSet) {
+        methodsSet.forEach(m -> {
 
             // workaround for Iterable<T> that give us
             // another generic name in List::forEach method
-            TreeMap<String,String> tAA = (TreeMap<String,String>)typeArgumentsAccordance.clone();
-            Set<String> keySet = tAA.keySet();
-            for (int i = 0; i < m.getDeclaringClass().getTypeParameters().length; i++) {
-                Type type = m.getDeclaringClass().getTypeParameters()[i];
-                if (i < keySet.size() && !((String)keySet.toArray()[i]).trim().equals(type.getTypeName().trim())) {
-                    tAA.put(type.getTypeName(), ((String)keySet.toArray()[i]).trim());
-                }
-            }
+            TreeMap<String,String> tAA = 
+                (TreeMap<String,String>)typeArgumentsAccordance.clone();
+            List<String> keySet = new ArrayList<>(tAA.keySet());
+            Stream.of(m.getDeclaringClass().getTypeParameters())
+                .forEach(type -> {
+                    Optional<String> key = Optional.ofNullable(
+                            keySet.isEmpty() ? null : keySet.get(0));
+                    key
+                        .filter(k -> !k.equals(type.getTypeName()))
+                        .ifPresent(k -> {
+                            tAA.put(type.getTypeName(), tAA.get(k));
+                            keySet.remove(0);
+                        });
+                });
 
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
             method.setModifiers(m.getModifiers());
 
-            String genericDeclaration = m.toGenericString();
-            for (Entry<String,String> kv : tAA.entrySet()) {
-                genericDeclaration = genericDeclaration.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-            }
-
+            String genericDeclaration =
+                getGenericName(tAA, m.toGenericString());
             method.setDeclaration(genericDeclaration);
 
-            String genericReturnType = m.getGenericReturnType().getTypeName();
-            for (Entry<String,String> kv : tAA.entrySet()) {
-                genericReturnType = genericReturnType.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-            }
+            String genericReturnType =
+                getGenericName(tAA, m.getGenericReturnType().getTypeName());
             method.setTypeName(genericReturnType);
 
             Type[] parameterTypes = m.getGenericParameterTypes();
-            for (Type t : parameterTypes) {
-                String typeName = t.getTypeName();
-                for (Entry<String,String> kv : tAA.entrySet()) {
-                    typeName = typeName.replaceAll(String.format("\\b%s\\b", kv.getKey()), kv.getValue());
-                }
-                method.addTypeParameter(new ClassTypeParameter(typeName));
-            }
+            Stream.of(parameterTypes)
+                .map(t -> 
+                        getGenericName(tAA, t.getTypeName()))
+                .forEachOrdered(t -> 
+                        method.addTypeParameter(
+                            new ClassTypeParameter(t)));
 
             clazz.addMethod(method);
 
-        }
+        });
 
-        Cache.getInstance().getClasses().put(getNameWithArguments(cls.getName()), clazz);
+        Cache.getInstance().getClasses()
+            .put(getNameWithArguments(cls.getName()), clazz);
         return clazz;
     }
 
