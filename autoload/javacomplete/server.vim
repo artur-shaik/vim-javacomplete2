@@ -351,8 +351,10 @@ endfunction
 
 function! javacomplete#server#EnableDebug()
   let g:JavaComplete_JavaviLogLevel = "debug"
-  JCserverTerminate
-  JCserverStart
+  if s:Poll()
+    JCserverTerminate
+    JCserverStart
+  endif
 endfunction
 
 function! javacomplete#server#GetLogContent()
