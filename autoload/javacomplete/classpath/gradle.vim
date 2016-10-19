@@ -13,7 +13,7 @@ function! javacomplete#classpath#gradle#IfGradle()
   return 0
 endfunction
 
-function! javacomplete#classpath#gradle#BuildClasspathHandler(jobId, data, event)
+function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
       let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]

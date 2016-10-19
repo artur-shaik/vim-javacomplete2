@@ -77,7 +77,7 @@ function! s:ParseMavenOutput()
   let s:pomProperties[s:mavenPom] = mvnProperties
 endfunction
 
-function! javacomplete#classpath#maven#BuildClasspathHandler(jobId, data, event)
+function! javacomplete#classpath#maven#BuildClasspathHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
       call s:ParseMavenOutput()

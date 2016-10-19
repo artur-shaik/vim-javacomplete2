@@ -223,17 +223,64 @@ function! javacomplete#util#IsWindows() abort
   return has("win32") || has("win64") || has("win16") || has("dos32") || has("dos16")
 endfunction
 
+function! s:JobVimOnCloseHandler(channel)
+  let job = s:asyncJobs[s:ChannelId(a:channel)]
+  let info = job_info(job['job'])
+  let Handler = function(job['handler'])
+  call call(Handler, [info['exitval'], 'exit'])
+endfunction
+
+function! s:JobVimOnErrorHandler(channel, text)
+  let job = s:asyncJobs[s:ChannelId(a:channel)]
+  let Handler = function(job['handler'])
+  call call(Handler, [[a:text], 'stderr'])
+endfunction
+
+function! s:JobVimOnCallbackHandler(channel, text)
+  let job = s:asyncJobs[s:ChannelId(a:channel)]
+  let Handler = function(job['handler'])
+  call call(Handler, [[a:text], 'stdout'])
+endfunction
+
+function! s:JobNeoVimResponseHandler(jobId, data, event)
+  let job = s:asyncJobs[a:jobId]
+  let Handler = function(job['handler'])
+  call call(Handler, [a:data, a:event])
+endfunction
+
+function! s:ChannelId(channel)
+  return matchstr(a:channel, '\d\+')
+endfunction
+
+function! s:NewJob(id, handler)
+  let s:asyncJobs = get(s:, 'asyncJobs', {})
+  let s:asyncJobs[a:id] = {}
+  let s:asyncJobs[a:id]['handler'] = a:handler
+endfunction
+
 function! javacomplete#util#RunSystem(command, shellName, handler)
   if has('nvim')
     if exists('*jobstart')
       let callbacks = {
-      \ 'on_stdout': function(a:handler),
-      \ 'on_stderr': function(a:handler),
-      \ 'on_exit': function(a:handler)
-      \ }
-      call jobstart(a:command, extend({'shell': a:shellName}, callbacks))
+        \ 'on_stdout': function('s:JobNeoVimResponseHandler'),
+        \ 'on_stderr': function('s:JobNeoVimResponseHandler'),
+        \ 'on_exit': function('s:JobNeoVimResponseHandler')
+        \ }
+      let jobId = jobstart(a:command, extend({'shell': a:shellName}, callbacks))
+      call s:NewJob(jobId, a:handler)
       return
     endif
+  elseif exists('*job_start')
+    let options = {
+      \ 'out_cb' : function('s:JobVimOnCallbackHandler'),
+      \ 'err_cb' : function('s:JobVimOnErrorHandler'),
+      \ 'close_cb' : function('s:JobVimOnCloseHandler')
+      \ }
+    let job = job_start(a:command, options)
+    let jobId = s:ChannelId(job_getchannel(job))
+    call s:NewJob(jobId, a:handler)
+    let s:asyncJobs[jobId]['job'] = job
+    return
   endif
 
   if type(a:command) == type([])

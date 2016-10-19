@@ -130,7 +130,7 @@ function! javacomplete#server#SetJVMLauncher(interpreter)
   let g:JavaComplete_JvmLauncher = a:interpreter
 endfunction
 
-function! javacomplete#server#CompilationJobHandler(jobId, data, event)
+function! javacomplete#server#CompilationJobHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
       echo 'Javavi compilation finished '
