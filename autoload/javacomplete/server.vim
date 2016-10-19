@@ -371,7 +371,7 @@ function! javacomplete#server#GetLogContent()
   setlocal noswapfile
   setlocal nowrap
   setlocal nobuflisted
-  call execute(':.-1read '. s:GetDebugLogPath())
+  execute '.-1read '. s:GetDebugLogPath()
   execute "normal! G"
   set nomodified
   nnoremap <buffer> <silent> q :bwipeout!<CR>
