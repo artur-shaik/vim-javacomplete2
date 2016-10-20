@@ -1,11 +1,7 @@
 package kg.ash.javavi.searchers;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
@@ -20,32 +16,30 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
 
     public static final Logger logger = LogManager.getLogger();
 
-    private ByExtensionVisitor finder 
-        = new ByExtensionVisitor(
-                Arrays.asList(
-                    "*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class"));
-    
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
 
         List<String> knownPaths = new ArrayList<>();
-        collectClassPath().stream()
+        new ClasspathCollector().collectClassPath().stream()
             .forEach(filePath -> {
                 if (filePath.toLowerCase().endsWith(".class")) {
                     String path = filePath.substring(0, filePath.length() - 6).replaceAll("/", ".");
                     String newPath = path.substring(0, path.lastIndexOf("."));
                     String fileName = path.substring(path.lastIndexOf(".") + 1, path.length());
-                    Optional<String> knownPath = knownPaths.parallelStream()
-                        .filter(s -> newPath.endsWith(s)).findFirst();
-                    
-                    if (knownPath.isPresent()) {
-                        result.add(new PackageEntry(
-                                    knownPath.get() + File.separator + fileName + ".class", 
-                                    JavaClassMap.SOURCETYPE_CLASSPATH, 
-                                    filePath, 
-                                    PackageEntry.FILETYPE_CLASS));
+                    Optional<PackageEntry> kp = knownPaths.parallelStream()
+                        .filter(s -> newPath.endsWith(s))
+                        .findFirst()
+                        .map(p -> p + File.separator + fileName + ".class")
+                        .map(p -> {
+                            return new PackageEntry(
+                                p, JavaClassMap.SOURCETYPE_CLASSPATH, 
+                                filePath, PackageEntry.FILETYPE_CLASS);
+                        });
+                    if (kp.isPresent()) {
+                        kp.ifPresent(result::add);
                         return;
                     }
+
                     String[] split = path.split("\\.");
                     int j = split.length - 2;
                     while (j > 0) {
@@ -90,40 +84,4 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
         }
     }
 
-    private List<String> collectClassPath() {
-        List<String> result = new ArrayList<>();
-
-        String extdirs = System.getProperty("java.ext.dirs");
-        for (String path : extdirs.split(File.pathSeparator)) {
-            result.addAll(addPathFromDir(path + File.separator));
-        }
-
-        result.addAll(addPathFromDir(System.getProperty("java.home")));
-
-        String classPath = System.getProperty("java.class.path") + File.pathSeparator;
-        for (String path : classPath.split(File.pathSeparator)) {
-            if (path.toLowerCase().endsWith(".jar") || path.toLowerCase().endsWith(".zip")) {
-                result.add(path);
-            } else {
-                result.addAll(addPathFromDir(path));
-            }
-        }
-
-        return result;
-    }
-
-    private List<String> addPathFromDir(String dirpath) {
-        List<String> result = new ArrayList<>();
-        File dir = new File(dirpath);
-        if (dir.isDirectory()) {
-            try {
-                Files.walkFileTree(Paths.get(dir.getPath()), finder);
-                result.addAll(finder.getResultList());
-            } catch (IOException e) {
-                logger.error(e, e);
-            }
-        }
-
-        return result;
-    }
 }

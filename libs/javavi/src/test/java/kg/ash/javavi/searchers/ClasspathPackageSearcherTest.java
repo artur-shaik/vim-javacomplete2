@@ -15,7 +15,7 @@ public class ClasspathPackageSearcherTest {
 
     @Test
     public void testLoadClassFileEntries() {
-        new MockUp<ClasspathPackageSearcher>() {
+        new MockUp<ClasspathCollector>() {
             @Mock
             private List<String> collectClassPath() {
                 return Arrays.asList(
@@ -25,6 +25,9 @@ public class ClasspathPackageSearcherTest {
                         "");
             }
 
+        };
+
+        new MockUp<ClasspathPackageSearcher>() {
             @Mock
             private String getPackageByFile(String path) {
                 if (path.split("\\.").length > 2) {
