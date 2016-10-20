@@ -57,6 +57,7 @@ command! JCserverTerminate call javacomplete#server#Terminate()
 command! JCserverCompile call javacomplete#server#Compile()
 command! JCserverLog call javacomplete#server#GetLogContent()
 command! JCserverEnableDebug call javacomplete#server#EnableDebug()
+command! JCserverEnableTraceDebug call javacomplete#server#EnableTraceDebug()
 
 command! JCdebugEnableLogs call javacomplete#logger#Enable()
 command! JCdebugDisableLogs call javacomplete#logger#Disable()

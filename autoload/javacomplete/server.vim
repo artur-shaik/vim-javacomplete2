@@ -357,6 +357,14 @@ function! javacomplete#server#EnableDebug()
   endif
 endfunction
 
+function! javacomplete#server#EnableTraceDebug()
+  let g:JavaComplete_JavaviLogLevel = "trace"
+  if s:Poll()
+    JCserverTerminate
+    JCserverStart
+  endif
+endfunction
+
 function! javacomplete#server#GetLogContent()
   let bufferName = "__JCServer_Log_Buffer__"
   let n = bufnr(bufferName)

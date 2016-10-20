@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import kg.ash.javavi.actions.Action;
 import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.searchers.ClasspathCollector;
 
 
 public class Javavi {
@@ -44,6 +45,12 @@ public class Javavi {
     public static void main(String[] args) throws Exception {
         logger.info("starting javavi server on port: {}", 
                 System.getProperty("daemon.port", "0"));
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("output included libraries");
+            new ClasspathCollector()
+                .collectClassPath().forEach(logger::trace);
+        }
 
         String response = makeResponse(args);
 
