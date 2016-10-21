@@ -35,9 +35,9 @@ public class ClasspathCollector {
 
         String classPath = System.getProperty("java.class.path");
         Stream.of(classPath.split(pSep))
-            .filter(p -> p.length() > 3)
+            .filter(p -> p.length() >= 4)
             .forEach(path -> {
-                String ext = path.substring(path.length() - 3)
+                String ext = path.substring(path.length() - 4)
                     .toLowerCase();
                 if (ext.endsWith(".jar") || ext.endsWith(".zip")) {
                     result.add(path);
