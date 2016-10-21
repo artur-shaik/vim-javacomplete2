@@ -36,7 +36,7 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                                 filePath, PackageEntry.FILETYPE_CLASS);
                         });
                     if (kp.isPresent()) {
-                        kp.ifPresent(result::add);
+                        result.add(kp.get());
                         return;
                     }
 
