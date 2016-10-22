@@ -54,13 +54,21 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   endif
 endfunction
 
+function! javacomplete#classpath#gradle#Regenerate()
+  call s:Generate(1)
+endfunction
+
 function! javacomplete#classpath#gradle#Generate()
+  call s:Generate(0)
+endfunction
+
+function! s:Generate(force) abort
   let base = javacomplete#util#GetBase("classpath". g:FILE_SEP)
   let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
 
   let path = base . g:JavaComplete_ProjectKey
   if filereadable(path)
-    if getftime(path) >= getftime(g:JavaComplete_GradlePath)
+    if a:force == 0 && getftime(path) >= getftime(g:JavaComplete_GradlePath)
       return join(readfile(path), '')
     endif
     call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')

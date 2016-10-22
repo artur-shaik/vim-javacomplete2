@@ -9,12 +9,21 @@ function! javacomplete#classpath#maven#IfMaven()
   return 0
 endfunction
 
+function! javacomplete#classpath#maven#Regenerate() 
+  let s:pomProperties = {}
+  call s:Generate(1)
+endfunction
+
 function! javacomplete#classpath#maven#Generate() abort
+  return s:Generate(0)
+endfunction
+
+function! s:Generate(force) abort
   let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
   let path = javacomplete#util#GetBase("classpath". g:FILE_SEP). g:JavaComplete_ProjectKey
 
   if filereadable(path)
-    if getftime(path) >= getftime(g:JavaComplete_PomPath)
+    if a:force == 0 && getftime(path) >= getftime(g:JavaComplete_PomPath)
       return join(readfile(path), '')
     endif
     call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')

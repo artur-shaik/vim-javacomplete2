@@ -77,6 +77,9 @@ command! JCgenerateEqualsAndHashCode call javacomplete#generators#GenerateEquals
 command! JCgenerateConstructor call javacomplete#generators#GenerateConstructor(0)
 command! JCgenerateConstructorDefault call javacomplete#generators#GenerateConstructor(1)
 
+command! JCmavenGenClasspath call javacomplete#classpath#maven#Regenerate()
+command! JCgradleGenClasspath call javacomplete#classpath#gradle#Regenerate()
+
 autocmd Filetype java,jsp JCstart
 
 function! s:nop(s)
