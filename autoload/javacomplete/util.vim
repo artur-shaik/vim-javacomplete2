@@ -304,12 +304,14 @@ function! javacomplete#util#Base64Encode(str)
 endfunction
 
 function! javacomplete#util#RemoveFile(file)
-  if g:JavaComplete_IsWindows
-    silent exe '!rmdir /s /q "'. a:file. '"'
-  else
-    silent exe '!rm -r "'. a:file. '"'
+  if filewritable(a:file)
+    if g:JavaComplete_IsWindows
+      silent exe '!rmdir /s /q "'. a:file. '"'
+    else
+      silent exe '!rm -r "'. a:file. '"'
+    endif
+    silent redraw!
   endif
-  silent redraw!
 endfunction
 
 if exists('*uniq')

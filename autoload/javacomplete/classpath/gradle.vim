@@ -54,15 +54,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   endif
 endfunction
 
-function! javacomplete#classpath#gradle#Regenerate()
-  call s:Generate(1)
-endfunction
-
-function! javacomplete#classpath#gradle#Generate()
-  call s:Generate(0)
-endfunction
-
-function! s:Generate(force) abort
+function! javacomplete#classpath#gradle#Generate(force) abort
   let base = javacomplete#util#GetBase("classpath". g:FILE_SEP)
   let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_GradlePath, '[\\/:;.]', '_', 'g')
 

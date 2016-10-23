@@ -1,4 +1,12 @@
 function! javacomplete#classpath#classpath#BuildClassPath()
+  call s:BuildClassPath(0)
+endfunction
+
+function! javacomplete#classpath#classpath#RebuildClassPath()
+  call s:BuildClassPath(1)
+endfunction
+
+function! s:BuildClassPath(force)
   if !get(g:, 'JavaComplete_MavenRepositoryDisabled', 0)
     if !exists('g:JavaComplete_PomPath')
       let g:JavaComplete_PomPath = javacomplete#util#FindFile('pom.xml')
@@ -21,7 +29,7 @@ function! javacomplete#classpath#classpath#BuildClassPath()
     endif
   endif
 
-  let g:JavaComplete_LibsPath .= s:FindClassPath()
+  let g:JavaComplete_LibsPath .= s:FindClassPath(a:force)
 endfunction
 
 function! s:ReadClassPathFile(classpathFile)
@@ -33,7 +41,7 @@ function! s:ReadClassPathFile(classpathFile)
   return cp
 endfunction
 
-fu! s:UseEclipse()
+function! s:UseEclipse(force)
   if has('python') || has('python3')
     let classpathFile = fnamemodify(findfile('.classpath', escape(expand('.'), '*[]?{}, ') . ';'), ':p')
     if !empty(classpathFile) && filereadable(classpathFile)
@@ -44,27 +52,27 @@ fu! s:UseEclipse()
   return ""
 endf
 
-fu! s:UseMaven()
+function! s:UseMaven(force)
   if javacomplete#classpath#maven#IfMaven()
-    return javacomplete#classpath#maven#Generate()
+    return javacomplete#classpath#maven#Generate(a:force)
   endif
 
   return ""
 endf
 
-fu! s:UseGradle()
+function! s:UseGradle(force)
   if javacomplete#classpath#gradle#IfGradle()
-    return javacomplete#classpath#gradle#Generate()
+    return javacomplete#classpath#gradle#Generate(a:force)
   endif
 
   return ""
 endf
 
-function! s:FindClassPath() abort
-    for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
+function! s:FindClassPath(force) abort
+  for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
       let cp = ''
-      exec "let cp .= s:Use". classpathSourceType. "()"
+      exec "let cp .= s:Use". classpathSourceType. "(". a:force. ")"
       if !empty(cp)
         return '.' . g:PATH_SEP . cp
       endif

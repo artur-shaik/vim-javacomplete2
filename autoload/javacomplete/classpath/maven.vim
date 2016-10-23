@@ -9,16 +9,10 @@ function! javacomplete#classpath#maven#IfMaven()
   return 0
 endfunction
 
-function! javacomplete#classpath#maven#Regenerate() 
-  let s:pomProperties = {}
-  call s:Generate(1)
-endfunction
-
-function! javacomplete#classpath#maven#Generate() abort
-  return s:Generate(0)
-endfunction
-
-function! s:Generate(force) abort
+function! javacomplete#classpath#maven#Generate(force) abort
+  if a:force != 0
+    let s:pomProperties = {}
+  endif
   let g:JavaComplete_ProjectKey = substitute(g:JavaComplete_PomPath, '[\\/:;.]', '_', 'g')
   let path = javacomplete#util#GetBase("classpath". g:FILE_SEP). g:JavaComplete_ProjectKey
 
