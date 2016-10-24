@@ -156,7 +156,7 @@ function! javacomplete#server#Compile()
   endif
 
   let s:compilationIsRunning = 1
-  if !executable('mvn')
+  if executable('mvn')
     let command = ['mvn', '-f', '"'. javaviDir. g:FILE_SEP. 'pom.xml"', 'compile']
   else
     call mkdir(javaviDir. join(['target', 'classes'], g:FILE_SEP), "p")
