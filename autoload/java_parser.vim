@@ -34,9 +34,9 @@ let s:RE_VAR_DECL_ID		= s:RE_IDENTIFIER . s:RE_BRACKETS . '*'
 let s:RE_TYPE_PARAMS		= ''
 
 let s:RE_THROWS			= 'throws\s\+' . s:RE_TYPE_NAME . '\(\s*,\s*' . s:RE_TYPE_NAME . '\)*'
-let s:RE_FORMAL_PARAM		= '\(final\s*\)\='. s:RE_TYPE . '\s\+' . s:RE_VAR_DECL_ID
+let s:RE_FORMAL_PARAM		= '\%(@'. s:RE_IDENTIFIER. '\s*\)\=\(final\s*\)\='. s:RE_TYPE . '\s\+' . s:RE_VAR_DECL_ID
 let s:RE_FORMAL_PARAM_LIST	= s:RE_FORMAL_PARAM . '\(\s*,\s*' . s:RE_FORMAL_PARAM . '\)*'
-let s:RE_FORMAL_PARAM2		= '^\s*\(final\s*\)\=\('. s:RE_TYPE . '\)\s\+\(' . s:RE_IDENTIFIER . '\)' . s:RE_BRACKETS . '*'
+let s:RE_FORMAL_PARAM2		= '^\s*\%(@'. s:RE_IDENTIFIER. '\s*\)\=\(final\s*\)\=\('. s:RE_TYPE . '\)\s\+\(' . s:RE_IDENTIFIER . '\)' . s:RE_BRACKETS . '*'
 
 let s:RE_METHOD_ARGS	= s:RE_IDENTIFIER . '\(\s*,\s*' . s:RE_IDENTIFIER . '\)*'
 
@@ -1258,7 +1258,8 @@ endfu
 
 fu! s:Log(level, pos, key, ...)
   if a:level >= java_parser#GetLogLevel()
-    call add(s:log, a:key)
+    let log = type(a:key) == type("") ? a:key : string(a:key)
+    call add(s:log, log)
   endif
 endfu
 
