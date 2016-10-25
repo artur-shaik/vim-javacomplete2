@@ -202,17 +202,17 @@ endfunction
 
 function! javacomplete#generators#GenerateEqualsAndHashCode()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate', 'template': 'equals', 'replace': {'type': 'constant', 'value': 'boolean equals(Object o)'}},
+        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate', 'template': 'equals', 'replace': {'type': 'find'}},
         \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate', 'template': 'hashCode', 'replace': {'type': 'constant', 'value': 'int hashCode()'}},
-        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate', 'template': ['hashCode', 'equals'], 'replace': {'type': 'constant', 'value': ['int hashCode()', 'boolean equals(Object o)']}}
+        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate', 'template': ['hashCode', 'equals'], 'replace': {'type': 'find'}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
 
 function! javacomplete#generators#GenerateToString()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate', 'template': 'toString_concat', 'replace': {'type': 'constant', 'value': 'String toString()'}},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate', 'template': 'toString_StringBuilder', 'replace': {'type': 'constant', 'value': 'String toString()'}}
+        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate', 'template': 'toString_concat', 'replace': {'type': 'find'}},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate', 'template': 'toString_StringBuilder', 'replace': {'type': 'find'}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
@@ -276,16 +276,22 @@ function! <SID>generateByTemplate(command)
 
   if len(result) > 0
     if has_key(a:command, 'replace')
+      let toReplace = []
       if a:command.replace.type == 'constant'
-        let toReplace = type(a:command.replace.value) != type([]) ? [a:command.replace.value] : a:command.replace.value
+        call add(toReplace, type(a:command.replace.value) != type([]) ? [a:command.replace.value] : a:command.replace.value)
       elseif a:command.replace.type == 'search'
         let defs = s:GetNewMethodsDefinitions(result)
-        let toReplace = []
         for def in defs
           call add(toReplace, def.d)
         endfor
-      else
-        let toReplace = []
+      elseif a:command.replace.type == 'find'
+        let defs = s:GetNewMethodsDefinitions(result)
+        for def in defs
+          let m = s:FindMethod(s:ti.methods, def)
+          if !empty(m)
+            call add(toReplace, m.d)
+          endif
+        endfor
       endif
 
       let idx = 0
@@ -319,7 +325,7 @@ function! javacomplete#generators#AbstractDeclaration()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
   let s = ''
   let abstractMethods = []
-  let publicMethods = []
+  let implementedMethods = []
   for i in get(s:ti, 'extends', [])
     let parentInfo = javacomplete#collector#DoGetClassInfo(i)
     let members = javacomplete#complete#complete#SearchMember(parentInfo, '', 1, 1, 1, 14, 0)
@@ -327,7 +333,7 @@ function! javacomplete#generators#AbstractDeclaration()
       if javacomplete#util#CheckModifier(m.m, [g:JC_MODIFIER_ABSTRACT])
         call add(abstractMethods, m)
       elseif javacomplete#util#CheckModifier(m.m, [g:JC_MODIFIER_PUBLIC]) 
-        call add(publicMethods, m)
+        call add(implementedMethods, m)
       endif
     endfor
     unlet i
@@ -336,7 +342,7 @@ function! javacomplete#generators#AbstractDeclaration()
   let result = []
   let method = g:JavaComplete_Templates['abstractDeclaration']
   for m in abstractMethods
-    if s:CheckImplementationExistense(s:ti, publicMethods, m)
+    if !empty(s:CheckImplementationExistense(s:ti, implementedMethods, m))
       continue
     endif
     let declaration = javacomplete#util#GenMethodParamsDeclaration(m)
@@ -347,49 +353,103 @@ function! javacomplete#generators#AbstractDeclaration()
     for line in split(substitute(method, '$declaration', declaration, 'g'), '\n')
       call add(result, line)
     endfor
+
+    call add(implementedMethods, m)
   endfor
 
   call s:InsertResults(result)
 endfunction
 
 " ti - this class info
-" publicMethods - implemented methods from parent class
+" implementedMethods - implemented methods from parent class
 " method - method to check
-function! s:CheckImplementationExistense(ti, publicMethods, method) 
-  let methodDeclaration = javacomplete#util#CleanFQN(a:method.r . ' '. a:method.n)
-  let paramsList = []
+function! s:CheckImplementationExistense(ti, implementedMethods, method) 
+  let methods = a:ti.methods
+  call extend(methods, a:implementedMethods)
+  return s:FindMethod(methods, a:method)
+endfunction
+
+" TODO: extract method
+function! s:FindMethod(methods, method)
+  let searchMethodParamList = []
   if has_key(a:method, 'p')
     for p in a:method.p
-      call add(paramsList, javacomplete#util#CleanFQN(p))
+      call add(searchMethodParamList, javacomplete#util#CleanFQN(p))
+    endfor
+  elseif has_key(a:method, 'params')
+    for param in a:method.params
+      if type(param) == type({}) && has_key(param, 'type') 
+        if has_key(param.type, 'name')
+          call add(searchMethodParamList, javacomplete#util#CleanFQN(param.type.name))
+        elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
+          let name = javacomplete#util#CleanFQN(param.type.clazz.name)
+          if has_key(param.type, 'arguments')
+            let args = []
+            for arg in param.type.arguments
+              if type(arg) == type({})
+                if len(arg.name) == 1
+                  call add(searchMethodParamList, '\('. g:RE_TYPE_ARGUMENT_EXTENDS. '\|'. g:RE_TYPE. '\)')
+                else
+                  call add(searchMethodParamList, arg.name)
+                endif
+              else
+                call add(searchMethodParamList, '?')
+              endif
+            endfor
+            let name .= '<'. join(args, ',\s*'). '>'
+          endif
+          call add(searchMethodParamList, name)
+        elseif has_key(param.type, 'typetag')
+          call add(searchMethodParamList, param.type.typetag)
+        elseif has_key(param.type, 'tag') && param.type.tag == 'TYPEARRAY'
+          if has_key(param.type, 'elementtype') && has_key(param.type.elementtype, 'name')
+            call add(searchMethodParamList, param.type.elementtype.name . '[]')
+          endif
+        endif
+      endif
     endfor
   endif
-  let methods = a:ti.methods
-  call extend(methods, a:publicMethods)
-  for em in methods
-    if methodDeclaration ==# javacomplete#util#CleanFQN(em.r . ' '. em.n)
-      let paramsList2 = []
-      if has_key(em, 'params')
-        for param in em.params
+
+  let methodDeclaration = javacomplete#util#CleanFQN(a:method.r . ' '. a:method.n)
+  for method in a:methods
+    if methodDeclaration ==# javacomplete#util#CleanFQN(method.r . ' '. method.n)
+      let methodParamList = []
+      if has_key(method, 'params')
+        for param in method.params
           if type(param) == type({}) && has_key(param, 'type') 
             if has_key(param.type, 'name')
-              call add(paramsList2, javacomplete#util#CleanFQN(param.type.name))
+              call add(methodParamList, javacomplete#util#CleanFQN(param.type.name))
             elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
               let name = javacomplete#util#CleanFQN(param.type.clazz.name)
               if has_key(param.type, 'arguments')
                 let args = []
                 for arg in param.type.arguments
-                  call add(args, arg.name)
+                  if type(arg) == type({})
+                    if len(arg.name) == 1
+                      call add(args, '\('. g:RE_TYPE_ARGUMENT_EXTENDS. '\|'. g:RE_TYPE. '\)')
+                    else
+                      call add(args, arg.name)
+                    endif
+                  else
+                    call add(args, '?')
+                  endif
                 endfor
                 let name .= '<'. join(args, ',\s*'). '>'
               endif
-              call add(paramsList2, name)
+              call add(methodParamList, name)
+            elseif has_key(param.type, 'typetag')
+              call add(methodParamList, param.type.typetag)
+            elseif has_key(param.type, 'tag') && param.type.tag == 'TYPEARRAY'
+              if has_key(param.type, 'elementtype') && has_key(param.type.elementtype, 'name')
+                call add(methodParamList, param.type.elementtype.name . '[]')
+              endif
             endif
           endif
         endfor
-      elseif has_key(em, 'p')
-        for param in em.p
+      elseif has_key(method, 'p')
+        for param in method.p
           if type(param) == type("")
-            call add(paramsList2, javacomplete#util#CleanFQN(param))
+            call add(methodParamList, javacomplete#util#CleanFQN(param))
           endif
         endfor
       endif
@@ -397,21 +457,26 @@ function! s:CheckImplementationExistense(ti, publicMethods, method)
       " compare parameters need to be done with regexp because of separator of
       " arguments if paramater has generic arguments
       let i = 0
-      for p in paramsList
-        if i < len(paramsList2)
-          if p !~ paramsList2[i]
-            return 0
+      let _continue = 0
+      for p in searchMethodParamList
+        if i < len(methodParamList)
+          if p !~ methodParamList[i]
+            let _continue = 1
+            break
           endif
         else
-          return 0;
+          let _continue = 1
+          break
         endif
         let i += 1
       endfor
-      return 1
+      if _continue == 1
+        continue
+      endif
+      return method
     endif
   endfor
-
-  return 0
+  return {}
 endfunction
 
 function! s:CreateBuffer(name, title, commands)
@@ -588,7 +653,7 @@ endfunction
 function! s:FilterExistedMethods(locationMap, result)
   let resultMethods = []
   for def in s:GetNewMethodsDefinitions(a:result)
-    if s:CheckImplementationExistense(s:ti, [], def)
+    if !empty(s:CheckImplementationExistense(s:ti, [], def))
       continue
     endif
     for m in a:locationMap 
@@ -667,4 +732,4 @@ function! s:InsertResults(result)
   endif
 endfunction
 
-" vim:set fdm=marker sw=3 nowrap:
+" vim:set fdm=marker sw=2 nowrap:
