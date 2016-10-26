@@ -367,7 +367,42 @@ function! s:CheckImplementationExistense(ti, implementedMethods, method)
   return s:FindMethod(methods, a:method)
 endfunction
 
-" TODO: extract method
+function! s:GetParams(params)
+  let params = []
+  for param in a:params
+    if type(param) == type({}) && has_key(param, 'type') 
+      if has_key(param.type, 'name')
+        call add(params, javacomplete#util#CleanFQN(param.type.name))
+      elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
+        let name = javacomplete#util#CleanFQN(param.type.clazz.name)
+        if has_key(param.type, 'arguments')
+          let args = []
+          for arg in param.type.arguments
+            if type(arg) == type({})
+              if len(arg.name) == 1
+                call add(params, '\('. g:RE_TYPE_ARGUMENT_EXTENDS. '\|'. g:RE_TYPE. '\)')
+              else
+                call add(params, arg.name)
+              endif
+            else
+              call add(params, '?')
+            endif
+          endfor
+          let name .= '<'. join(args, ',\s*'). '>'
+        endif
+        call add(params, name)
+      elseif has_key(param.type, 'typetag')
+        call add(params, param.type.typetag)
+      elseif has_key(param.type, 'tag') && param.type.tag == 'TYPEARRAY'
+        if has_key(param.type, 'elementtype') && has_key(param.type.elementtype, 'name')
+          call add(params, param.type.elementtype.name . '[]')
+        endif
+      endif
+    endif
+  endfor
+  return params
+endfunction
+
 function! s:FindMethod(methods, method)
   let searchMethodParamList = []
   if has_key(a:method, 'p')
@@ -375,37 +410,7 @@ function! s:FindMethod(methods, method)
       call add(searchMethodParamList, javacomplete#util#CleanFQN(p))
     endfor
   elseif has_key(a:method, 'params')
-    for param in a:method.params
-      if type(param) == type({}) && has_key(param, 'type') 
-        if has_key(param.type, 'name')
-          call add(searchMethodParamList, javacomplete#util#CleanFQN(param.type.name))
-        elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
-          let name = javacomplete#util#CleanFQN(param.type.clazz.name)
-          if has_key(param.type, 'arguments')
-            let args = []
-            for arg in param.type.arguments
-              if type(arg) == type({})
-                if len(arg.name) == 1
-                  call add(searchMethodParamList, '\('. g:RE_TYPE_ARGUMENT_EXTENDS. '\|'. g:RE_TYPE. '\)')
-                else
-                  call add(searchMethodParamList, arg.name)
-                endif
-              else
-                call add(searchMethodParamList, '?')
-              endif
-            endfor
-            let name .= '<'. join(args, ',\s*'). '>'
-          endif
-          call add(searchMethodParamList, name)
-        elseif has_key(param.type, 'typetag')
-          call add(searchMethodParamList, param.type.typetag)
-        elseif has_key(param.type, 'tag') && param.type.tag == 'TYPEARRAY'
-          if has_key(param.type, 'elementtype') && has_key(param.type.elementtype, 'name')
-            call add(searchMethodParamList, param.type.elementtype.name . '[]')
-          endif
-        endif
-      endif
-    endfor
+    call extend(searchMethodParamList, s:GetParams(a:method.params))
   endif
 
   let methodDeclaration = javacomplete#util#CleanFQN(a:method.r . ' '. a:method.n)
@@ -413,37 +418,7 @@ function! s:FindMethod(methods, method)
     if methodDeclaration ==# javacomplete#util#CleanFQN(method.r . ' '. method.n)
       let methodParamList = []
       if has_key(method, 'params')
-        for param in method.params
-          if type(param) == type({}) && has_key(param, 'type') 
-            if has_key(param.type, 'name')
-              call add(methodParamList, javacomplete#util#CleanFQN(param.type.name))
-            elseif has_key(param.type, 'clazz') && has_key(param.type.clazz, 'name')
-              let name = javacomplete#util#CleanFQN(param.type.clazz.name)
-              if has_key(param.type, 'arguments')
-                let args = []
-                for arg in param.type.arguments
-                  if type(arg) == type({})
-                    if len(arg.name) == 1
-                      call add(args, '\('. g:RE_TYPE_ARGUMENT_EXTENDS. '\|'. g:RE_TYPE. '\)')
-                    else
-                      call add(args, arg.name)
-                    endif
-                  else
-                    call add(args, '?')
-                  endif
-                endfor
-                let name .= '<'. join(args, ',\s*'). '>'
-              endif
-              call add(methodParamList, name)
-            elseif has_key(param.type, 'typetag')
-              call add(methodParamList, param.type.typetag)
-            elseif has_key(param.type, 'tag') && param.type.tag == 'TYPEARRAY'
-              if has_key(param.type, 'elementtype') && has_key(param.type.elementtype, 'name')
-                call add(methodParamList, param.type.elementtype.name . '[]')
-              endif
-            endif
-          endif
-        endfor
+        call extend(methodParamList, s:GetParams(method.params))
       elseif has_key(method, 'p')
         for param in method.p
           if type(param) == type("")
