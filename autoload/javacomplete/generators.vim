@@ -186,11 +186,11 @@ function! s:CollectVars()
 endfunction
 
 function! javacomplete#generators#GenerateConstructor(default)
-  let defaultConstructorCommand = {'key': '1', 'desc': 'generate default constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'search'}, 'options': {'default': 1}}
+  let defaultConstructorCommand = {'key': '1', 'desc': 'generate default constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'same'}, 'options': {'default': 1}}
   if a:default == 0
     let commands = [
           \ defaultConstructorCommand,
-          \ {'key': '2', 'desc': 'generate constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'search'}}
+          \ {'key': '2', 'desc': 'generate constructor', 'call': '<SID>generateByTemplate', 'template': 'constructor', 'replace': {'type': 'same'}}
           \ ]
     call s:FieldsListBuffer(commands)
   else
@@ -202,17 +202,17 @@ endfunction
 
 function! javacomplete#generators#GenerateEqualsAndHashCode()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate', 'template': 'equals', 'replace': {'type': 'find'}},
-        \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate', 'template': 'hashCode', 'replace': {'type': 'constant', 'value': 'int hashCode()'}},
-        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate', 'template': ['hashCode', 'equals'], 'replace': {'type': 'find'}}
+        \ {'key': '1', 'desc': 'generate `equals` method', 'call': '<SID>generateByTemplate', 'template': 'equals', 'replace': {'type': 'similar'}},
+        \ {'key': '2', 'desc': 'generate `hashCode` method', 'call': '<SID>generateByTemplate', 'template': 'hashCode', 'replace': {'type': 'similar'}},
+        \ {'key': '3', 'desc': 'generate `equals` and `hashCode` methods', 'call': '<SID>generateByTemplate', 'template': ['hashCode', 'equals'], 'replace': {'type': 'similar'}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
 
 function! javacomplete#generators#GenerateToString()
   let commands = [
-        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate', 'template': 'toString_concat', 'replace': {'type': 'find'}},
-        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate', 'template': 'toString_StringBuilder', 'replace': {'type': 'find'}}
+        \ {'key': '1', 'desc': 'generate `toString` method using concatination', 'call': '<SID>generateByTemplate', 'template': 'toString_concat', 'replace': {'type': 'similar'}},
+        \ {'key': '2', 'desc': 'generate `toString` method using StringBuilder', 'call': '<SID>generateByTemplate', 'template': 'toString_StringBuilder', 'replace': {'type': 'similar'}}
         \ ]
   call s:FieldsListBuffer(commands)
 endfunction
@@ -277,14 +277,12 @@ function! <SID>generateByTemplate(command)
   if len(result) > 0
     if has_key(a:command, 'replace')
       let toReplace = []
-      if a:command.replace.type == 'constant'
-        call add(toReplace, type(a:command.replace.value) != type([]) ? [a:command.replace.value] : a:command.replace.value)
-      elseif a:command.replace.type == 'search'
+      if a:command.replace.type == 'same'
         let defs = s:GetNewMethodsDefinitions(result)
         for def in defs
           call add(toReplace, def.d)
         endfor
-      elseif a:command.replace.type == 'find'
+      elseif a:command.replace.type == 'similar'
         let defs = s:GetNewMethodsDefinitions(result)
         for def in defs
           let m = s:FindMethod(s:ti.methods, def)
