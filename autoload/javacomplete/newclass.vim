@@ -75,7 +75,7 @@ function! s:ParseInput(path, currentPath, currentPackage)
         let i = -1
       endif
     else
-      call extend(newPackage, reverse(currentPath)[:-idx - 1], 0)
+      call extend(reverse(newPackage), reverse(currentPath)[:-idx - 1], 0)
     endif
     let newPath = newPath. join(path[i+1:-2], g:FILE_SEP)
     return {
