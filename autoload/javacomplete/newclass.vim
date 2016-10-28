@@ -16,8 +16,8 @@ function! javacomplete#newclass#CreateClass()
   endif
   let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
   let path = split(userinput, '\.')
-  let currentPath = expand('%:p')
-  let currentPathList = split(currentPath, g:FILE_SEP)[:-2]
+  let currentPath = fnamemodify(expand('%:p'), ':p:h')
+  let currentPathList = split(currentPath, g:FILE_SEP)
   let data = s:ParseInput(
         \ path, reverse(copy(currentPathList)), currentPackage)
   let data['current_path'] = '/'. join(currentPathList, g:FILE_SEP). '/'

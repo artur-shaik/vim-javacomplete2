@@ -83,13 +83,23 @@ describe 'javacomplete-test'
         let currentPath = reverse(split('/home/foo/project/src/kg/foo/bar/baz/bad/bas/CurrentClass.java', '/')[:-2])
         Expect Call('s:ParseInput', 
                     \ ['/bar', 'fee', 'NewClass'], 
-                    \ b:currentPath, 
+                    \ currentPath, 
                     \ split('kg.foo.bar.baz.bad.bas', '\.')) 
                     \ == 
                     \ {
                     \ 'path' : '../../../fee', 
                     \ 'class' : 'NewClass', 
                     \ 'package' : 'kg.foo.bar.fee'
+                    \ }
+        Expect Call('s:ParseInput', 
+                    \ ['/bad', 'NewClass'], 
+                    \ currentPath, 
+                    \ split('kg.foo.bar.baz.bad.bas', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.bar.baz.bad'
                     \ }
     end
 
