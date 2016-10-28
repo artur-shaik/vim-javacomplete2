@@ -34,10 +34,14 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
         List<PackageEntry> result = new ArrayList<>();
         for (String directory : getExistDirectories()) {
             try {
+                logger.debug("search source files");
+
                 Files.walkFileTree(Paths.get(directory), finder);
                 for (String path : finder.getResultList()) {
                     String packagePath = fetchPackagePath(path);
                     if (packagePath != null) {
+                        logger.trace(path);
+
                         packagePath = packagePath.substring(0, packagePath.length() - 4) + "class";
                         result.add(new PackageEntry(packagePath, JavaClassMap.SOURCETYPE_SOURCES, path, PackageEntry.FILETYPE_JAVA));
                     }
