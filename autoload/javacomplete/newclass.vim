@@ -58,26 +58,17 @@ function! s:ParseInput(path, currentPath, currentPackage)
     endif
     let idx = index(a:currentPath, a:currentPackage[0])
     let currentPath = idx >= 0 ? a:currentPath[:idx] : a:currentPath
-    let i = len(path) - 2
-    let newPath = ""
-    let newPackage = []
-    let idx = index(currentPath, path[i])
-    while i > 0
-      let newPath .= '..'. g:FILE_SEP
-      call add(newPackage, path[i])
-      let i -= 1
-      let idx = index(currentPath, path[i])
-    endwhile
+    let idx = index(currentPath, path[0])
     if idx < 0
       let newPath = repeat('..'. g:FILE_SEP, len(currentPath))
+      let newPath .= join(path[:-2], g:FILE_SEP)
       let newPackage = path[:-2]
-      if i == 0
-        let i = -1
-      endif
     else
-      call extend(reverse(newPackage), reverse(currentPath)[:-idx - 1], 0)
+      let newPath = repeat('..'. g:FILE_SEP, len(currentPath[:idx-1]))
+      let newPath .= join(path[1:-2], g:FILE_SEP)
+      let newPackage = path[1:-2]
+      call extend(newPackage, reverse(currentPath)[:-idx-1], 0)
     endif
-    let newPath = newPath. join(path[i+1:-2], g:FILE_SEP)
     return {
           \ 'path' : newPath, 
           \ 'class' : path[-1], 
