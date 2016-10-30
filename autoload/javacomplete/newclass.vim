@@ -5,7 +5,7 @@
 
 function! s:Log(log)
   let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[generators] ". log)
+  call javacomplete#logger#Log("[newclass] ". log)
 endfunction
 
 function! javacomplete#newclass#CreateClass()
@@ -14,18 +14,21 @@ function! javacomplete#newclass#CreateClass()
   if empty(userinput)
     return
   endif
+  call s:Log("input: ". userinput)
+
   let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
-  let path = split(userinput, '\.')
   let currentPath = expand('%:p:h')
   let currentPathList = split(currentPath, g:FILE_SEP)
   call filter(currentPathList, 'empty(v:val) == 0')
   let data = s:ParseInput(
-        \ path, reverse(copy(currentPathList)), currentPackage)
-  let data['current_path'] = '/'. join(currentPathList, g:FILE_SEP). '/'
+        \ userinput, reverse(copy(currentPathList)), currentPackage)
+  let data['current_path'] = g:FILE_SEP. join(currentPathList, g:FILE_SEP). g:FILE_SEP
   call s:CreateClass(data)
 endfunction
 
 function! s:CreateClass(data)
+  call s:Log("create class: ". string(a:data))
+
   let path = a:data['current_path']
         \ . g:FILE_SEP
         \ . a:data['path']
@@ -43,22 +46,25 @@ function! s:CreateClass(data)
   endif
 endfunction
 
-function! s:ParseInput(path, currentPath, currentPackage)
-  if len(a:path) == 1
+function! s:ParseInput(userinput, currentPath, currentPackage)
+  let path = split(a:userinput, '\.')
+  if len(path) == 1
     return {
           \ 'path' : '', 
-          \ 'class' : a:path[0], 
+          \ 'class' : path[0], 
           \ 'package' : join(a:currentPackage, '.')
           \ }
-  elseif a:path[0] == '/' || a:path[0][0] == '/'
-    if a:path[0] == '/'
-      let path = a:path[1:]
+  elseif path[0] == '/' || path[0][0] == '/'
+    if path[0] == '/'
+      let path = path[1:]
     else
-      let path = a:path
       let path[0] = path[0][1:]
     endif
-    let idx = index(a:currentPath, a:currentPackage[0])
-    let currentPath = idx >= 0 ? a:currentPath[:idx] : a:currentPath
+    let sameSubpackageIdx = index(a:currentPath, a:currentPackage[0])
+    if sameSubpackageIdx < 0
+      return s:RelativePath(path, a:currentPath, a:currentPackage)
+    endif
+    let currentPath = a:currentPath[:sameSubpackageIdx]
     let idx = index(currentPath, path[0])
     if idx < 0
       let newPath = repeat('..'. g:FILE_SEP, len(currentPath))
@@ -76,13 +82,17 @@ function! s:ParseInput(path, currentPath, currentPackage)
           \ 'package' : join(newPackage, '.')
           \ }
   else
-    let newPackage = join(a:currentPackage, '.'). '.'. join(a:path[:-2], '.')
-    return {
-          \ 'path' : join(a:path[:-2], g:FILE_SEP), 
-          \ 'class' : a:path[-1], 
-          \ 'package' : newPackage
-          \ }
+    return s:RelativePath(path, a:currentPath, a:currentPackage)
   endif
+endfunction
+
+function! s:RelativePath(path, currentPath, currentPackage)
+  let newPackage = join(a:currentPackage, '.'). '.'. join(a:path[:-2], '.')
+  return {
+        \ 'path' : join(a:path[:-2], g:FILE_SEP), 
+        \ 'class' : a:path[-1], 
+        \ 'package' : newPackage
+        \ }
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

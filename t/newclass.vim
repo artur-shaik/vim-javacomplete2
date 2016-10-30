@@ -12,7 +12,7 @@ describe 'javacomplete-test'
 
     it 'ParseInput same package class test'
         Expect Call('s:ParseInput', 
-                    \ ['NewClass'], 
+                    \ 'NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -25,7 +25,7 @@ describe 'javacomplete-test'
 
     it 'ParseInput root path search test'
         Expect Call('s:ParseInput', 
-                    \ ['/', 'foo', 'baz', 'NewClass'], 
+                    \ '/foo.baz.NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -35,7 +35,7 @@ describe 'javacomplete-test'
                     \ 'package' : 'kg.foo.baz'
                     \ }
         Expect Call('s:ParseInput', 
-                    \ ['/foo', 'baz', 'NewClass'], 
+                    \ '/foo.baz.NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -45,7 +45,7 @@ describe 'javacomplete-test'
                     \ 'package' : 'kg.foo.baz'
                     \ }
         Expect Call('s:ParseInput', 
-                    \ ['/', 'org', 'foo', 'baz', 'NewClass'], 
+                    \ '/.org.foo.baz.NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -55,7 +55,7 @@ describe 'javacomplete-test'
                     \ 'package' : 'org.foo.baz'
                     \ }
         Expect Call('s:ParseInput', 
-                    \ ['/', 'foo', 'baz', 'bar', 'NewClass'], 
+                    \ '/.foo.baz.bar.NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -68,7 +68,7 @@ describe 'javacomplete-test'
 
     it 'ParseInput relative path test'
         Expect Call('s:ParseInput', 
-                    \ ['foo', 'baz', 'NewClass'], 
+                    \ 'foo.baz.NewClass', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -82,7 +82,7 @@ describe 'javacomplete-test'
     it 'ParseInput relative path test'
         let currentPath = reverse(split('/home/foo/project/src/kg/foo/bar/baz/bad/bas/CurrentClass.java', '/')[:-2])
         Expect Call('s:ParseInput', 
-                    \ ['/bar', 'fee', 'NewClass'], 
+                    \ '/bar.fee.NewClass', 
                     \ currentPath, 
                     \ split('kg.foo.bar.baz.bad.bas', '\.')) 
                     \ == 
@@ -92,7 +92,7 @@ describe 'javacomplete-test'
                     \ 'package' : 'kg.foo.bar.fee'
                     \ }
         Expect Call('s:ParseInput', 
-                    \ ['/bad', 'NewClass'], 
+                    \ '/bad.NewClass', 
                     \ currentPath, 
                     \ split('kg.foo.bar.baz.bad.bas', '\.')) 
                     \ == 
@@ -100,6 +100,19 @@ describe 'javacomplete-test'
                     \ 'path' : '../', 
                     \ 'class' : 'NewClass', 
                     \ 'package' : 'kg.foo.bar.baz.bad'
+                    \ }
+    end
+
+    it 'ParseInput wrong package'
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass', 
+                    \ b:currentPath, 
+                    \ split('kf.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : 'foo/baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kf.foo.bar.foo.baz'
                     \ }
     end
 
