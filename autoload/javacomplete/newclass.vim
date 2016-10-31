@@ -48,13 +48,7 @@ endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
   let path = split(a:userinput, '\.')
-  if len(path) == 1
-    return {
-          \ 'path' : '', 
-          \ 'class' : path[0], 
-          \ 'package' : join(a:currentPackage, '.')
-          \ }
-  elseif path[0] == '/' || path[0][0] == '/'
+  if path[0] == '/' || path[0][0] == '/'
     if path[0] == '/'
       let path = path[1:]
     else
@@ -87,7 +81,7 @@ function! s:ParseInput(userinput, currentPath, currentPackage)
 endfunction
 
 function! s:RelativePath(path, currentPath, currentPackage)
-  let newPackage = join(a:currentPackage, '.'). '.'. join(a:path[:-2], '.')
+  let newPackage = join(a:currentPackage + a:path[:-2], '.')
   return {
         \ 'path' : join(a:path[:-2], g:FILE_SEP), 
         \ 'class' : a:path[-1], 
