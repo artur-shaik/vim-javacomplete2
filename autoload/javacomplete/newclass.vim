@@ -38,10 +38,8 @@ function! s:CreateClass(data)
   let fileName = fnamemodify(path. g:FILE_SEP. a:data['class'], ":p")
   execute ':e '. fileName. '.java'
   if filewritable(fileName. '.java') == 0
-    call append(0, 'package '. a:data['package']. ';')
-    call append(line('$'), 'public class '. a:data['class']. ' {')
-    call append(line('$'), '')
-    call append(line('$'), '}')
+    let options = {'name' : a:data['class'], 'package' : a:data['package']}
+    call javacomplete#generators#GenerateClass(options)
     call cursor(4, 1)
   endif
 endfunction
