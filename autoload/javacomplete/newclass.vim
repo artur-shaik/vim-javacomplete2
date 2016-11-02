@@ -22,6 +22,11 @@ function! javacomplete#newclass#CreateClass()
   call filter(currentPathList, 'empty(v:val) == 0')
   let data = s:ParseInput(
         \ userinput, reverse(copy(currentPathList)), currentPackage)
+  if type(data) != type({})
+    echom "\n"
+    echoerr "Error: could not parse input line"
+    return
+  endif
   let data['current_path'] = g:FILE_SEP. join(currentPathList, g:FILE_SEP). g:FILE_SEP
   call s:CreateClass(data)
 endfunction
@@ -45,36 +50,40 @@ function! s:CreateClass(data)
 endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
-  let path = split(a:userinput, '\.')
-  if path[0] == '/' || path[0][0] == '/'
-    if path[0] == '/'
-      let path = path[1:]
+  let submatch = matchlist(a:userinput, '^\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)$')
+  call s:Log(submatch)
+  if !empty(submatch)
+    let path = split(submatch[1], '\.')
+    if path[0] == '/' || path[0][0] == '/'
+      if path[0] == '/'
+        let path = path[1:]
+      else
+        let path[0] = path[0][1:]
+      endif
+      let sameSubpackageIdx = index(a:currentPath, a:currentPackage[0])
+      if sameSubpackageIdx < 0
+        return s:RelativePath(path, a:currentPath, a:currentPackage)
+      endif
+      let currentPath = a:currentPath[:sameSubpackageIdx]
+      let idx = index(currentPath, path[0])
+      if idx < 0
+        let newPath = repeat('..'. g:FILE_SEP, len(currentPath))
+        let newPath .= join(path[:-2], g:FILE_SEP)
+        let newPackage = path[:-2]
+      else
+        let newPath = repeat('..'. g:FILE_SEP, len(currentPath[:idx-1]))
+        let newPath .= join(path[1:-2], g:FILE_SEP)
+        let newPackage = path[1:-2]
+        call extend(newPackage, reverse(currentPath)[:-idx-1], 0)
+      endif
+      return {
+            \ 'path' : newPath, 
+            \ 'class' : path[-1], 
+            \ 'package' : join(newPackage, '.')
+            \ }
     else
-      let path[0] = path[0][1:]
-    endif
-    let sameSubpackageIdx = index(a:currentPath, a:currentPackage[0])
-    if sameSubpackageIdx < 0
       return s:RelativePath(path, a:currentPath, a:currentPackage)
     endif
-    let currentPath = a:currentPath[:sameSubpackageIdx]
-    let idx = index(currentPath, path[0])
-    if idx < 0
-      let newPath = repeat('..'. g:FILE_SEP, len(currentPath))
-      let newPath .= join(path[:-2], g:FILE_SEP)
-      let newPackage = path[:-2]
-    else
-      let newPath = repeat('..'. g:FILE_SEP, len(currentPath[:idx-1]))
-      let newPath .= join(path[1:-2], g:FILE_SEP)
-      let newPackage = path[1:-2]
-      call extend(newPackage, reverse(currentPath)[:-idx-1], 0)
-    endif
-    return {
-          \ 'path' : newPath, 
-          \ 'class' : path[-1], 
-          \ 'package' : join(newPackage, '.')
-          \ }
-  else
-    return s:RelativePath(path, a:currentPath, a:currentPackage)
   endif
 endfunction
 
