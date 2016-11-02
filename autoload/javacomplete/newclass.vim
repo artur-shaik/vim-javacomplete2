@@ -47,6 +47,7 @@ function! s:CreateClass(data)
     call javacomplete#generators#GenerateClass(options)
     silent execute "normal! gg=G"
     call search(a:data['class'])
+    call javacomplete#imports#AddMissing()
   endif
 endfunction
 
