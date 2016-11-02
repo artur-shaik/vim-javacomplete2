@@ -116,4 +116,29 @@ describe 'javacomplete-test'
                     \ }
     end
 
+    it 'ParseInput class with fields'
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass(String foo, public static Integer bar)', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'fields' : {
+                        \ '1' : {
+                            \ 'mod' : 'private',
+                            \ 'type' : 'String',
+                            \ 'name' : 'foo'
+                            \ },
+                        \ '2' : {
+                            \ 'mod' : 'public static',
+                            \ 'type' : 'Integer',
+                            \ 'name' : 'bar'
+                            \ }
+                        \ }
+                    \ }
+    end
+
 end
