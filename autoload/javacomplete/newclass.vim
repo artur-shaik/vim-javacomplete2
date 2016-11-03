@@ -43,7 +43,13 @@ function! s:CreateClass(data)
   let fileName = fnamemodify(path. g:FILE_SEP. a:data['class'], ":p")
   execute ':e '. fileName. '.java'
   if filewritable(fileName. '.java') == 0
-    let options = {'name' : a:data['class'], 'package' : a:data['package'], 'fields' : a:data['fields']}
+    let options = {
+          \ 'name' : a:data['class'], 
+          \ 'package' : a:data['package'] 
+          \ }
+    if has_key(a:data, 'fields')
+      let options['fields'] = a:data['fields']
+    endif
     call javacomplete#generators#GenerateClass(options)
     silent execute "normal! gg=G"
     call search(a:data['class'])
