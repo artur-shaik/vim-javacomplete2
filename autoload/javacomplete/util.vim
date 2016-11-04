@@ -289,9 +289,9 @@ function! javacomplete#util#RunSystem(command, shellName, handler)
     let ret = system(a:command)
   endif
   for l in split(ret, "\n")
-    call call(a:handler, [0, [l], "stdout"])
+    call call(a:handler, [[l], "stdout"])
   endfor
-  call call(a:handler, [0, "0", "exit"])
+  call call(a:handler, ["0", "exit"])
 endfunction
 
 function! javacomplete#util#Base64Encode(str)
