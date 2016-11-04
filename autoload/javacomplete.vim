@@ -1,6 +1,11 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 
+if exists('g:JavaComplete_Autoload')
+  finish
+endif
+let g:JavaComplete_Autoload = 1
+
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
 if get(g:, 'JavaComplete_UsePython3', 0) == 0 && has('python')
