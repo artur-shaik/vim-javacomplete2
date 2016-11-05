@@ -35,6 +35,7 @@ class JavaviBridge():
     def setupServer(self, javabin, args, classpath):
         is_win = sys.platform == 'win32'
         separator = (';' if is_win else ':')
+        fileSeparator = ('\\' if is_win else '/')
 
         classpathset = set(classpath.split(separator))
 
@@ -44,8 +45,15 @@ class JavaviBridge():
 
         environ['CLASSPATH'] = separator.join(classpathset)
 
-        if vim.eval('exists("g:JavaComplete_JavaviLogfileDirectory")') == "1":
-            self.logfile = open(vim.eval("g:JavaComplete_JavaviLogfileDirectory") + ('\\' if is_win else '/') + "javavi_" + str(SERVER[1]) + ".log", "w")
+        if vim.eval('get(g:, "JavaComplete_JavaviLogLevel", 0)') != 0:
+            defaulttmp = fileSeparator + fileSeparator.join(
+                ['tmp', 'javavi_log'])
+            logdir = vim.eval(
+                "get(g:, 'JavaComplete_JavaviLogDirectory', '%s')" 
+                % defaulttmp)
+            self.logfile = open("%s%s%s" % (
+                    logdir, fileSeparator, "javavi_stdout.log"), 
+                "a")
             output = self.logfile
         else:
             output = subprocess.PIPE
