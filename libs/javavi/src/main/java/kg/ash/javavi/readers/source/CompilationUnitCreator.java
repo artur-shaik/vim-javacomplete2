@@ -9,8 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 
 public class CompilationUnitCreator {
 

@@ -2,8 +2,8 @@ package kg.ash.javavi;
 
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 
 import kg.ash.javavi.actions.Action;
 import kg.ash.javavi.actions.ActionFactory;

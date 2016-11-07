@@ -16,8 +16,8 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
