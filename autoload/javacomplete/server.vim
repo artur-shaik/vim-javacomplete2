@@ -267,8 +267,8 @@ endfunction
 function! s:GetJavaviDeps()
   let deps = []
   call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p"))
-  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'log4j-api.jar'], g:FILE_SEP), ":p"))
-  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'log4j-core.jar'], g:FILE_SEP), ":p"))
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javavi_log4j-api.jar'], g:FILE_SEP), ":p"))
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javavi_log4j-core.jar'], g:FILE_SEP), ":p"))
   let path = join(deps, g:PATH_SEP)
   if exists('b:classpath') && b:classpath !~ '^\s*$'
     return path . b:classpath

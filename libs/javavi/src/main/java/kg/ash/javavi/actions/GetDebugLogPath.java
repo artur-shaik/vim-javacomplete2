@@ -1,10 +1,10 @@
 package kg.ash.javavi.actions;
 
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
-import org.apache.logging.log4j.core.lookup.StrLookup;
+import kg.ash.javavi.apache.logging.log4j.core.LoggerContext;
+import kg.ash.javavi.apache.logging.log4j.core.config.xml.XmlConfiguration;
+import kg.ash.javavi.apache.logging.log4j.core.lookup.StrLookup;
 
-import org.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
 
 public class GetDebugLogPath implements Action {
 

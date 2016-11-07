@@ -16,6 +16,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
@@ -26,8 +30,6 @@ import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.FileClassLoader;
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.ClassSearcher;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Reflection implements ClassReader {
 
