@@ -179,6 +179,18 @@ describe 'javacomplete-test'
                     \ 'package' : 'kg.foo.baz',
                     \ 'implements' : 'kg.FooClassIFace'
                     \ }
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass extends FooClass implements kg.FooClassIFace', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'extends' : 'FooClass',
+                    \ 'implements' : 'kg.FooClassIFace'
+                    \ }
     end
 
 end
