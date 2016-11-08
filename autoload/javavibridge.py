@@ -51,6 +51,8 @@ class JavaviBridge():
             logdir = vim.eval(
                 "get(g:, 'JavaComplete_JavaviLogDirectory', '%s')" 
                 % defaulttmp)
+            if not os.path.isdir(logdir):
+                os.mkdir(logdir)
             self.logfile = open("%s%s%s" % (
                     logdir, fileSeparator, "javavi_stdout.log"), 
                 "a")
