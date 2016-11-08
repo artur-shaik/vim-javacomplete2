@@ -128,7 +128,7 @@ describe 'javacomplete-test'
 
     it 'ParseInput class with fields'
         Expect Call('s:ParseInput', 
-                    \ '/foo.baz.NewClass(String foo, public static Integer bar)', 
+                    \ '/foo.baz.NewClass(String foo, public static Integer bar, public final static int CONSTANT)', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 
                     \ == 
@@ -146,6 +146,11 @@ describe 'javacomplete-test'
                             \ 'mod' : 'public static',
                             \ 'type' : 'Integer',
                             \ 'name' : 'bar'
+                            \ },
+                        \ '3' : {
+                            \ 'mod' : 'public final static',
+                            \ 'type' : 'int',
+                            \ 'name' : 'CONSTANT'
                             \ }
                         \ }
                     \ }
