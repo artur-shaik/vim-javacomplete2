@@ -64,6 +64,16 @@ describe 'javacomplete-test'
                     \ 'class' : 'NewClass', 
                     \ 'package' : 'kg.foo.baz.bar'
                     \ }
+        Expect Call('s:ParseInput', 
+                    \ '/bar.NewClass', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.bar'
+                    \ }
     end
 
     it 'ParseInput relative path test'

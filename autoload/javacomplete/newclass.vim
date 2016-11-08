@@ -114,7 +114,11 @@ function! s:BuildPathData(path, currentPath, currentPackage)
       let newPath .= join(path[:-2], g:FILE_SEP)
       let newPackage = path[:-2]
     else
-      let newPath = repeat('..'. g:FILE_SEP, len(currentPath[:idx-1]))
+      let newPath = idx > 0 ? 
+            \ repeat('..'. g:FILE_SEP, 
+            \ len(currentPath[:idx-1])) 
+            \ : 
+            \ ''
       let newPath .= join(path[1:-2], g:FILE_SEP)
       let newPackage = path[1:-2]
       call extend(newPackage, reverse(currentPath)[:-idx-1], 0)
