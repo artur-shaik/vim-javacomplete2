@@ -156,4 +156,29 @@ describe 'javacomplete-test'
                     \ }
     end
 
+    it 'ParseInput class extends/implements'
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass extends kg.FooClass', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'extends' : 'kg.FooClass'
+                    \ }
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass implements kg.FooClassIFace', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'implements' : 'kg.FooClassIFace'
+                    \ }
+    end
+
 end

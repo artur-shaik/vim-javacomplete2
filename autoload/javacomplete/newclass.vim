@@ -50,20 +50,39 @@ function! s:CreateClass(data)
     if has_key(a:data, 'fields')
       let options['fields'] = a:data['fields']
     endif
+    if has_key(a:data, 'extends')
+      let options['extends'] = a:data['extends']
+    endif
+    if has_key(a:data, 'implements')
+      let options['implements'] = a:data['implements']
+    endif
     call javacomplete#generators#GenerateClass(options)
     silent execute "normal! gg=G"
     call search(a:data['class'])
     call javacomplete#imports#AddMissing()
+    call javacomplete#generators#AbstractDeclaration()
   endif
 endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
-  let submatch = matchlist(a:userinput, '^\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\((.\{-})\|\)$')
+  let submatch = matchlist(a:userinput, '^\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\(\s\+extends\s\+'. g:RE_TYPE. '\)\=\(\s\+implements\s\+'. g:RE_TYPE. '\)\=\((.\{-})\|\)$')
   if !empty(submatch)
     let path = split(submatch[1], '\.')
     let classData = s:BuildPathData(path, a:currentPath, a:currentPackage)
     if !empty(submatch[2])
-      let fieldsMap = s:ParseFields(submatch[2])
+      let m = matchlist(submatch[2], '.*extends\s\+\('. g:RE_TYPE. '\)')
+      if !empty(m)
+        let classData['extends'] = m[1]
+      endif
+    endif
+    if !empty(submatch[3])
+      let m = matchlist(submatch[3], '.*implements\s\+\('. g:RE_TYPE. '\)')
+      if !empty(m)
+        let classData['implements'] = m[1]
+      endif
+    endif
+    if !empty(submatch[4])
+      let fieldsMap = s:ParseFields(submatch[4])
       if type(fieldsMap) == type({})
         let classData['fields'] = fieldsMap
       endif
