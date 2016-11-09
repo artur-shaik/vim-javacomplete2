@@ -193,4 +193,33 @@ describe 'javacomplete-test'
                     \ }
     end
 
+    it 'ParseInput class with methods'
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass(String one, Integer two):constructor:toString(2):hashCode(1)', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'fields' : {
+                        \ '1' : {
+                            \ 'mod' : 'private',
+                            \ 'type' : 'String',
+                            \ 'name' : 'one'
+                            \ },
+                        \ '2' : {
+                            \ 'mod' : 'private',
+                            \ 'type' : 'Integer',
+                            \ 'name' : 'two'
+                            \ }
+                    \ },
+                    \ 'methods' : {
+                        \ 'constructor' : [],
+                        \ 'toString' : [2],
+                        \ 'hashCode' : [1]
+                        \ }
+                    \ }
+    end
 end

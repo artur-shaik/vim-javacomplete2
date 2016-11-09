@@ -66,7 +66,7 @@ function! s:CreateClass(data)
 endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
-  let submatch = matchlist(a:userinput, '^\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\(\s\+extends\s\+'. g:RE_TYPE. '\)\=\(\s\+implements\s\+'. g:RE_TYPE. '\)\=\((.\{-})\|\)$')
+  let submatch = matchlist(a:userinput, '^\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\(\s\+extends\s\+'. g:RE_TYPE. '\)\=\(\s\+implements\s\+'. g:RE_TYPE. '\)\=\((.\{-})\|\)\(:.*\)\=$')
   if !empty(submatch)
     let path = split(submatch[1], '\.')
     let classData = s:BuildPathData(path, a:currentPath, a:currentPackage)
@@ -88,8 +88,33 @@ function! s:ParseInput(userinput, currentPath, currentPackage)
         let classData['fields'] = fieldsMap
       endif
     endif
+    if !empty(submatch[5])
+      let methodsMap = s:ParseMethods(submatch[5])
+      if !empty(methodsMap)
+        let classData['methods'] = methodsMap
+      endif
+    endif
     return classData
   endif
+endfunction
+
+function! s:ParseMethods(methods)
+  let methodsMap = {}
+  let methods = split(a:methods[1:], ':')
+  for method in methods
+    let bracketsIdx = stridx(method, '(')
+    if bracketsIdx > 0
+      let methodName = method[:bracketsIdx - 1]
+      let methodsMap[methodName] = []
+      let args = split(method[bracketsIdx + 1:-2])
+      for arg in args
+        call add(methodsMap[methodName], arg*1)
+      endfor
+    else
+      let methodsMap[method] = []
+    endif
+  endfor
+  return methodsMap
 endfunction
 
 function! s:ParseFields(fields)
