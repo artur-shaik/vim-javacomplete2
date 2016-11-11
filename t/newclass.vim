@@ -195,6 +195,57 @@ describe 'javacomplete-test'
 
     it 'ParseInput class with methods'
         Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass:constructor', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'methods' : {
+                        \ 'constructor' : []
+                        \ }
+                    \ }
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass:constructor(*)', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'methods' : {
+                        \ 'constructor' : ['*']
+                        \ }
+                    \ }
+        Expect Call('s:ParseInput', 
+                    \ '/foo.baz.NewClass(String one, Integer two):constructor(1,2)', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'fields' : {
+                        \ '1' : {
+                            \ 'mod' : 'private',
+                            \ 'type' : 'String',
+                            \ 'name' : 'one'
+                            \ },
+                        \ '2' : {
+                            \ 'mod' : 'private',
+                            \ 'type' : 'Integer',
+                            \ 'name' : 'two'
+                            \ }
+                    \ },
+                    \ 'methods' : {
+                        \ 'constructor' : [1, 2]
+                        \ }
+                    \ }
+        Expect Call('s:ParseInput', 
                     \ '/foo.baz.NewClass(String one, Integer two):constructor:toString(2):hashCode(1)', 
                     \ b:currentPath, 
                     \ split('kg.foo.bar', '\.')) 

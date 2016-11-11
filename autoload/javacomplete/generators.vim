@@ -94,11 +94,19 @@ function! s:FieldsListBuffer(commands)
   call cursor(contentLine + 1, 0)
 endfunction
 
+function! javacomplete#generators#GenerateByTemplate(command)
+  call <SID>generateByTemplate(a:command)
+endfunction
+
 " a:1 - method declaration to replace
 function! <SID>generateByTemplate(command)
-  let fields = []
+  let command = a:command
+  if !has_key(command, 'fields')
+    let command['fields'] = []
+  endif
+
   if bufname('%') == "__FieldsListBuffer__"
-    call s:Log("generate method with template: ". string(a:command.template))
+    call s:Log("generate method with template: ". string(command.template))
 
     let currentBuf = getline(1,'$')
     for line in currentBuf
@@ -106,7 +114,7 @@ function! <SID>generateByTemplate(command)
         let cmd = line[0]
         let idx = line[1:stridx(line, ' ')-1]
         let var = b:currentFileVars[idx]
-        call add(fields, var)
+        call add(command['fields'], var)
       endif
     endfor
 
@@ -114,14 +122,12 @@ function! <SID>generateByTemplate(command)
   endif
 
   let result = []
-  let templates = type(a:command.template) != type([]) ? [a:command.template] : a:command.template
+  let templates = type(command.template) != type([]) ? [command.template] : command.template
   let class = {}
   if has_key(s:, 'ti')
     let class['name'] = s:ti.name
   endif
-  if len(fields) > 0
-    let class['fields'] = fields
-  endif
+  let class['fields'] = command['fields']
   for template in templates
     call s:CheckAndLoadTemplate(template)
     if has_key(g:JavaComplete_Generators, template)
@@ -129,8 +135,8 @@ function! <SID>generateByTemplate(command)
       execute g:JavaComplete_Generators[template]['data']
 
       let arguments = [class]
-      if has_key(a:command, 'options')
-        call add(arguments, a:command.options)
+      if has_key(command, 'options')
+        call add(arguments, command.options)
       endif
       let TemplateFunction = function('s:__'. template)
       for line in split(call(TemplateFunction, arguments), '\n')
@@ -141,14 +147,14 @@ function! <SID>generateByTemplate(command)
   endfor
 
   if len(result) > 0
-    if has_key(a:command, 'replace')
+    if has_key(command, 'replace')
       let toReplace = []
-      if a:command.replace.type == 'same'
+      if command.replace.type == 'same'
         let defs = s:GetNewMethodsDefinitions(result)
         for def in defs
           call add(toReplace, def.d)
         endfor
-      elseif a:command.replace.type == 'similar'
+      elseif command.replace.type == 'similar'
         let defs = s:GetNewMethodsDefinitions(result)
         for def in defs
           let m = s:FindMethod(s:ti.methods, def)
@@ -180,8 +186,8 @@ function! <SID>generateByTemplate(command)
         endif
       endwhile
     endif
-    if has_key(a:command, 'position_type')
-      call s:InsertResults(result, a:command['position_type'])
+    if has_key(command, 'position_type')
+      call s:InsertResults(result, command['position_type'])
     else
       call s:InsertResults(result)
     endif

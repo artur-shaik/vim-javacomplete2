@@ -62,7 +62,68 @@ function! s:CreateClass(data)
     silent execute "normal! j"
     call javacomplete#imports#AddMissing()
     call javacomplete#generators#AbstractDeclaration()
+    if has_key(a:data, 'methods')
+      let methods = a:data['methods']
+      let vars = s:GetVariables(a:data['fields'])
+      if has_key(methods, 'constructor')
+        let command = {'template': 'constructor', 'replace': {'type': 'same'}, 'fields' : []}
+        call s:InsertVars(command, methods['constructor'], vars)
+        call javacomplete#generators#GenerateByTemplate(command)
+      endif
+      if has_key(methods, 'toString')
+        let command = {'template': 'toString_StringBuilder', 'replace': {'type': 'similar'}, 'fields' : []}
+        if empty(methods['toString'])
+          call add(methods['toString'], '*')
+        endif
+        call s:InsertVars(command, methods['toString'], vars)
+        call javacomplete#generators#GenerateByTemplate(command)
+      endif
+      if has_key(methods, 'equals')
+        let command = {'template': 'equals', 'replace': {'type': 'similar'}, 'fields' : []}
+        if empty(methods['equals'])
+          call add(methods['equals'], '*')
+        endif
+        call s:InsertVars(command, methods['equals'], vars)
+        call javacomplete#generators#GenerateByTemplate(command)
+      endif
+      if has_key(methods, 'hashCode')
+        let command = {'template': 'hashCode', 'replace': {'type': 'similar'}, 'fields' : []}
+        if empty(methods['hashCode'])
+          call add(methods['hashCode'], '*')
+        endif
+        call s:InsertVars(command, methods['hashCode'], vars)
+        call javacomplete#generators#GenerateByTemplate(command)
+      endif
+    endif
+    call javacomplete#generators#Accessors()
   endif
+endfunction
+
+function! s:InsertVars(command, method, vars)
+  for arg in a:method
+    if arg == '*'
+      let a:command['fields'] = values(a:vars)
+      break
+    endif
+
+    call add(a:command['fields'], a:vars[arg])
+  endfor
+endfunction
+
+function! s:GetVariables(fields)
+  let result = {}
+  for fieldIdx in keys(a:fields)
+    let field = a:fields[fieldIdx]
+    let var = {
+          \ 'name' : field['name'],
+          \ 'type' : field['type'],
+          \ 'static' : field['mod'] =~ '.*\<static\>.*',
+          \ 'final' : field['mod'] =~ '.*\<final\>.*',
+          \ 'isArray' : field['type'] =~# g:RE_ARRAY_TYPE
+          \ }
+    let result[fieldIdx] = var
+  endfor
+  return result
 endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
@@ -106,9 +167,12 @@ function! s:ParseMethods(methods)
     if bracketsIdx > 0
       let methodName = method[:bracketsIdx - 1]
       let methodsMap[methodName] = []
-      let args = split(method[bracketsIdx + 1:-2])
+      let args = split(method[bracketsIdx + 1:-2], ',')
       for arg in args
-        call add(methodsMap[methodName], arg*1)
+        if arg != '*'
+          let arg = arg*1
+        endif
+        call add(methodsMap[methodName], arg)
       endfor
     else
       let methodsMap[method] = []
