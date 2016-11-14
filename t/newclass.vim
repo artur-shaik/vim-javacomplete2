@@ -273,4 +273,18 @@ describe 'javacomplete-test'
                         \ }
                     \ }
     end
+
+    it 'ParseInput relative path test'
+        Expect Call('s:ParseInput', 
+                    \ 'interface:foo.baz.NewClass', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : 'foo/baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.bar.foo.baz',
+                    \ 'template' : 'interface'
+                    \ }
+    end
 end

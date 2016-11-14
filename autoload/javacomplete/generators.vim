@@ -38,8 +38,9 @@ function! s:CollectVars()
   return currentFileVars
 endfunction
 
-function! javacomplete#generators#GenerateClass(options)
-  let classCommand = {'template': 'class', 'options': a:options, 'position_type' : 1}
+function! javacomplete#generators#GenerateClass(options, ...)
+  let template = a:0 > 0 && !empty(a:1) ? '_'. a:1 : ''
+  let classCommand = {'template': 'class'. template, 'options': a:options, 'position_type' : 1}
   call <SID>generateByTemplate(classCommand)
 endfunction
 
