@@ -64,7 +64,7 @@ function! s:CreateClass(data)
     call javacomplete#generators#AbstractDeclaration()
     if has_key(a:data, 'methods')
       let methods = a:data['methods']
-      let vars = s:GetVariables(a:data['fields'])
+      let vars = s:GetVariables(get(a:data, 'fields', {}))
       if has_key(methods, 'constructor')
         let command = {'template': 'constructor', 'replace': {'type': 'same'}, 'fields' : []}
         call s:InsertVars(command, methods['constructor'], vars)
@@ -95,7 +95,9 @@ function! s:CreateClass(data)
         call javacomplete#generators#GenerateByTemplate(command)
       endif
     endif
-    call javacomplete#generators#Accessors()
+    if has_key(a:data, 'fields')
+      call javacomplete#generators#Accessors()
+    endif
   endif
 endfunction
 
