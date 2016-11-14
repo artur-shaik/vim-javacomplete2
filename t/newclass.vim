@@ -274,7 +274,7 @@ describe 'javacomplete-test'
                     \ }
     end
 
-    it 'ParseInput relative path test'
+    it 'ParseInput template test'
         Expect Call('s:ParseInput', 
                     \ 'interface:foo.baz.NewClass', 
                     \ b:currentPath, 
