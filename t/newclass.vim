@@ -287,4 +287,31 @@ describe 'javacomplete-test'
                     \ 'template' : 'interface'
                     \ }
     end
+
+    it 'ParseInput subdir test'
+        Expect Call('s:ParseInput', 
+                    \ '[test]:NewClass', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../../../test/java/kg/foo/bar/', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.bar'
+                    \ }
+    end
+
+    it 'ParseInput template with subdir test'
+        Expect Call('s:ParseInput', 
+                    \ 'junit5:[test]:/foo.baz.NewClass', 
+                    \ b:currentPath, 
+                    \ split('kg.foo.bar', '\.')) 
+                    \ == 
+                    \ {
+                    \ 'path' : '../../../test/java/kg/foo/bar/../baz', 
+                    \ 'class' : 'NewClass', 
+                    \ 'package' : 'kg.foo.baz',
+                    \ 'template' : 'junit5'
+                    \ }
+    end
 end

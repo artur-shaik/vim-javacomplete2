@@ -133,33 +133,34 @@ function! s:GetVariables(fields)
 endfunction
 
 function! s:ParseInput(userinput, currentPath, currentPackage)
-  let submatch = matchlist(a:userinput, '^\([A-Za-z0-9_]*:\)\=\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\(\s\+extends\s\+'. g:RE_TYPE. '\)\=\(\s\+implements\s\+'. g:RE_TYPE. '\)\=\((.\{-})\|\)\(:.*\)\=$')
+  let submatch = matchlist(a:userinput, '^\([A-Za-z0-9_]*:\)\=\(\[.\{-}\]:\)\=\(\%(\/\|\/\.\|\)'. g:RE_TYPE. '\)\(\s\+extends\s\+'. g:RE_TYPE. '\)\=\(\s\+implements\s\+'. g:RE_TYPE. '\)\=\((.\{-})\|\)\(:.*\)\=$')
   if !empty(submatch)
-    let path = split(submatch[2], '\.')
-    let classData = s:BuildPathData(path, a:currentPath, a:currentPackage)
+    let path = split(submatch[3], '\.')
+    let subdir = !empty(submatch[2]) ? submatch[2][1:-3] : ''
+    let classData = s:BuildPathData(path, subdir, a:currentPath, a:currentPackage)
     if !empty(submatch[1])
       let classData['template'] = submatch[1][:-2]
     endif
-    if !empty(submatch[3])
-      let m = matchlist(submatch[3], '.*extends\s\+\('. g:RE_TYPE. '\)')
+    if !empty(submatch[4])
+      let m = matchlist(submatch[4], '.*extends\s\+\('. g:RE_TYPE. '\)')
       if !empty(m)
         let classData['extends'] = m[1]
       endif
     endif
-    if !empty(submatch[4])
-      let m = matchlist(submatch[4], '.*implements\s\+\('. g:RE_TYPE. '\)')
+    if !empty(submatch[5])
+      let m = matchlist(submatch[5], '.*implements\s\+\('. g:RE_TYPE. '\)')
       if !empty(m)
         let classData['implements'] = m[1]
       endif
     endif
-    if !empty(submatch[5])
-      let fieldsMap = s:ParseFields(submatch[5])
+    if !empty(submatch[6])
+      let fieldsMap = s:ParseFields(submatch[6])
       if type(fieldsMap) == type({})
         let classData['fields'] = fieldsMap
       endif
     endif
-    if !empty(submatch[6])
-      let methodsMap = s:ParseMethods(submatch[6])
+    if !empty(submatch[7])
+      let methodsMap = s:ParseMethods(submatch[7])
       if !empty(methodsMap)
         let classData['methods'] = methodsMap
       endif
@@ -213,7 +214,16 @@ function! s:ParseFields(fields)
   return 0
 endfunction
 
-function! s:BuildPathData(path, currentPath, currentPackage)
+function! s:BuildPathData(path, subdir, currentPath, currentPackage)
+  if !empty(a:subdir)
+    let idx = index(a:currentPath, 'src')
+    let newPath = repeat('..'. g:FILE_SEP, idx)
+    let newPath .= a:subdir. g:FILE_SEP. 'java'. g:FILE_SEP
+    let newPath .= join(a:currentPackage, g:FILE_SEP). g:FILE_SEP
+  else
+    let newPath = ''
+  endif
+
   let path = a:path
   if path[0] == '/' || path[0][0] == '/'
     if path[0] == '/'
@@ -223,16 +233,16 @@ function! s:BuildPathData(path, currentPath, currentPackage)
     endif
     let sameSubpackageIdx = index(a:currentPath, a:currentPackage[0])
     if sameSubpackageIdx < 0
-      return s:RelativePath(path, a:currentPath, a:currentPackage)
+      return s:RelativePath(path, newPath, a:currentPath, a:currentPackage)
     endif
     let currentPath = a:currentPath[:sameSubpackageIdx]
     let idx = index(currentPath, path[0])
     if idx < 0
-      let newPath = repeat('..'. g:FILE_SEP, len(currentPath))
+      let newPath .= repeat('..'. g:FILE_SEP, len(currentPath))
       let newPath .= join(path[:-2], g:FILE_SEP)
       let newPackage = path[:-2]
     else
-      let newPath = idx > 0 ? 
+      let newPath .= idx > 0 ? 
             \ repeat('..'. g:FILE_SEP, 
             \ len(currentPath[:idx-1])) 
             \ : 
@@ -247,14 +257,14 @@ function! s:BuildPathData(path, currentPath, currentPackage)
           \ 'package' : join(newPackage, '.')
           \ }
   else
-    return s:RelativePath(path, a:currentPath, a:currentPackage)
+    return s:RelativePath(path, newPath, a:currentPath, a:currentPackage)
   endif
 endfunction
 
-function! s:RelativePath(path, currentPath, currentPackage)
+function! s:RelativePath(path, newPath, currentPath, currentPackage)
   let newPackage = join(a:currentPackage + a:path[:-2], '.')
   return {
-        \ 'path' : join(a:path[:-2], g:FILE_SEP), 
+        \ 'path' : a:newPath. join(a:path[:-2], g:FILE_SEP), 
         \ 'class' : a:path[-1], 
         \ 'package' : newPackage
         \ }
