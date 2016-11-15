@@ -56,7 +56,11 @@ function! s:CreateClass(data)
     if has_key(a:data, 'implements')
       let options['implements'] = a:data['implements']
     endif
+    let isInterfaceTemplate = 0
     if has_key(a:data, 'template')
+      if a:data['template'] == 'interface'
+        let isInterfaceTemplate = 1
+      endif
       call javacomplete#generators#GenerateClass(options, a:data['template'])
     else
       call javacomplete#generators#GenerateClass(options)
@@ -65,7 +69,9 @@ function! s:CreateClass(data)
     call search(a:data['class'])
     silent execute "normal! j"
     call javacomplete#imports#AddMissing()
-    call javacomplete#generators#AbstractDeclaration()
+    if !isInterfaceTemplate
+      call javacomplete#generators#AbstractDeclaration()
+    endif
     if has_key(a:data, 'methods')
       let methods = a:data['methods']
       let vars = s:GetVariables(get(a:data, 'fields', {}))
@@ -99,8 +105,10 @@ function! s:CreateClass(data)
         call javacomplete#generators#GenerateByTemplate(command)
       endif
     endif
-    if has_key(a:data, 'fields')
-      call javacomplete#generators#Accessors()
+    if !isInterfaceTemplate
+      if has_key(a:data, 'fields')
+        call javacomplete#generators#Accessors()
+      endif
     endif
   endif
 endfunction
