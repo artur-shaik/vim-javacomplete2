@@ -60,15 +60,14 @@ class JavaviBridge():
         else:
             output = subprocess.PIPE
 
-        shell = False
         args = [javabin] + args + ['-D', str(SERVER[1])]
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
             info.wShowWindow = 0
-            self.popen = SafePopen(args, shell=shell, env=environ, stdout = output, stderr = output, startupinfo = info)
+            self.popen = SafePopen(args, env=environ, stdout = output, stderr = output, startupinfo = info)
         else:
-            self.popen = SafePopen(args, shell=shell, env=environ, stdout = output, stderr = output)
+            self.popen = SafePopen(args, env=environ, stdout = output, stderr = output)
 
     def pid(self):
         return self.popen.pid
