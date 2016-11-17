@@ -76,17 +76,17 @@ function! javacomplete#server#Start()
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
     let sources = []
     if exists('g:JavaComplete_SourcesPath')
-      let sources += ['-sources', s:ExpandAllPaths(g:JavaComplete_SourcesPath) ]
+      let sources += ['-sources', s:ExpandAllPaths(g:JavaComplete_SourcesPath)]
     endif
 
-    let args = javaProps + [ 'kg.ash.javavi.Javavi' ] + sources
+    let args = javaProps + ['kg.ash.javavi.Javavi'] + sources
     if exists('g:JavaComplete_ServerAutoShutdownTime')
-      let args += [ '-t', g:JavaComplete_ServerAutoShutdownTime ]
+      let args += ['-t', g:JavaComplete_ServerAutoShutdownTime]
     endif
-    let args += [ '-base', javacomplete#util#GetBase('') ]
-    let args += [ '-compiler', javacomplete#server#GetCompiler() ]
+    let args += ['-base', javacomplete#util#GetBase('')]
+    let args += ['-compiler', javacomplete#server#GetCompiler()]
     if !empty(g:JavaComplete_ProjectKey)
-      let args += [ '-project', g:JavaComplete_ProjectKey ]
+      let args += ['-project', g:JavaComplete_ProjectKey]
     endif
 
     call s:Log("server classpath: -cp ". classpath)

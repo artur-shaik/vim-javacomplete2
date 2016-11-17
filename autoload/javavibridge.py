@@ -23,7 +23,7 @@ def SafePopen(args, **kwargs):
     if kwargs.get('stdin') is None:
         kwargs['stdin'] = subprocess.PIPE if sys.platform == 'win32' else None
 
-    return subprocess.Popen( args, **kwargs )
+    return subprocess.Popen(args, **kwargs)
 
 class JavaviBridge():
 
@@ -61,7 +61,7 @@ class JavaviBridge():
             output = subprocess.PIPE
 
         shell = False
-        args = [ javabin ] + args + [ '-D', str(SERVER[1]) ]
+        args = [javabin] + args + ['-D', str(SERVER[1])]
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
