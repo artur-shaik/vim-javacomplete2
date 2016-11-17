@@ -74,24 +74,23 @@ function! javacomplete#server#Start()
     call add(javaProps, '-Ddaemon.port='. port)
 
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
-    let sources = ''
+    let sources = []
     if exists('g:JavaComplete_SourcesPath')
-      let sources = '-sources "'. substitute(s:ExpandAllPaths(g:JavaComplete_SourcesPath), '\\', '\\\\', 'g'). '"'
+      let sources += ['-sources', s:ExpandAllPaths(g:JavaComplete_SourcesPath)]
     endif
 
-    let args = ' kg.ash.javavi.Javavi '. sources
+    let args = javaProps + ['kg.ash.javavi.Javavi'] + sources
     if exists('g:JavaComplete_ServerAutoShutdownTime')
-      let args .= ' -t '. g:JavaComplete_ServerAutoShutdownTime
+      let args += ['-t', g:JavaComplete_ServerAutoShutdownTime]
     endif
-    let args .= ' -base "'. substitute(javacomplete#util#GetBase(''), '\\', '\\\\', 'g'). '"'
-    let args .= ' -compiler "'. substitute(javacomplete#server#GetCompiler(), '\\', '\\\\', 'g'). '"'
+    let args += ['-base', javacomplete#util#GetBase('')]
+    let args += ['-compiler', javacomplete#server#GetCompiler()]
     if !empty(g:JavaComplete_ProjectKey)
-      let args .= ' -project "'. substitute(g:JavaComplete_ProjectKey, '\\', '\\\\', 'g'). '"'
+      let args += ['-project', g:JavaComplete_ProjectKey]
     endif
 
-    let args = ' '. join(javaProps, ' '). ' '. args
     call s:Log("server classpath: -cp ". classpath)
-    call s:Log("server arguments:". args)
+    call s:Log("server arguments:". join(args, ' '))
 
     JavacompletePy bridgeState = JavaviBridge()
     JavacompletePy bridgeState.setupServer(vim.eval('javacomplete#server#GetJVMLauncher()'), vim.eval('args'), vim.eval('classpath'))
