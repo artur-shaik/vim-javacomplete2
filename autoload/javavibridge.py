@@ -19,11 +19,11 @@ def GetUnusedLocalhostPort():
 SERVER = ('127.0.0.1', GetUnusedLocalhostPort())
 
 # A wrapper for subprocess.Popen that works around a Popen bug on Windows.
-def SafePopen(*args, **kwargs):
+def SafePopen(args, **kwargs):
     if kwargs.get('stdin') is None:
         kwargs['stdin'] = subprocess.PIPE if sys.platform == 'win32' else None
 
-    return subprocess.Popen( *args, **kwargs )
+    return subprocess.Popen( args, **kwargs )
 
 class JavaviBridge():
 
@@ -60,14 +60,15 @@ class JavaviBridge():
         else:
             output = subprocess.PIPE
 
-        shell = is_win == False
+        shell = False
+        args = [ javabin ] + args + [ '-D', str(SERVER[1]) ]
         if is_win and vim.eval('has("gui_running")'):
             info = subprocess.STARTUPINFO()
             info.dwFlags = 1
             info.wShowWindow = 0
-            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = output, startupinfo = info)
+            self.popen = SafePopen(args, shell=shell, env=environ, stdout = output, stderr = output, startupinfo = info)
         else:
-            self.popen = SafePopen(javabin + ' ' + args + ' -D ' + str(SERVER[1]), shell=shell, env=environ, stdout = output, stderr = output)
+            self.popen = SafePopen(args, shell=shell, env=environ, stdout = output, stderr = output)
 
     def pid(self):
         return self.popen.pid
