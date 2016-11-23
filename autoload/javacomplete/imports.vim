@@ -3,6 +3,11 @@
 "
 " Everything to work with imports
 
+function! s:Log(log)
+  let log = type(a:log) == type("") ? a:log : string(a:log)
+  call javacomplete#logger#Log("[imports] ". log)
+endfunction
+
 " Similar with filter(), but returns a new list instead of operating in-place.
 " `item` has the value of the current item.
 function! s:filter(expr, string)
