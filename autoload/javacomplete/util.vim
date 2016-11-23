@@ -134,20 +134,18 @@ function! javacomplete#util#GetClassNameWithScope(...)
   let offset = a:0 > 0 ? a:1 : col('.')
   let curline = getline('.')
   let word_l = offset - 1
-  let word_r = offset - 2
   while curline[word_l - 1] =~ '[\.:@A-Za-z0-9_]'
     let word_l -= 1
     if curline[word_l] == '@'
       break
     endif
   endwhile
-  while curline[word_r + 1] =~ '[A-Za-z0-9_]'
+  let word_r = word_l
+  while curline[word_r] =~ '[A-Za-z0-9_]'
     let word_r += 1
   endwhile
 
-  let c = curline[word_l : word_r]
-
-  return c
+  return curline[word_l : word_r - 1]
 endfunction
 
 function! s:MemberCompare(m1, m2)

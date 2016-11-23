@@ -30,19 +30,28 @@ describe 'javacomplete utils test'
         call cursor(0, 10)
         Expect Call('javacomplete#util#GetClassNameWithScope') == 'ArrayList'
 
-        new 
-        put ='ArrayList<String> l'
-        call cursor(0, 11)
+        new
+        call cursor(1, 1)
+        put! ='ArrayList<String> l'
+        call cursor(1, 11)
         Expect Call('javacomplete#util#GetClassNameWithScope') == 'String'
 
         new 
-        put ='List l = new ArrayList<String>()'
-        call cursor(0, 1)
+        call cursor(1, 1)
+        put! ='List l = new ArrayList<String>()'
+        call cursor(1, 1)
         Expect Call('javacomplete#util#GetClassNameWithScope') == 'List'
-        call cursor(0, 14)
+        call cursor(1, 14)
         Expect Call('javacomplete#util#GetClassNameWithScope') == 'ArrayList'
-        call cursor(0, 31)
+        call cursor(1, 31)
         Expect Call('javacomplete#util#GetClassNameWithScope') == ''
+
+        new 
+        call cursor(1, 1)
+        put! ='ArrayList. '
+        call cursor(1, 12)
+        Expect Call('javacomplete#util#GetClassNameWithScope') == 'ArrayList'
+
     end
 
     it 'CleanFQN test'
