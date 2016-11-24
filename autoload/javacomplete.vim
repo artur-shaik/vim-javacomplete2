@@ -147,13 +147,25 @@ call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI()
   if get(g:, 'JC_ClassnameCompletedFlag', 0)
+    let saveCursor = getcurpos()
     let line = getline('.')
-    if line[col('.') - 2] !~ '\v(\s|\.|\(|\<)'
-      return
+    if empty(javacomplete#util#Trim(line))
+      call cursor(line('.') - 1, 500)
+      let line = getline('.')
+      let offset = 1
+    else
+      if line[col('.') - 2] !~ '\v(\s|\.|\(|\<)'
+        return
+      endif
+      let offset = 0
     endif
 
     let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
+    if saveCursor[1] != line('.') + offset
+      let saveCursor[1] += 1
+    endif
+    call setpos('.', saveCursor)
   endif
 
   if get(g:, 'JC_DeclarationCompletedFlag', 0)
