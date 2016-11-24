@@ -162,9 +162,7 @@ function! s:HandleTextChangedI()
 
     let g:JC_ClassnameCompletedFlag = 0
     call javacomplete#imports#Add()
-    if saveCursor[1] != line('.') + offset
-      let saveCursor[1] += 1
-    endif
+    let saveCursor[1] = line('.') + offset
     call setpos('.', saveCursor)
   endif
 
