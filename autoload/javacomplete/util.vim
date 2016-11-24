@@ -141,7 +141,7 @@ function! javacomplete#util#GetClassNameWithScope(...)
     endif
   endwhile
   let word_r = word_l
-  while curline[word_r] =~ '[A-Za-z0-9_]'
+  while curline[word_r] =~ '[@A-Za-z0-9_]'
     let word_r += 1
   endwhile
 

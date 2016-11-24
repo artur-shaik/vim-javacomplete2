@@ -48,6 +48,12 @@ describe 'javacomplete utils test'
 
         new 
         call cursor(1, 1)
+        put! ='@Annotation'
+        call cursor(1, 2)
+        Expect Call('javacomplete#util#GetClassNameWithScope') == '@Annotation'
+
+        new 
+        call cursor(1, 1)
         put! ='ArrayList. '
         call cursor(1, 12)
         Expect Call('javacomplete#util#GetClassNameWithScope') == 'ArrayList'
