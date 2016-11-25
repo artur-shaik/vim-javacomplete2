@@ -222,6 +222,8 @@ function! s:AddImport(import)
 
   for imp in importsFqn
     if imp == import
+      echon "\r\r"
+      echon ''
       echo 'JavaComplete: import already exists'
       return
     endif
@@ -233,6 +235,8 @@ function! s:AddImport(import)
   let importPath = join(splittedImport, '.')
   for imp in importsStar
     if imp == importPath. '.'
+      echo "\r\r"
+      echo ''
       echo 'JavaComplete: import already exists'
       return
     endif
