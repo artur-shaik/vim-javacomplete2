@@ -223,7 +223,7 @@ function! s:AddImport(import)
   for imp in importsFqn
     if imp == import
       redraw
-      echom 'JavaComplete: import already exists'
+      echom 'JavaComplete: import for '. import. ' already exists'
       return
     endif
   endfor
@@ -235,7 +235,7 @@ function! s:AddImport(import)
   for imp in importsStar
     if imp == importPath. '.'
       redraw
-      echom 'JavaComplete: import already exists'
+      echom 'JavaComplete: import for '. import. ' already exists'
       return
     endif
   endfor
