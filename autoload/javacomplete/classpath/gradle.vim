@@ -81,7 +81,7 @@ function! s:GenerateClassPath(path, gradle) abort
       let gradle = 'gradle'
     endif
   endif
-  call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
+  call writefile(["rootProject{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
   let cmd = [gradle, '-I', s:temporaryGradleFile, 'classpath']
   call javacomplete#server#BlockStart()
   call javacomplete#util#RunSystem(cmd, 'gradle classpath build process', 'javacomplete#classpath#gradle#BuildClasspathHandler')
