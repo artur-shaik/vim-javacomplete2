@@ -20,3 +20,6 @@ libs/javavi/target/
 .vim-flavor
 
 .vimrc
+
+# ignore vim's help tags
+doc/tags
