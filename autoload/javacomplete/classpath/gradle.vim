@@ -65,11 +65,11 @@ function! javacomplete#classpath#gradle#Generate(force) abort
     endif
     call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
   endif
-  call s:GenerateClassPath(path, g:JavaComplete_GradlePath)
+  call s:GenerateClassPath(path)
   return ''
 endfunction
 
-function! s:GenerateClassPath(path, gradle) abort
+function! s:GenerateClassPath(path) abort
   let s:temporaryGradleFile = tempname()
   let s:gradleOutput = []
   let s:gradlePath = a:path
