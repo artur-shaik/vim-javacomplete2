@@ -65,26 +65,44 @@ function! javacomplete#classpath#gradle#Generate(force) abort
     endif
     call javacomplete#util#RemoveFile(javacomplete#util#GetBase('cache'). g:FILE_SEP. 'class_packages_'. g:JavaComplete_ProjectKey. '.dat')
   endif
-  call s:GenerateClassPath(path, g:JavaComplete_GradlePath)
+  call s:GenerateClassPath(path)
   return ''
 endfunction
 
-function! s:GenerateClassPath(path, gradle) abort
+function! s:GenerateClassPath(path) abort
   let s:temporaryGradleFile = tempname()
   let s:gradleOutput = []
   let s:gradlePath = a:path
   if exists("g:JavaComplete_GradleExecutable")
     let gradle = g:JavaComplete_GradleExecutable
   else
-    let gradle = fnamemodify(g:JavaComplete_GradlePath, ':p:h') . (javacomplete#util#IsWindows() ? '\gradlew.bat' : '/gradlew')
+    let gradle = fnamemodify(
+          \ g:JavaComplete_GradlePath, ':p:h') 
+          \ . (javacomplete#util#IsWindows() 
+          \ ? 
+          \ '\gradlew.bat' 
+          \ : 
+          \ '/gradlew')
     if !executable(gradle)
       let gradle = 'gradle'
     endif
   endif
-  call writefile(["allprojects{apply from: '". g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], s:temporaryGradleFile)
-  let cmd = [gradle, '-I', s:temporaryGradleFile, 'classpath']
+  call writefile(
+        \ ["rootProject{apply from: '"
+        \ . g:JavaComplete_Home. g:FILE_SEP. "classpath.gradle'}"], 
+        \ s:temporaryGradleFile)
+  let cmd = [
+        \ gradle, 
+        \ '-p', 
+        \ fnamemodify(g:JavaComplete_GradlePath, ':p:h'), 
+        \ '-I', 
+        \ s:temporaryGradleFile, 
+        \ 'classpath']
   call javacomplete#server#BlockStart()
-  call javacomplete#util#RunSystem(cmd, 'gradle classpath build process', 'javacomplete#classpath#gradle#BuildClasspathHandler')
+  call javacomplete#util#RunSystem(
+        \ cmd, 
+        \ 'gradle classpath build process', 
+        \ 'javacomplete#classpath#gradle#BuildClasspathHandler')
 endfunction
 
 " vim:set fdm=marker sw=2 nowrap:

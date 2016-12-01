@@ -21,7 +21,7 @@ function! s:BuildClassPath(force)
       if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
         let g:JavaComplete_GradlePath = getcwd(). g:FILE_SEP. "build.gradle"
       else
-        let g:JavaComplete_GradlePath = javacomplete#util#FindFile('build.gradle')
+        let g:JavaComplete_GradlePath = javacomplete#util#FindFile('build.gradle', '**3')
       endif
       if g:JavaComplete_GradlePath != ""
         let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
