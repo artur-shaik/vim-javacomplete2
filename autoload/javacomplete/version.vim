@@ -3,7 +3,7 @@
 "
 " Version control
 
-let g:JavaComplete_ServerCompatibilityVersion = "2.3.5"
+let g:JavaComplete_ServerCompatibilityVersion = "2.3.6"
 
 function! javacomplete#version#GetCompatibilityVerison()
   return g:JavaComplete_ServerCompatibilityVersion
