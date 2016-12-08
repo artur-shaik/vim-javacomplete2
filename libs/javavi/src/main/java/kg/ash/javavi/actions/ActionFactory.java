@@ -34,6 +34,8 @@ public class ActionFactory {
                 return new ParseByContentAction();
             case "-get-debug-log-path":
                 return new GetDebugLogPath();
+            case "-version":
+                return new GetAppVersion();
         }
 
         return null;

@@ -13,7 +13,7 @@ import kg.ash.javavi.searchers.ClasspathCollector;
 
 public class Javavi {
 
-    static final String VERSION	= "2.3.5";
+    public static final String VERSION	= "2.3.5";
 
     public static String NEWLINE = "";
 
