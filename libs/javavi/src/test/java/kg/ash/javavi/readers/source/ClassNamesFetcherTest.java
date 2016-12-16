@@ -38,7 +38,8 @@ public class ClassNamesFetcherTest {
             + "EJB, BeanClass1, InterceptorRefs, InterceptorRef, BeanClass2, "
             + "WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, "
             + "SomeClass, unusualClassName, FakeAttr, StaticClassName, " 
-            + "AnotherStatic, ParentAnnotation, ChildAnnotation, format";
+            + "AnotherStatic, ParentAnnotation, ChildAnnotation, format, "
+            + "AnnotationForConstractor";
         Set<String> waitForList = new HashSet<String>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 

@@ -49,6 +49,11 @@ public class ResourceClassForClassFetcherTest {
 	@EJB private BeanClass1 bean1;
 	@EJB private BeanClass2 bean2;
 
+    @AnnotationForConstractor
+    public ResourceClassForClassFetcherTest() {
+
+    }
+
 	private TestClass getTestClass(SomeClass source, String hash) throws TestClassForbiddenException {
 		try {
             TestClass testClass = bean1.getByUniq(format());
