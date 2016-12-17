@@ -33,7 +33,7 @@ function! javacomplete#collector#DoGetClassInfo(class, ...)
   if has_key(t, 'extends')
     if type(t.extends) == type([]) && len(t.extends) > 0
       if type(t.extends[0]) == type("")
-        let extends = t.extends[0] . '$'. a:class
+        let extends = t.extends[0] . '$'. class
       elseif type(t.extends[0]) == type({})
         if has_key(t.extends[0], 'name')
           let className = t.extends[0].name
@@ -253,6 +253,16 @@ function! s:Tree2ClassInfo(t)
       call add(t.classes, t.fqn . '.' . def.name)
     endif
     unlet def
+  endfor
+
+  for line in reverse(getline(0, '.'))
+    let matches = matchlist(line, g:RE_TYPE_DECL_HEAD. t.name)
+    if len(matches)
+      if matches[1] == 'interface'
+        let t.interface = 1
+      endif
+      break
+    endif
   endfor
 
   " convert type name in extends to fqn for class defined in source files
