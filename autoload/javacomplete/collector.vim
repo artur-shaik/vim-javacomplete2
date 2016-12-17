@@ -260,6 +260,8 @@ function! s:Tree2ClassInfo(t)
     if len(matches)
       if matches[1] == 'interface'
         let t.interface = 1
+      elseif matches[1] == 'enum'
+        let t.enum = 1
       endif
       break
     endif
