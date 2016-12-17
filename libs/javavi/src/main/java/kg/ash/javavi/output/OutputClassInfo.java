@@ -77,7 +77,7 @@ public class OutputClassInfo {
 
     private void isIntefaceOrClass(StringBuilder sb, SourceClass clazz) {
         if (clazz.isInterface()) {
-            sb.append("'extends':[");
+            sb.append("'interface':'1','extends':[");
         } else {
             String superclass = clazz.getSuperclass();
             if (superclass != null && !"java.lang.Object".equals(superclass)) {

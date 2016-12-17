@@ -321,6 +321,9 @@ endfunction
 
 function! javacomplete#generators#AbstractDeclaration()
   let s:ti = javacomplete#collector#DoGetClassInfo('this')
+  if get(s:ti, 'interface', 0) == 1
+    return
+  endif
   let s = ''
   let abstractMethods = []
   let implementedMethods = []

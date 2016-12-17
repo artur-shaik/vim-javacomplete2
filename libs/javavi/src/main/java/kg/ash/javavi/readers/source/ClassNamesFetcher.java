@@ -4,6 +4,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.MultiTypeParameter;
@@ -80,6 +81,11 @@ public class ClassNamesFetcher {
                     }
                 }
             }
+        }
+
+        @Override
+        public void visit(ConstructorDeclaration type, Object arg) {
+            addAnnotations(type.getAnnotations(), arg);
         }
 
         @Override
