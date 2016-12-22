@@ -1,6 +1,5 @@
 task classpath {
   doLast {
-    String finalFileContents = ""
     HashSet<String> classpathFiles = new HashSet<String>()
     for (proj in allprojects) {
       def exploded = proj.getBuildDir().absolutePath + File.separator + "intermediates" + File.separator + "exploded-aar"
@@ -29,6 +28,11 @@ task classpath {
       }
       if (proj.hasProperty("android")) {
         classpathFiles += proj.android.getBootClasspath()
+        proj.android.applicationVariants.all { v ->
+          classpathFiles += v.getApkLibraries()
+          classpathFiles += v.getCompileLibraries()
+          classpathFiles += v.getSourceSets()
+        }
       }
 
       if (proj.hasProperty("sourceSets")) {
