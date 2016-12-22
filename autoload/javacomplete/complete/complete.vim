@@ -690,11 +690,22 @@ function! s:DoGetMethodList(methods, kind, ...)
     endif
   endif
 
+  let methodNames = map(copy(a:methods), 'v:val.n')
+
   let useFQN = javacomplete#UseFQN()
   let s = ''
+  let origParen = paren
   for method in a:methods
     if !useFQN
       let method.d = javacomplete#util#CleanFQN(method.d)
+    endif
+    let paren = origParen
+    if paren == '('
+      if count(methodNames, method.n) == 1
+        if !has_key(method, 'p')
+          let paren = '()'
+        endif
+      endif
     endif
     let s .= "{'kind':'" . (javacomplete#util#IsStatic(method.m) ? "M" : "m") . "','word':'" . s:GenWord(method, a:kind, paren) . "','abbr':'" . method.n . abbrEnd . "','menu':'" . method.d . "','dup':'1'},"
   endfor
