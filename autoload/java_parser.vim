@@ -2494,7 +2494,7 @@ fu! s:statement()
     call s:nextToken()
     let lock = s:parExpression()
     let body = s:block()
-    return {'tag': 'SYNCHRONIZED', 'pos': pos, 'endpos': b:pos, 'lock': lock, 'cases': body}
+    return {'tag': 'SYNCHRONIZED', 'pos': pos, 'endpos': b:pos, 'lock': lock, 'body': body}
 
   elseif b:token == 'RETURN'
     call s:nextToken()
