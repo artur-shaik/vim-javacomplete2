@@ -56,12 +56,12 @@ function! javacomplete#server#Terminate()
 endfunction
 
 function! s:GetServerAppVersion()
-  let classpath = 
-        \ s:GetJavaviClassPath(). g:PATH_SEP. 
+  let classpath =
+        \ s:GetJavaviClassPath(). g:PATH_SEP.
         \ s:GetJavaviDeps(). g:PATH_SEP
   return system(join(
         \ [
-          \ 'java', '-cp', classpath, 
+          \ javacomplete#server#GetJVMLauncher(), '-cp', classpath,
           \ 'kg.ash.javavi.Javavi -version'
         \ ]))
 endfunction
