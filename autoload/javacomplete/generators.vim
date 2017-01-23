@@ -200,7 +200,6 @@ endfunction
 
 function! s:CheckAndLoadTemplate(template)
   let fileName = g:JavaComplete_Home. '/plugin/res/gen__'. a:template. '.tpl'
-  echom fileName
   if filereadable(fileName)
     if has_key(g:JavaComplete_Generators, a:template)
       if getftime(fileName) > g:JavaComplete_Generators[a:template]['file_time']
