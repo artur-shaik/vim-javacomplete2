@@ -8,9 +8,25 @@ function! s:Log(log)
   call javacomplete#logger#Log("[newclass] ". log)
 endfunction
 
+function! javacomplete#newclass#Completion(argLead, cmdLine, cursorPos)
+  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:cmdLine ."] cursorpos:[" .a:cursorPos ."]")
+  let result = []
+  let placesSplit = split(a:cmdLine, ':')
+  if len(placesSplit) <= 1
+    let cutLen = len(g:JavaComplete_Home. '/plugin/res/gen__class_')
+    let templates = glob(g:JavaComplete_Home. '/plugin/res/gen__class_'. a:cmdLine. '*.tpl', 0, 1)
+    for template in templates
+      let t = template[cutLen:-5]
+      call add(result, t)
+    endfor
+  endif
+
+  return result
+endfunction
+
 function! javacomplete#newclass#CreateClass()
   let message = "enter new class name: "
-  let userinput = input(message, '')
+  let userinput = input(message, '', 'customlist,javacomplete#newclass#Completion')
   if empty(userinput)
     return
   endif
