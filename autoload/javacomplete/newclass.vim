@@ -8,17 +8,22 @@ function! s:Log(log)
   call javacomplete#logger#Log("[newclass] ". log)
 endfunction
 
+function! s:FetchTemplatesByPrefix(prefix)
+  let result = []
+  let prePath = g:JavaComplete_Home. '/plugin/res/gen__class_'
+  let cutLen = len(prePath)
+  for template in glob(prePath. a:prefix. '*.tpl', 0, 1)
+    call add(result, template[cutLen:-5])
+  endfor
+  return result
+endfunction
+
 function! javacomplete#newclass#Completion(argLead, cmdLine, cursorPos)
   call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:cmdLine ."] cursorpos:[" .a:cursorPos ."]")
   let result = []
   let placesSplit = split(a:cmdLine, ':')
   if len(placesSplit) <= 1
-    let cutLen = len(g:JavaComplete_Home. '/plugin/res/gen__class_')
-    let templates = glob(g:JavaComplete_Home. '/plugin/res/gen__class_'. a:cmdLine. '*.tpl', 0, 1)
-    for template in templates
-      let t = template[cutLen:-5]
-      call add(result, t)
-    endfor
+    call extend(result, s:FetchTemplatesByPrefix(a:cmdLine))
   endif
 
   return result
