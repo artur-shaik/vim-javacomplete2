@@ -38,17 +38,16 @@ function! javacomplete#newclass#CreateClass()
   call s:Log("input: ". userinput)
 
   let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
-  let currentPath = expand('%:p:h')
-  let currentPathList = split(currentPath, g:FILE_SEP)
+  let currentPath = split(expand('%:p:h'), g:FILE_SEP)
   call filter(currentPathList, 'empty(v:val) == 0')
   let data = s:ParseInput(
-        \ userinput, reverse(copy(currentPathList)), currentPackage)
+        \ userinput, reverse(copy(currentPath)), currentPackage)
   if type(data) != type({})
     echom "\n"
     echoerr "Error: could not parse input line"
     return
   endif
-  let data['current_path'] = g:FILE_SEP. join(currentPathList, g:FILE_SEP). g:FILE_SEP
+  let data['current_path'] = g:FILE_SEP. join(currentPath, g:FILE_SEP). g:FILE_SEP
   call s:CreateClass(data)
 endfunction
 
