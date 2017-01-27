@@ -8,11 +8,29 @@ function! s:Log(log)
   call javacomplete#logger#Log("[newclass] ". log)
 endfunction
 
-function! s:FetchTemplatesByPrefix(prefix)
+function! javacomplete#newclass#Completion(argLead, command, cursorPos)
+  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
+  let result = []
+  let commandsSplit = split(a:command, ':', 1)
+  let command = len(commandsSplit) >= 1 ? commandsSplit[-1] : a:command
+  if command[0] == '/'
+    call extend(result, s:FetchAvailablePackages(command[1:], s:GetCompleted(commandsSplit), 0))
+  elseif command[0] == '['
+    call extend(result, s:FetchAvailableSubDirectories(command[1:], s:GetCompleted(commandsSplit)))
+  elseif len(commandsSplit) == 1
+    call extend(result, s:FetchTemplatesByPrefix(command))
+    call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), 1))
+  else
+    call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), 1))
+  endif
+  return result
+endfunction
+
+function! s:FetchTemplatesByPrefix(command)
   let result = []
   let prePath = g:JavaComplete_Home. '/plugin/res/gen__class_'
   let cutLength = len(prePath)
-  for template in glob(prePath. a:prefix. '*.tpl', 0, 1)
+  for template in glob(prePath. a:command. '*.tpl', 0, 1)
     call add(result, template[cutLength:-5]. ':')
   endfor
   return result
@@ -45,23 +63,15 @@ function! s:FetchAvailablePackages(command, completed, isRelative)
   return result
 endfunction
 
-function! javacomplete#newclass#Completion(argLead, command, cursorPos)
-  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
+function! s:FetchAvailableSubDirectories(command, completed)
   let result = []
-  let commandsSplit = split(a:command, ':', 1)
-  if len(commandsSplit) >= 1
-    let command = commandsSplit[-1]
-  else
-    let command = a:command
-  endif
-  let isRelative = 1
-  if command[0] == '/'
-    let isRelative = 0
-    let command = command[1:]
-  elseif len(commandsSplit) == 1
-    call extend(result, s:FetchTemplatesByPrefix(command))
-  endif
-  call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), isRelative))
+  let currentPath = split(expand('%:p:h'), g:FILE_SEP)
+  let currentPath = currentPath[:index(currentPath, 'src')]
+  let prePath = g:FILE_SEP. join(currentPath, g:FILE_SEP). g:FILE_SEP
+  let cutLength = len(prePath)
+  for path in glob(prePath. a:command. '*'. g:FILE_SEP, 0, 1)
+    call add(result, a:completed. '['. path[cutLength:-2]. ']')
+  endfor
   return result
 endfunction
 
