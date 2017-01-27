@@ -11,22 +11,66 @@ endfunction
 function! s:FetchTemplatesByPrefix(prefix)
   let result = []
   let prePath = g:JavaComplete_Home. '/plugin/res/gen__class_'
-  let cutLen = len(prePath)
+  let cutLength = len(prePath)
   for template in glob(prePath. a:prefix. '*.tpl', 0, 1)
-    call add(result, template[cutLen:-5])
+    call add(result, template[cutLength:-5]. ':')
   endfor
   return result
 endfunction
 
-function! javacomplete#newclass#Completion(argLead, cmdLine, cursorPos)
-  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:cmdLine ."] cursorpos:[" .a:cursorPos ."]")
+function! s:FetchAvailablePackages(command, completed, isRelative)
   let result = []
-  let placesSplit = split(a:cmdLine, ':')
-  if len(placesSplit) <= 1
-    call extend(result, s:FetchTemplatesByPrefix(a:cmdLine))
+  let currentPath = split(expand('%:p:h'), g:FILE_SEP)
+  if a:isRelative == 0
+    let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
+    let sameSubpackageIdx = index(currentPath, currentPackage[0])
+    if sameSubpackageIdx >= 0
+      let currentPath = currentPath[:sameSubpackageIdx - 1]
+      if empty(a:command)
+        for p in currentPackage
+          call add(result, a:completed. '/'. p)
+        endfor
+      endif
+    endif
   endif
-
+  let command = substitute(a:command, '\.', g:FILE_SEP, 'g')
+  let cutLength = len(join(currentPath, g:FILE_SEP)) + 2
+  for path in glob(g:FILE_SEP. join(currentPath, g:FILE_SEP). g:FILE_SEP. '**'. g:FILE_SEP. command. '*'. g:FILE_SEP, 1, 1)
+    let p = substitute(path[cutLength:], g:FILE_SEP, '.', 'g')
+    if a:isRelative == 0
+      let p = '/'. p
+    endif
+    call add(result, a:completed. p)
+  endfor
   return result
+endfunction
+
+function! javacomplete#newclass#Completion(argLead, command, cursorPos)
+  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
+  let result = []
+  let commandsSplit = split(a:command, ':', 1)
+  if len(commandsSplit) >= 1
+    let command = commandsSplit[-1]
+  else
+    let command = a:command
+  endif
+  let isRelative = 1
+  if command[0] == '/'
+    let isRelative = 0
+    let command = command[1:]
+  elseif len(commandsSplit) == 1
+    call extend(result, s:FetchTemplatesByPrefix(command))
+  endif
+  call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), isRelative))
+  return result
+endfunction
+
+function! s:GetCompleted(commandsSplit)
+  let completed = join(a:commandsSplit[:-2], ':')
+  if !empty(completed)
+    let completed = completed. ':'
+  endif
+  return completed
 endfunction
 
 function! javacomplete#newclass#CreateClass()
@@ -39,7 +83,7 @@ function! javacomplete#newclass#CreateClass()
 
   let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
   let currentPath = split(expand('%:p:h'), g:FILE_SEP)
-  call filter(currentPathList, 'empty(v:val) == 0')
+  call filter(currentPath, 'empty(v:val) == 0')
   let data = s:ParseInput(
         \ userinput, reverse(copy(currentPath)), currentPackage)
   if type(data) != type({})
