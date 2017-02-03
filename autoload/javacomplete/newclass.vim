@@ -14,14 +14,14 @@ function! javacomplete#newclass#Completion(argLead, command, cursorPos)
   let commandsSplit = split(a:command, ':', 1)
   let command = len(commandsSplit) >= 1 ? commandsSplit[-1] : a:command
   if command[0] == '/'
-    call extend(result, s:FetchAvailablePackages(command[1:], s:GetCompleted(commandsSplit), 0))
+    call extend(result, s:ClassnameCompletions(command[1:], s:GetCompleted(commandsSplit), 0))
   elseif command[0] == '['
     call extend(result, s:FetchAvailableSubDirectories(command[1:], s:GetCompleted(commandsSplit)))
   elseif len(commandsSplit) == 1
     call extend(result, s:FetchTemplatesByPrefix(command))
-    call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), 1))
+    call extend(result, s:ClaslassnameCompletions(command, s:GetCompleted(commandsSplit), 1))
   else
-    call extend(result, s:FetchAvailablePackages(command, s:GetCompleted(commandsSplit), 1))
+    call extend(result, s:ClaslassnameCompletions(command, s:GetCompleted(commandsSplit), 1))
   endif
   return result
 endfunction
@@ -34,6 +34,14 @@ function! s:FetchTemplatesByPrefix(command)
     call add(result, template[cutLength:-5]. ':')
   endfor
   return result
+endfunction
+
+function! s:ClassnameCompletions(command, completed, isRelative)
+  if len(split(a:command, ' ')) == 1
+    return s:FetchAvailablePackages(a:command, a:completed, a:isRelative)
+  else
+    return s:FetchKeywords(a:command, a:completed, a:isRelative)
+  endif
 endfunction
 
 function! s:FetchAvailablePackages(command, completed, isRelative)
@@ -59,6 +67,27 @@ function! s:FetchAvailablePackages(command, completed, isRelative)
       let p = '/'. p
     endif
     call add(result, a:completed. p)
+  endfor
+  return result
+endfunction
+
+function! s:FetchKeywords(command, completed, isRelative)
+  let keywords = ['extends', 'implements']
+  let splittedCommand = split(a:command, ' ')
+  if index(keywords, splittedCommand[-2]) >= 0
+    return []
+  endif
+  let completed = a:completed. join(splittedCommand[:-2], ' ')
+  if a:isRelative == 0
+    let completed = '/'. completed
+  endif
+  let result = []
+  for kw in keywords
+    if a:command =~ '\<'. kw. '\>' 
+          \ || kw !~ '\<'. splittedCommand[-1]. '*'
+      continue
+    endif
+    call add(result, completed. ' '. kw)
   endfor
   return result
 endfunction
