@@ -11,17 +11,26 @@ endfunction
 function! javacomplete#newclass#Completion(argLead, command, cursorPos)
   call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
   let result = []
-  let commandsSplit = split(a:command, ':', 1)
-  let command = len(commandsSplit) >= 1 ? commandsSplit[-1] : a:command
+  let commandTokens = split(a:command, ':', 1)
+  let command = len(commandTokens) >= 1 ? commandTokens[-1] : a:command
   if command[0] == '/'
-    call extend(result, s:ClassnameCompletions(command[1:], s:GetCompleted(commandsSplit), 0))
+    call extend(result, s:ClassnameCompletions(command[1:], s:GetCompleted(commandTokens), 0))
   elseif command[0] == '['
-    call extend(result, s:FetchAvailableSubDirectories(command[1:], s:GetCompleted(commandsSplit)))
-  elseif len(commandsSplit) == 1
+    call extend(result, s:FetchAvailableSubDirectories(command[1:], s:GetCompleted(commandTokens)))
+  elseif len(commandTokens) == 1
     call extend(result, s:FetchTemplatesByPrefix(command))
-    call extend(result, s:ClaslassnameCompletions(command, s:GetCompleted(commandsSplit), 1))
+    call extend(result, s:ClassnameCompletions(command, s:GetCompleted(commandTokens), 1))
+  elseif len(commandTokens) == 2
+    call extend(result, s:ClassnameCompletions(command, s:GetCompleted(commandTokens), 1))
+    call extend(result, s:ClassMethods(command, s:GetCompleted(commandTokens)))
+  elseif len(commandTokens) == 3
+    if commandTokens[1] =~ '[\[\]]'
+      call extend(result, s:ClassnameCompletions(command, s:GetCompleted(commandTokens), 1))
+    else
+      call extend(result, s:ClassMethods(command, s:GetCompleted(commandTokens)))
+    endif
   else
-    call extend(result, s:ClaslassnameCompletions(command, s:GetCompleted(commandsSplit), 1))
+    call extend(result, s:ClassMethods(command, s:GetCompleted(commandTokens)))
   endif
   return result
 endfunction
@@ -37,7 +46,7 @@ function! s:FetchTemplatesByPrefix(command)
 endfunction
 
 function! s:ClassnameCompletions(command, completed, isRelative)
-  if len(split(a:command, ' ')) == 1
+  if stridx(a:command, ' ') < 0
     return s:FetchAvailablePackages(a:command, a:completed, a:isRelative)
   else
     return s:FetchKeywords(a:command, a:completed, a:isRelative)
@@ -73,18 +82,16 @@ endfunction
 
 function! s:FetchKeywords(command, completed, isRelative)
   let keywords = ['extends', 'implements']
-  let splittedCommand = split(a:command, ' ')
-  if index(keywords, splittedCommand[-2]) >= 0
+  let tokens = split(a:command, ' ', 1)
+  if len(tokens) > 1 && index(keywords, tokens[-2]) >= 0
     return []
   endif
-  let completed = a:completed. join(splittedCommand[:-2], ' ')
-  if a:isRelative == 0
-    let completed = '/'. completed
-  endif
+  let completed = a:completed. (a:isRelative == 0 ? '/' : '')
+  let completed = completed. join(tokens[:-2], ' ')
   let result = []
   for kw in keywords
     if a:command =~ '\<'. kw. '\>' 
-          \ || kw !~ '\<'. splittedCommand[-1]. '*'
+          \ || kw !~ '\<'. tokens[-1]. '*'
       continue
     endif
     call add(result, completed. ' '. kw)
@@ -104,8 +111,20 @@ function! s:FetchAvailableSubDirectories(command, completed)
   return result
 endfunction
 
-function! s:GetCompleted(commandsSplit)
-  let completed = join(a:commandsSplit[:-2], ':')
+function! s:ClassMethods(command, completed)
+  let keywords = ['constructor(', 'toString(', 'hashCode(', 'equals(']
+  let result = []
+  for kw in keywords
+    if kw !~ '\<'. a:command. '*'
+      continue
+    endif
+    call add(result, a:completed. kw)
+  endfor
+  return result
+endfunction
+
+function! s:GetCompleted(commandTokens)
+  let completed = join(a:commandTokens[:-2], ':')
   if !empty(completed)
     let completed = completed. ':'
   endif
