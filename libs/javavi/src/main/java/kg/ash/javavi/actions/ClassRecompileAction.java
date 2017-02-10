@@ -7,7 +7,10 @@ import kg.ash.javavi.apache.logging.log4j.Logger;
 
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.readers.ClassReader;
 import kg.ash.javavi.searchers.ClassNameMap;
+import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.JavaClassMap;
 
 public class ClassRecompileAction extends ActionWithTarget {
@@ -19,7 +22,7 @@ public class ClassRecompileAction extends ActionWithTarget {
         String target = parseTarget(args);
 
         String[] splitted = target.split("\\.");
-        ClassNameMap classMap = findClass(splitted[splitted.length - 1]);
+        ClassNameMap classMap = findClass(target.substring(0, target.lastIndexOf("\\.")), splitted[splitted.length - 1]);
         if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
             String classFile = classMap.getClassFile();
             String sourceFile = classMap.getJavaFile();
@@ -63,7 +66,7 @@ public class ClassRecompileAction extends ActionWithTarget {
         return offset;
     }
 
-    private ClassNameMap findClass(String name) {
+    private ClassNameMap findClass(String className, String name) {
         JavaClassMap classMap = Cache.getInstance().getClassPackages().get(name);
         if (classMap != null && classMap instanceof ClassNameMap) {
             return (ClassNameMap) classMap;

@@ -192,7 +192,7 @@ function! javacomplete#server#Communicate(option, args, log)
 
   if s:Poll()
     if !empty(a:args)
-      let args = ' "'. substitute(a:args, '"', '\\"', 'g'). '"'
+      let args = ' '. substitute(a:args, '"', '\\"', 'g')
     else
       let args = ''
     endif
