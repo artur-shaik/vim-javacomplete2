@@ -80,6 +80,7 @@ command! JCgenerateConstructorDefault call javacomplete#generators#GenerateConst
 command! JCclasspathGenerate call javacomplete#classpath#classpath#RebuildClassPath()
 
 command! JCclassNew call javacomplete#newclass#CreateClass()
+command! JCclassInFile call javacomplete#newclass#CreateInFile()
 
 autocmd Filetype java,jsp JCstart
 

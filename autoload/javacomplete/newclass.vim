@@ -8,6 +8,15 @@ function! s:Log(log)
   call javacomplete#logger#Log("[newclass] ". log)
 endfunction
 
+function! javacomplete#newclass#TemplatesCompletion(argLead, command, cursorPos)
+  call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
+  let result = []
+  let commandTokens = split(a:command, ':', 1)
+  let command = len(commandTokens) >= 1 ? commandTokens[-1] : a:command
+  call extend(result, s:FetchTemplatesByPrefix(command, 0))
+  return result
+endfunction
+
 function! javacomplete#newclass#Completion(argLead, command, cursorPos)
   call s:Log("arglead:[".a:argLead ."] cmdline:[" .a:command ."] cursorpos:[" .a:cursorPos ."]")
   let result = []
@@ -18,7 +27,7 @@ function! javacomplete#newclass#Completion(argLead, command, cursorPos)
   elseif command[0] == '['
     call extend(result, s:FetchAvailableSubDirectories(command[1:], s:GetCompleted(commandTokens)))
   elseif len(commandTokens) == 1
-    call extend(result, s:FetchTemplatesByPrefix(command))
+    call extend(result, s:FetchTemplatesByPrefix(command, 1))
     call extend(result, s:ClassnameCompletions(command, s:GetCompleted(commandTokens), 1))
   elseif len(commandTokens) == 2
     call extend(result, s:ClassnameCompletions(command, s:GetCompleted(commandTokens), 1))
@@ -35,12 +44,12 @@ function! javacomplete#newclass#Completion(argLead, command, cursorPos)
   return result
 endfunction
 
-function! s:FetchTemplatesByPrefix(command)
+function! s:FetchTemplatesByPrefix(command, addSeparator)
   let result = []
   let prePath = g:JavaComplete_Home. '/plugin/res/gen__class_'
   let cutLength = len(prePath)
   for template in glob(prePath. a:command. '*.tpl', 0, 1)
-    call add(result, template[cutLength:-5]. ':')
+    call add(result, template[cutLength:-5]. (a:addSeparator == 1 ? ':' : ''))
   endfor
   return result
 endfunction
@@ -129,6 +138,58 @@ function! s:GetCompleted(commandTokens)
     let completed = completed. ':'
   endif
   return completed
+endfunction
+
+function! javacomplete#newclass#CreateInFile()
+  let templates = s:FetchTemplatesByPrefix('', 0)
+  let message = join(templates, ', ')
+  let message .= "\nenter template name [default]: "
+  let userinput = input(message, '', 'customlist,javacomplete#newclass#TemplatesCompletion')
+  call s:Log("input: ". userinput)
+
+  let currentPath = split(expand('%:p:h'), g:FILE_SEP)
+  call filter(currentPath, 'empty(v:val) == 0')
+
+  let data = {}
+  let data['path'] = ''
+  let data['current_path'] = join(currentPath, g:FILE_SEP)
+  let data['class'] = expand('%:t:r')
+  let data['package'] = s:DeterminePackage(currentPath)
+  if !empty(userinput)
+    let data['template'] = userinput
+  endif
+  call s:CreateClass(data)
+endfunction
+
+function! s:DeterminePackage(currentPath)
+  let i = 0
+  while i < len(a:currentPath)
+    if a:currentPath[i] == 'java'
+      break
+    endif
+    let i += 1
+  endwhile
+  if i < len(a:currentPath)
+    let package = a:currentPath[i + 1:]
+  else
+    let rootPackage = input("\nenter your root package: ")
+    if empty(rootPackage)
+      return ''
+    endif
+    let i = 0
+    while i < len(a:currentPath)
+      if a:currentPath[i] == rootPackage
+        break
+      endif
+      let i += 1
+    endwhile
+    if i < len(a:currentPath)
+      let package = a:currentPath[i:]
+    else
+      return ''
+    endif
+  endif
+  return join(package, '.')
 endfunction
 
 function! javacomplete#newclass#CreateClass()
