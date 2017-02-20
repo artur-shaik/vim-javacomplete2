@@ -36,6 +36,8 @@ public class ActionFactory {
                 return new GetDebugLogPath();
             case "-version":
                 return new GetAppVersion();
+            case "-add-source-to-cache":
+                return new AddClassToCacheAction();
         }
 
         return null;

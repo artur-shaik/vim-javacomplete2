@@ -213,6 +213,11 @@ function! s:RemoveCurrentFromCache()
   endif
   call javacomplete#server#Communicate('-clear-from-cache', fqn, 's:RemoveCurrentFromCache')
   call javacomplete#server#Communicate('-async -recompile-class', fqn, 's:RemoveCurrentFromCache')
+
+  let arguments = '-source '. resolve(expand('%:p'))
+  let arguments .= ' -class '. classname
+  let arguments .= ' -package '. package
+  call javacomplete#server#Communicate('-async -add-source-to-cache', arguments, 's:RemoveCurrentFromCache')
 endfunction
 
 function! s:DefaultMappings()
