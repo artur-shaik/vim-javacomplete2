@@ -152,12 +152,13 @@ function! javacomplete#newclass#CreateInFile()
 
   let data = {}
   let data['path'] = ''
-  let data['current_path'] = join(currentPath, g:FILE_SEP)
+  let data['current_path'] = g:FILE_SEP. join(currentPath, g:FILE_SEP)
   let data['class'] = expand('%:t:r')
   let data['package'] = s:DeterminePackage(currentPath)
   if !empty(userinput)
     let data['template'] = userinput
   endif
+  call s:Log(data)
   call s:CreateClass(data)
 endfunction
 
@@ -225,7 +226,8 @@ function! s:CreateClass(data)
   endif
   let fileName = fnamemodify(path. g:FILE_SEP. a:data['class'], ":p")
   execute ':e '. fileName. '.java'
-  if filewritable(fileName. '.java') == 0
+  let fileSize = getfsize(fileName. '.java')
+  if (fileSize <= 0 && fileSize > -2) || (line('$') == 1 && getline(1) == '')
     let options = {
           \ 'name' : a:data['class'], 
           \ 'package' : a:data['package'] 
@@ -293,6 +295,8 @@ function! s:CreateClass(data)
         call javacomplete#generators#Accessors()
       endif
     endif
+  else
+    echoerr "file is not empty"
   endif
 endfunction
 
