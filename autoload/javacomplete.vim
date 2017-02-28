@@ -256,6 +256,9 @@ function! s:DefaultMappings()
   vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
   vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  nmap <silent> <buffer> <leader>jn <Plug>(JavaComplete-Generate-NewClass)
+  nmap <silent> <buffer> <leader>jN <Plug>(JavaComplete-Generate-ClassInFile)
 endfunction
 
 augroup javacomplete
