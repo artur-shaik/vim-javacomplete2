@@ -154,6 +154,9 @@ Default mappings:
   vmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
   vmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   vmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  nmap <silent> <buffer> <leader>jn <Plug>(JavaComplete-Generate-NewClass)
+  nmap <silent> <buffer> <leader>jN <Plug>(JavaComplete-Generate-ClassInFile)
 ```
 
 ### Optional
@@ -216,6 +219,11 @@ Default mappings:
 `JCgenerateConstructorDefault` - generate default constructor;
 
 
+`JCclassNew` - open prompt to enter class creation command;
+
+`JCclassInFile` - open prompt to choose template that will be used for creation class boilerplate in current empty file;
+
+
 `JCserverShowPort` - show port, through which vim plugin communicates with server;
 
 `JCserverShowPID` - show server process identificator;
@@ -235,6 +243,21 @@ Default mappings:
 
 `JCcacheClear` - clear cache manually.
 
+## Class creation
+
+Prompt scheme, for class creation:
+
+    template:[subdirectory]:/package.ClassName extends SuperClass implements Interface(String str, public Integer i):contructor(*):toString(1)
+
+A: (optional) template - which will be used to create class boilerplate. Some existed templates: junit, interface, exception, servlet, etcl
+B: (optional) subdirectory in which class will be put. For example: test, androidTest;
+C: class name and package. With `/` will use backsearch for parent package to put in it. Without `/` put in relative package to current;
+D: (optional) extends and implements classes will be automatically imported;
+E: (optional) private str variable, and public i variable will be added to class;
+F: (optional) contructor using all fields and toString override method with only `str` field will be created. Also hashCode and equals can be used.
+
+There is autocompletion in command prompt that will try to help you. Your current opened file shouldn't have dirty changes or `hidden` should be set.
+
 ## Limitations:
 
 - First run can be slow;
@@ -249,7 +272,7 @@ Default mappings:
 - FXML support;
 - ~~Check for jsp support~~;
 - Refactoring support?;
-- Class creation helpers;
+- ~~Class creation helpers~~;
 - ~~Generics~~;
 - etc...
 

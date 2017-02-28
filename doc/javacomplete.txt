@@ -14,6 +14,7 @@
    2.2 Kind letter				|javacomplete-kindletter|
    2.3 Options					|javacomplete-options|
    2.4 Commands					|javacomplete-commands|
+   2.5 Class creation                           javacomplete-classnew
 3. Java parser in Vim    			|javacomplete-parser|
    3.1 Sample					|javacomplete-sample|
 4. FAQ						|javacomplete-faq|
@@ -346,6 +347,9 @@ A single letter indicates the kind of compeltion item. These kinds are:
     JCgenerateConstructor - generate constructor with chosen fields;
     JCgenerateConstructorDefault - generate default constructor;
 
+    JCclassNew - open prompt to enter class creation command;
+    JCclassInFile - open prompt to choose template that will be used for creation class boilerplate in current empty file;
+
     JCserverShowPort - show port, through which vim plugin communicates with server;
     JCserverShowPID - show server process identificator;
     JCserverStart - start server manually;
@@ -358,7 +362,20 @@ A single letter indicates the kind of compeltion item. These kinds are:
     
     JCcacheClear - clear cache manually.
 
+2.5 Class creation
     
+Prompt scheme, for class creation:
+
+    template:[subdirectory]:/package.ClassName extends SuperClass implements Interface(String str, public Integer i):contructor(*):toString(1)
+
+A: (optional) template - which will be used to create class boilerplate. Some existed templates: junit, interface, exception, servlet, etcl
+B: (optional) subdirectory in which class will be put. For example: test, androidTest;
+C: class name and package. With `/` will use backsearch for parent package to put in it. Without `/` put in relative package to current;
+D: (optional) extends and implements classes will be automatically imported;
+E: (optional) private str variable, and public i variable will be added to class;
+F: (optional) contructor using all fields and toString override method with only 'str' field will be created. Also hashCode and equals can be used.
+
+There is autocompletion in command prompt that will try to help you. Your current opened file shouldn't have dirty changes or 'hidden' should be set.
 
 ==============================================================================
 3. Java parser in Vim    			*javacomplete-parser*
