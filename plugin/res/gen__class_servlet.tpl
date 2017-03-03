@@ -1,6 +1,6 @@
 function! s:__class_servlet(class, options)
     let name = a:options.name
-    let url = tolower(substitute(name, '\C\([A-Z]\)', '/\1', 'g')[1:])
+    let url = tolower(substitute(name, '\C\([A-Z]\)', '/\1', 'g'))
     let result = "package ". a:options.package .";\n\n"
     let result .= "@WebServlet(name = \"". name. "\", urlPatterns = {\"". url. "\"})\n"
     let result .= "public class ". name
