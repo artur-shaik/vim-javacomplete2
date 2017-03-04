@@ -175,7 +175,9 @@ public class Reflection implements ClassReader {
         clazz.setName(name);
         clazz.setModifiers(cls.getModifiers());
         clazz.setIsInterface(cls.isInterface());
-        clazz.setPackage(cls.getPackage().getName());
+        if (cls.getPackage() != null) {
+            clazz.setPackage(cls.getPackage().getName());
+        }
 
         TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
         if (!typeArguments.isEmpty()) {
