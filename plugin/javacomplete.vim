@@ -88,35 +88,34 @@ function! s:nop(s)
   return ''
 endfunction
 
-nnoremap <Plug>(JavaComplete-Imports-AddMissing) :call javacomplete#imports#AddMissing()<cr>
-inoremap <Plug>(JavaComplete-Imports-AddMissing) <c-r>=<SID>nop(javacomplete#imports#AddMissing())<cr>
-nnoremap <Plug>(JavaComplete-Imports-RemoveUnused) :call javacomplete#imports#RemoveUnused()<cr>
-inoremap <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#imports#RemoveUnused())<cr>
-nnoremap <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
-inoremap <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
-nnoremap <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)<cr>
-inoremap <Plug>(JavaComplete-Imports-AddSmart) <c-r>=<SID>nop(javacomplete#imports#Add(1))<cr>
-nnoremap <Plug>(JavaComplete-Generate-AbstractMethods) :call javacomplete#generators#AbstractDeclaration()<cr>
-inoremap <Plug>(JavaComplete-Generate-AbstractMethods) <c-r>=<SID>nop(javacomplete#generators#AbstractDeclaration())<cr>
-nnoremap <Plug>(JavaComplete-Generate-Accessors) :call javacomplete#generators#Accessors()<cr>
-nnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
-nnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
-nnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
-inoremap <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('s'))<cr>
-inoremap <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
-inoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
-vnoremap <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
-vnoremap <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
-vnoremap <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
-nnoremap <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#GenerateToString()<cr>
-nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
-nnoremap <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
-nnoremap <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
-nnoremap <Plug>(JavaComplete-Generate-NewClass) :call javacomplete#newclass#CreateClass()<cr>
-nnoremap <Plug>(JavaComplete-Generate-ClassInFile) :call javacomplete#newclass#CreateInFile()<cr>
-
-nnoremap <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
-inoremap <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
+nnoremap <silent> <Plug>(JavaComplete-Imports-AddMissing) :call javacomplete#imports#AddMissing()<cr>
+inoremap <silent> <Plug>(JavaComplete-Imports-AddMissing) <c-r>=<SID>nop(javacomplete#imports#AddMissing())<cr>
+nnoremap <silent> <Plug>(JavaComplete-Imports-RemoveUnused) :call javacomplete#imports#RemoveUnused()<cr>
+inoremap <silent> <Plug>(JavaComplete-Imports-RemoveUnused) <c-r>=<SID>nop(javacomplete#imports#RemoveUnused())<cr>
+nnoremap <silent> <Plug>(JavaComplete-Imports-Add) :call javacomplete#imports#Add()<cr>
+inoremap <silent> <Plug>(JavaComplete-Imports-Add) <c-r>=<SID>nop(javacomplete#imports#Add())<cr>
+nnoremap <silent> <Plug>(JavaComplete-Imports-AddSmart) :call javacomplete#imports#Add(1)<cr>
+inoremap <silent> <Plug>(JavaComplete-Imports-AddSmart) <c-r>=<SID>nop(javacomplete#imports#Add(1))<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-AbstractMethods) :call javacomplete#generators#AbstractDeclaration()<cr>
+inoremap <silent> <Plug>(JavaComplete-Generate-AbstractMethods) <c-r>=<SID>nop(javacomplete#generators#AbstractDeclaration())<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-Accessors) :call javacomplete#generators#Accessors()<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
+inoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('s'))<cr>
+inoremap <silent> <Plug>(JavaComplete-Generate-AccessorGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('g'))<cr>
+inoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetterGetter) <c-r>=<SID>nop(javacomplete#generators#Accessor('sg'))<cr>
+vnoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetter) :call javacomplete#generators#Accessor('s')<cr>
+vnoremap <silent> <Plug>(JavaComplete-Generate-AccessorGetter) :call javacomplete#generators#Accessor('g')<cr>
+vnoremap <silent> <Plug>(JavaComplete-Generate-AccessorSetterGetter) :call javacomplete#generators#Accessor('sg')<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#GenerateToString()<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-NewClass) :call javacomplete#newclass#CreateClass()<cr>
+nnoremap <silent> <Plug>(JavaComplete-Generate-ClassInFile) :call javacomplete#newclass#CreateInFile()<cr>
+nnoremap <silent> <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
+inoremap <silent> <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
