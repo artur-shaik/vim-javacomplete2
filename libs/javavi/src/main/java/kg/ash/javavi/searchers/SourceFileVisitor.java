@@ -8,7 +8,13 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+
 public class SourceFileVisitor extends SimpleFileVisitor<Path> {
+
+    public static final Logger logger = 
+        LogManager.getLogger();
 
     private final PathMatcher matcher;
     private String targetFile = null;
@@ -25,6 +31,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
             path = pattern;
         }
 
+        logger.info("visit source: {}", path);
         matcher = FileSystems.getDefault()
                 .getPathMatcher(String.format("glob:%s.java", path));
 
