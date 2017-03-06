@@ -103,6 +103,8 @@ function! javacomplete#server#Start()
     endif
     JavacompletePy vim.command('let port = "%s"' % SERVER[1])
     call add(javaProps, '-Ddaemon.port='. port)
+    let log4j2Config = join([g:JavaComplete_Home,'libs', 'javavi', 'target', 'classes', 'log4j2.xml'], g:FILE_SEP)
+    call add(javaProps, '-Dlog4j.configurationFile='. log4j2Config)
 
     let classpath = substitute(javacomplete#server#GetClassPath(), '\\', '\\\\', 'g')
     let sources = []
@@ -223,7 +225,7 @@ function! javacomplete#server#Communicate(option, args, log)
 
   if s:Poll()
     if !empty(a:args)
-      let args = ' "'. substitute(a:args, '"', '\\"', 'g'). '"'
+      let args = ' '. substitute(a:args, '"', '\\"', 'g')
     else
       let args = ''
     endif

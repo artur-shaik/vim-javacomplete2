@@ -92,7 +92,9 @@ public class Parser implements ClassReader {
         SourceClass clazz = new SourceClass();
         Cache.getInstance().getClasses().put(targetClass, clazz);
 
-        clazz.setPackage(cu.getPackage().getName().toString());
+        if (cu.getPackage() != null) {
+            clazz.setPackage(cu.getPackage().getName().toString());
+        }
         clazz.setRegion(cu.getBegin().line, cu.getBegin().column, cu.getEnd().line, cu.getEnd().column);
 
         if (cu.getImports() != null) {

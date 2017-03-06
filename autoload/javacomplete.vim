@@ -213,6 +213,11 @@ function! s:RemoveCurrentFromCache()
   endif
   call javacomplete#server#Communicate('-clear-from-cache', fqn, 's:RemoveCurrentFromCache')
   call javacomplete#server#Communicate('-async -recompile-class', fqn, 's:RemoveCurrentFromCache')
+
+  let arguments = '-source '. resolve(expand('%:p'))
+  let arguments .= ' -class '. classname
+  let arguments .= ' -package '. package
+  call javacomplete#server#Communicate('-async -add-source-to-cache', arguments, 's:RemoveCurrentFromCache')
 endfunction
 
 function! s:DefaultMappings()
@@ -251,6 +256,9 @@ function! s:DefaultMappings()
   vmap <silent> <buffer> <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
   vmap <silent> <buffer> <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
   vmap <silent> <buffer> <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+
+  nmap <silent> <buffer> <leader>jn <Plug>(JavaComplete-Generate-NewClass)
+  nmap <silent> <buffer> <leader>jN <Plug>(JavaComplete-Generate-ClassInFile)
 endfunction
 
 augroup javacomplete

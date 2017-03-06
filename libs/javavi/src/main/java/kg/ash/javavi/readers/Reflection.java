@@ -132,7 +132,7 @@ public class Reflection implements ClassReader {
             Class clazz = Class.forName(className);
             return getSourceClass(clazz);
         } catch (Exception ex) {
-            logger.debug(ex);
+            logger.debug(String.format("error lookup %s", className), ex);
             return null;
         }
     }
@@ -151,7 +151,9 @@ public class Reflection implements ClassReader {
             TreeMap<String,String> taa, 
             String genericName) {
 
-        if (typeArguments.isEmpty()) return genericName;
+        if (typeArguments == null || typeArguments.isEmpty()) {
+            return genericName;
+        }
         for (Entry<String, String> kv : taa.entrySet()) {
             genericName = genericName
                 .replaceAll(
@@ -175,10 +177,12 @@ public class Reflection implements ClassReader {
         clazz.setName(name);
         clazz.setModifiers(cls.getModifiers());
         clazz.setIsInterface(cls.isInterface());
-        clazz.setPackage(cls.getPackage().getName());
+        if (cls.getPackage() != null) {
+            clazz.setPackage(cls.getPackage().getName());
+        }
 
         TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
-        if (!typeArguments.isEmpty()) {
+        if (typeArguments != null && !typeArguments.isEmpty()) {
             List<String> arguments = new ArrayList<>(typeArguments);
             Stream.of(cls.getTypeParameters()).forEachOrdered(type -> {
                 typeArgumentsAccordance.put(type.getTypeName(), popTypeArgument(arguments));

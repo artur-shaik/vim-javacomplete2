@@ -2,12 +2,27 @@ package kg.ash.javavi.cache;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.searchers.JavaClassMap;
 import kg.ash.javavi.searchers.PackagesLoader;
 
 public class Cache {
+
+    public static final Logger logger = 
+        LogManager.getLogger();
+
+    private int cacheCode;
+
+    private int autosavePeriod = 60;
+    private Timer autosaveCacheTimer = new Timer();
+    private TimerTask autosaveCacheTask;
 
     public static String PACKAGES_EMPTY_ERROR = "message: packages still empty, try later. indexing...";
 
@@ -43,7 +58,11 @@ public class Cache {
                 saveCache();
             }
 
+            cacheCode = getClassPackages().hashCode();
             collectIsRunning = false;
+
+            autosaveCacheTimer.schedule(
+                    new AutosaveTask(this), autosavePeriod * 1000);
         }).start();
     }
 
@@ -70,6 +89,27 @@ public class Cache {
 
     public HashMap<String, SourceClass> getClasses() {
         return classes;
+    }
+
+    class AutosaveTask extends TimerTask {
+        private final Cache cache;
+
+        public AutosaveTask(Cache cache) {
+            this.cache = cache;
+        }
+
+        public void run() {
+            int newCode = cache.getClassPackages().hashCode();
+            if (newCode != cache.cacheCode) {
+                cache.logger.info("autosave cache: {} != {}", newCode, cache.cacheCode);
+                cache.saveCache();
+                cache.cacheCode = cache.getClassPackages().hashCode();
+            }
+
+            cache.autosaveCacheTimer.schedule(
+                    new AutosaveTask(cache), cache.autosavePeriod * 1000);
+        }
+
     }
 
 }

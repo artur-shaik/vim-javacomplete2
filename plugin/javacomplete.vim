@@ -79,6 +79,9 @@ command! JCgenerateConstructorDefault call javacomplete#generators#GenerateConst
 
 command! JCclasspathGenerate call javacomplete#classpath#classpath#RebuildClassPath()
 
+command! JCclassNew call javacomplete#newclass#CreateClass()
+command! JCclassInFile call javacomplete#newclass#CreateInFile()
+
 autocmd Filetype java,jsp JCstart
 
 function! s:nop(s)
@@ -109,6 +112,8 @@ nnoremap <Plug>(JavaComplete-Generate-ToString) :call javacomplete#generators#Ge
 nnoremap <Plug>(JavaComplete-Generate-EqualsAndHashCode) :call javacomplete#generators#GenerateEqualsAndHashCode()<cr>
 nnoremap <Plug>(JavaComplete-Generate-Constructor) :call javacomplete#generators#GenerateConstructor(0)<cr>
 nnoremap <Plug>(JavaComplete-Generate-DefaultConstructor) :call javacomplete#generators#GenerateConstructor(1)<cr>
+nnoremap <Plug>(JavaComplete-Generate-NewClass) :call javacomplete#newclass#CreateClass()<cr>
+nnoremap <Plug>(JavaComplete-Generate-ClassInFile) :call javacomplete#newclass#CreateInFile()<cr>
 
 nnoremap <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
 inoremap <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
