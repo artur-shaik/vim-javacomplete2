@@ -21,7 +21,7 @@ public class ClassRecompileActionTest {
 
         new MockUp<ClassRecompileAction>() {
             @Mock
-            private ClassNameMap findClass(String name) {
+            private ClassNameMap findClass(String className, String name) {
                 return classMap;
             }
 
@@ -45,7 +45,7 @@ public class ClassRecompileActionTest {
 
         new MockUp<ClassRecompileAction>() {
             @Mock
-            private ClassNameMap findClass(String name) {
+            private ClassNameMap findClass(String className, String name) {
                 return classMap;
             }
 
@@ -68,7 +68,7 @@ public class ClassRecompileActionTest {
 
         new MockUp<ClassRecompileAction>() {
             @Mock
-            private ClassNameMap findClass(String name) {
+            private ClassNameMap findClass(String className, String name) {
                 return classMap;
             }
 

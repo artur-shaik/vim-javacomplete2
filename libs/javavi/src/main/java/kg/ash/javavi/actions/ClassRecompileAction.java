@@ -22,7 +22,7 @@ public class ClassRecompileAction extends ActionWithTarget {
         String target = parseTarget(args);
 
         String[] splitted = target.split("\\.");
-        ClassNameMap classMap = findClass(target.substring(0, target.lastIndexOf("\\.")), splitted[splitted.length - 1]);
+        ClassNameMap classMap = findClass(target.substring(0, target.lastIndexOf(".")), splitted[splitted.length - 1]);
         if (classMap != null && classMap.getClassFile() != null && classMap.getJavaFile() != null) {
             String classFile = classMap.getClassFile();
             String sourceFile = classMap.getJavaFile();
