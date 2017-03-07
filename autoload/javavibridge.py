@@ -3,6 +3,7 @@
 
 import socket
 import sys
+import tempfile
 import time
 import subprocess
 import os
@@ -46,8 +47,7 @@ class JavaviBridge():
         environ['CLASSPATH'] = separator.join(classpathset)
 
         if vim.eval('get(g:, "JavaComplete_JavaviLogLevel", 0)') != 0:
-            defaulttmp = fileSeparator + fileSeparator.join(
-                ['tmp', 'javavi_log'])
+            defaulttmp = tempfile.gettempdir() + fileSeparator + 'javavi_log'
             logdir = vim.eval(
                 "get(g:, 'JavaComplete_JavaviLogDirectory', '%s')" 
                 % defaulttmp)
