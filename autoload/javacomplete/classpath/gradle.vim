@@ -62,7 +62,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
     endif
   elseif a:event == 'stderr'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
-        echoerr data
+      echoerr data
     endfor
   endif
 endfunction
