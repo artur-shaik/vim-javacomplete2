@@ -16,7 +16,21 @@ endfunction
 function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
-      let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]
+      let cp = ''
+      let flag = 0
+      for i in range(len(s:gradleOutput))
+        if s:gradleOutput[i] =~ '^CLASSPATH:'
+          let cp .= s:gradleOutput[i][10:]
+          let flag = 1
+          while flag
+            if s:gradleOutput[i + flag] !~ '^\s*$'
+              let cp .= s:gradleOutput[i + flag]
+            else
+              let flag = 0
+            endif
+          endwhile
+        endif
+      endfor
       let g:JavaComplete_LibsPath .= ':'. cp
 
       call writefile([cp], s:gradlePath)
