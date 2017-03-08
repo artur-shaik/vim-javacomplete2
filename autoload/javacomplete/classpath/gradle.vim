@@ -17,18 +17,17 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
       let cp = ''
-      let flag = 0
       for i in range(len(s:gradleOutput))
         if s:gradleOutput[i] =~ '^CLASSPATH:'
           let cp .= s:gradleOutput[i][10:]
-          let flag = 1
-          while flag
-            if s:gradleOutput[i + flag] !~ '^\s*$'
-              let cp .= s:gradleOutput[i + flag]
+          for j in range(i, len(s:gradleOutput) - 1)
+            if s:gradleOutput[j] !~ '^\s*$'
+              let cp .= s:gradleOutput[j]
             else
-              let flag = 0
+              break
             endif
-          endwhile
+          endfor
+          break
         endif
       endfor
       let g:JavaComplete_LibsPath .= ':'. cp
