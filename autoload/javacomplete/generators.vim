@@ -199,19 +199,26 @@ function! <SID>generateByTemplate(command)
 endfunction
 
 function! s:CheckAndLoadTemplate(template)
-  let fileName = g:JavaComplete_Home. '/plugin/res/gen__'. a:template. '.tpl'
-  if filereadable(fileName)
-    if has_key(g:JavaComplete_Generators, a:template)
-      if getftime(fileName) > g:JavaComplete_Generators[a:template]['file_time']
-        let g:JavaComplete_Generators[a:template]['data'] = join(readfile(fileName), "\n")
-        let g:JavaComplete_Generators[a:template]['file_time'] = getftime(fileName)
-      endif
-    else
-      let g:JavaComplete_Generators[a:template] = {}
-      let g:JavaComplete_Generators[a:template]['data'] = join(readfile(fileName), "\n")
-      let g:JavaComplete_Generators[a:template]['file_time'] = getftime(fileName)
-    endif
+  let filenames = []
+  if exists('g:JavaComplete_CustomTemplateDirectory')
+    call add(filenames, expand(g:JavaComplete_CustomTemplateDirectory). '/gen__'. a:template. '.tpl')
   endif
+  call add(filenames, g:JavaComplete_Home. '/plugin/res/gen__'. a:template. '.tpl')
+  for filename in filenames
+    if filereadable(filename)
+      if has_key(g:JavaComplete_Generators, a:template)
+        if getftime(filename) > g:JavaComplete_Generators[a:template]['file_time']
+          let g:JavaComplete_Generators[a:template]['data'] = join(readfile(filename), "\n")
+          let g:JavaComplete_Generators[a:template]['file_time'] = getftime(filename)
+        endif
+      else
+        let g:JavaComplete_Generators[a:template] = {}
+        let g:JavaComplete_Generators[a:template]['data'] = join(readfile(filename), "\n")
+        let g:JavaComplete_Generators[a:template]['file_time'] = getftime(filename)
+      endif
+      break
+    endif
+  endfor
 endfunction
 
 function! javacomplete#generators#AbstractDeclaration()

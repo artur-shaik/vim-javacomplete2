@@ -327,6 +327,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
 	let g:JavaComplete_EnableDefaultMappings = 0 
 	By default this option is enabled, with a value of 1.
 
+    Set directory that contains custom templates, for class creation:
+
+	let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'
+	By default this options is null.
+
 
 
 2.4 Commands					*javacomplete-commands*

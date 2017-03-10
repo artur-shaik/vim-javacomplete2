@@ -45,10 +45,23 @@ function! javacomplete#newclass#Completion(argLead, command, cursorPos)
 endfunction
 
 function! s:FetchTemplatesByPrefix(command, addSeparator)
+  let result = s:FetchTemplatesByPath(
+        \ g:JavaComplete_Home. '/plugin/res/gen__class_',
+        \ a:command,
+        \ a:addSeparator)
+  if exists('g:JavaComplete_CustomTemplateDirectory')
+    call extend(result,
+          \ s:FetchTemplatesByPath(expand(g:JavaComplete_CustomTemplateDirectory). '/gen__class_',
+          \ a:command,
+          \ a:addSeparator))
+  endif
+  return result
+endfunction
+
+function! s:FetchTemplatesByPath(path, command, addSeparator)
   let result = []
-  let prePath = g:JavaComplete_Home. '/plugin/res/gen__class_'
-  let cutLength = len(prePath)
-  for template in glob(prePath. a:command. '*.tpl', 0, 1)
+  let cutLength = len(a:path)
+  for template in glob(a:path. a:command. '*.tpl', 0, 1)
     call add(result, template[cutLength:-5]. (a:addSeparator == 1 ? ':' : ''))
   endfor
   return result

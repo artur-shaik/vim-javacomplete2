@@ -190,6 +190,8 @@ Default mappings:
 
 `let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']` - Regular class names that will be used automatically when you insert import. You can populate it with your custom classes, or it will be populated automatically when you choose any import option. List will be persisted, so it will be used next time you run the same project.
 
+`let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'` - set directory that contains custom templates, for class creation. By default this options is null.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
