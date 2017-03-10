@@ -21,7 +21,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
         if s:gradleOutput[i] =~ '^CLASSPATH:'
           let cp .= s:gradleOutput[i][10:]
           for j in range(i, len(s:gradleOutput) - 1)
-            if s:gradleOutput[j] !~ '^\s*$'
+            if s:gradleOutput[j] !~ '^END CLASSPATH GENERATION'
               let cp .= s:gradleOutput[j]
             else
               break

@@ -49,5 +49,6 @@ task classpath {
     }
     def paths = classpathFiles.join(File.pathSeparator)
     println "CLASSPATH:" + paths
+    println "END CLASSPATH GENERATION"
   }
 }
