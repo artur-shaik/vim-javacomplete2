@@ -31,7 +31,11 @@ task classpath {
         proj.android.applicationVariants.all { v ->
           classpathFiles += v.getApkLibraries()
           classpathFiles += v.getCompileLibraries()
-          classpathFiles += v.getSourceSets()
+          for (srcSet in v.getSourceSets()) {
+            for (dir in srcSet.java.srcDirs) {
+                classpathFiles += dir.absolutePath
+            }
+          }
         }
       }
 
@@ -45,5 +49,6 @@ task classpath {
     }
     def paths = classpathFiles.join(File.pathSeparator)
     println "CLASSPATH:" + paths
+    println "END CLASSPATH GENERATION"
   }
 }

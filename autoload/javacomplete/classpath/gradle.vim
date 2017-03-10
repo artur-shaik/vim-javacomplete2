@@ -16,7 +16,20 @@ endfunction
 function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
   if a:event == 'exit'
     if a:data == "0"
-      let cp = filter(s:gradleOutput, 'v:val =~ "^CLASSPATH:"')[0][10:]
+      let cp = ''
+      for i in range(len(s:gradleOutput))
+        if s:gradleOutput[i] =~ '^CLASSPATH:'
+          let cp .= s:gradleOutput[i][10:]
+          for j in range(i, len(s:gradleOutput) - 1)
+            if s:gradleOutput[j] !~ '^END CLASSPATH GENERATION'
+              let cp .= s:gradleOutput[j]
+            else
+              break
+            endif
+          endfor
+          break
+        endif
+      endfor
       let g:JavaComplete_LibsPath .= ':'. cp
 
       call writefile([cp], s:gradlePath)
@@ -49,7 +62,7 @@ function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
     endif
   elseif a:event == 'stderr'
     for data in filter(a:data,'v:val !~ "^\\s*$"')
-        echoerr data
+      echoerr data
     endfor
   endif
 endfunction
