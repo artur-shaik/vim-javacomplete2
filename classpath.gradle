@@ -26,14 +26,28 @@ task classpath {
               }
           }
       }
+
       if (proj.hasProperty("android")) {
         classpathFiles += proj.android.getBootClasspath()
-        proj.android.applicationVariants.all { v ->
-          classpathFiles += v.getApkLibraries()
-          classpathFiles += v.getCompileLibraries()
-          for (srcSet in v.getSourceSets()) {
-            for (dir in srcSet.java.srcDirs) {
-                classpathFiles += dir.absolutePath
+        if (proj.android.hasProperty("applicationVariants")) {
+          proj.android.applicationVariants.all { v ->
+            classpathFiles += v.getApkLibraries()
+            classpathFiles += v.getCompileLibraries()
+            for (srcSet in v.getSourceSets()) {
+              for (dir in srcSet.java.srcDirs) {
+                  classpathFiles += dir.absolutePath
+              }
+            }
+          }
+        }
+
+        if (proj.android.hasProperty("libraryVariants")) {
+          proj.android.libraryVariants.all { v ->
+            classpathFiles += v.javaCompile.classpath.files
+            for (srcSet in v.getSourceSets()) {
+              for (dir in srcSet.java.srcDirs) {
+                  classpathFiles += dir.absolutePath
+              }
             }
           }
         }
