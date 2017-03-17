@@ -205,7 +205,7 @@ public class ClassNamesFetcher {
                         return;
                     }
 
-                    if (name.matches("^[A-Z][A-Za-z0-9_]+")) {
+                    if (name.matches("^[A-Z][A-Za-z0-9_]*")) {
                         resultList.add(name);
                     }
                 }
