@@ -116,7 +116,7 @@ To add all missing imports with F6:
 
 `imap <F6> <Plug>(JavaComplete-Imports-AddMissing)`
 
-To remove all missing imports with F7:
+To remove all unused imports with F7:
 
 `nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)`
 
