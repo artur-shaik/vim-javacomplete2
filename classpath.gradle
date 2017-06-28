@@ -41,8 +41,7 @@ task classpath {
         classpathFiles += proj.android.getBootClasspath()
         if (proj.android.hasProperty("applicationVariants")) {
           proj.android.applicationVariants.all { v ->
-            classpathFiles += v.getApkLibraries()
-            classpathFiles += v.getCompileLibraries()
+            classpathFiles += v.javaCompile.classpath.files
             for (srcSet in v.getSourceSets()) {
               for (dir in srcSet.java.srcDirs) {
                   classpathFiles += dir.absolutePath
