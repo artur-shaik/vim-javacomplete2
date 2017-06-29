@@ -1,16 +1,22 @@
 function! javacomplete#classpath#gradle#IfGradle()
   if exists("g:JavaComplete_GradleExecutable")
-    if executable(g:JavaComplete_GradleExecutable)
+    if executable(g:JavaComplete_GradleExecutable) && g:JavaComplete_GradlePath != ""
       return 1
     else
       return 0
     end
   endif
 
-  if g:JavaComplete_GradlePath != "" && (executable('gradle') || executable(fnamemodify(g:JavaComplete_GradlePath, ':p:h') . (javacomplete#util#IsWindows() ? '\gradlew.bat' : '/gradlew')))
+  if g:JavaComplete_GradlePath != "" && s:IsGradleExecutable() && g:JavaComplete_GradlePath != ""
     return 1
   endif
   return 0
+endfunction
+
+function! s:IsGradleExecutable() 
+  let osExec = javacomplete#util#IsWindows() ? '\gradlew.bat' : '/gradlew'
+  let path = fnamemodify(g:JavaComplete_GradlePath, ':p:h')
+  return executable('gradle') || executable(path. osExec)
 endfunction
 
 function! javacomplete#classpath#gradle#BuildClasspathHandler(data, event)
