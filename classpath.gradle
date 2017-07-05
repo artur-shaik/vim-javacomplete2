@@ -6,6 +6,15 @@ boolean isResolvable(Configuration conf) {
   return true
 }
 
+Collection getBuildCacheForDependency(File dependency) {
+  String name = dependency.getName()
+  String home = System.getProperty("user.home")
+  String gradleCache = home + '/.gradle/caches'
+  String include = '**/' + name +  '/**/classes.jar'
+  String exclude = '**/**'
+  return fileTree(dir: gradleCache, include: include).files.findAll { it.isFile() }
+}
+
 task classpath {
   doLast {
     HashSet<String> classpathFiles = new HashSet<String>()
@@ -16,11 +25,7 @@ task classpath {
             if (dependency.name.endsWith("jar")) {
               classpathFiles += dependency
             } else {
-              zipTree(dependency).each { explodedFile ->
-                if (explodedFile.toString().endsWith("jar")) {
-                  classpathFiles += explodedFile
-                }
-              }
+              classpathFiles += getBuildCacheForDependency(dependency)
             }
           }
         }
@@ -41,11 +46,7 @@ task classpath {
                 if (dependency.name.endsWith("jar")) {
                   classpathFiles += dependency
                 } else {
-                  zipTree(dependency).each { explodedFile ->
-                    if (explodedFile.toString().endsWith("jar")) {
-                      classpathFiles += explodedFile
-                    }
-                  }
+                  classpathFiles += getBuildCacheForDependency(dependency)
                 }
               }
             }
@@ -54,11 +55,7 @@ task classpath {
                 if (dependency.name.endsWith("jar")) {
                   classpathFiles += dependency
                 } else {
-                  zipTree(dependency).each { explodedFile ->
-                    if (explodedFile.toString().endsWith("jar")) {
-                      classpathFiles += explodedFile
-                    }
-                  }
+                  classpathFiles += getBuildCacheForDependency(dependency)
                 }
               }
             }
@@ -69,6 +66,7 @@ task classpath {
               classpathFiles += v.getCompileLibraries()
             }
             for (srcSet in v.getSourceSets()) {
+            srcSet.properties.each { prop -> println prop }
               for (dir in srcSet.java.srcDirs) {
                   classpathFiles += dir.absolutePath
               }
@@ -97,7 +95,7 @@ task classpath {
       }
     }
     def paths = classpathFiles.join(File.pathSeparator)
-    println "CLASSPATH:" + paths
-    println "END CLASSPATH GENERATION"
+    // println "CLASSPATH:" + paths
+    // println "END CLASSPATH GENERATION"
   }
 }
