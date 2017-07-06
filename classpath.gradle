@@ -10,9 +10,12 @@ Collection getBuildCacheForDependency(File dependency) {
   String name = dependency.getName()
   String home = System.getProperty("user.home")
   String gradleCache = home + '/.gradle/caches'
-  String include = '**/' + name +  '/**/classes.jar'
-  String exclude = '**/**'
-  return fileTree(dir: gradleCache, include: include).files.findAll { it.isFile() }
+  if (file(gradleCache).exists()) {
+    String include = '**/' + name +  '/**/classes.jar'
+    return fileTree(dir: gradleCache, include: include).files.findAll { it.isFile() }
+  } else {
+    return zipTree(dependency)
+  }
 }
 
 task classpath {
@@ -66,7 +69,6 @@ task classpath {
               classpathFiles += v.getCompileLibraries()
             }
             for (srcSet in v.getSourceSets()) {
-            srcSet.properties.each { prop -> println prop }
               for (dir in srcSet.java.srcDirs) {
                   classpathFiles += dir.absolutePath
               }
@@ -95,7 +97,7 @@ task classpath {
       }
     }
     def paths = classpathFiles.join(File.pathSeparator)
-    // println "CLASSPATH:" + paths
-    // println "END CLASSPATH GENERATION"
+    println "CLASSPATH:" + paths
+    println "END CLASSPATH GENERATION"
   }
 }
