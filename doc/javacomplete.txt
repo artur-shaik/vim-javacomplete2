@@ -137,7 +137,7 @@ Default mappings:
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
-If no lib/javavi/target is generated, check that you have the write permission
+If no libs/javavi/target is generated, check that you have the write permission
 and jdk installed.
 
 ==============================================================================
