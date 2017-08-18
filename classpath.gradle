@@ -6,16 +6,30 @@ boolean isResolvable(Configuration conf) {
   return true
 }
 
+Collection getBuildCacheForDependency(File dependency) {
+  String name = dependency.getName()
+  String home = System.getProperty("user.home")
+  String gradleCache = home + '/.gradle/caches'
+  if (file(gradleCache).exists()) {
+    String include = '**/' + name +  '/**/classes.jar'
+    return fileTree(dir: gradleCache, include: include).files.findAll { it.isFile() }
+  } else {
+    return zipTree(dependency)
+  }
+}
+
 task classpath {
   doLast {
     HashSet<String> classpathFiles = new HashSet<String>()
     for (proj in allprojects) {
-      def exploded = proj.getBuildDir().absolutePath + File.separator + "intermediates" + File.separator + "exploded-aar"
-      def listFiles = new File(exploded)
-      if (listFiles.exists()) {
-        listFiles.eachFileRecurse(){ file ->
-          if (file.name.endsWith(".jar")) {
-            classpathFiles += file
+      for (conf in proj.configurations) {
+        if (isResolvable(conf)) {
+          for (dependency in conf) {
+            if (dependency.name.endsWith("jar")) {
+              classpathFiles += dependency
+            } else {
+              classpathFiles += getBuildCacheForDependency(dependency)
+            }
           }
         }
       }
@@ -26,23 +40,34 @@ task classpath {
         classpathFiles += rFiles
       }
 
-      for (conf in proj.configurations) {
-        if (isResolvable(conf)) {
-          for (dependency in conf) {
-              if (dependency.name.endsWith("aar")) {
-              } else {
-                classpathFiles += dependency
-              }
-          }
-        }
-      }
-
       if (proj.hasProperty("android")) {
         classpathFiles += proj.android.getBootClasspath()
         if (proj.android.hasProperty("applicationVariants")) {
           proj.android.applicationVariants.all { v ->
-            classpathFiles += v.getApkLibraries()
-            classpathFiles += v.getCompileLibraries()
+            if (v.hasProperty("compileConfiguration")) {
+              v.compileConfiguration.each { dependency ->
+                if (dependency.name.endsWith("jar")) {
+                  classpathFiles += dependency
+                } else {
+                  classpathFiles += getBuildCacheForDependency(dependency)
+                }
+              }
+            }
+            if (v.hasProperty("runtimeConfiguration")) {
+              v.runtimeConfiguration.each { dependency ->
+                if (dependency.name.endsWith("jar")) {
+                  classpathFiles += dependency
+                } else {
+                  classpathFiles += getBuildCacheForDependency(dependency)
+                }
+              }
+            }
+            if (v.hasProperty("getApkLibraries")) {
+              classpathFiles += v.getApkLibraries()
+            }
+            if (v.hasProperty("getCompileLibraries")) {
+              classpathFiles += v.getCompileLibraries()
+            }
             for (srcSet in v.getSourceSets()) {
               for (dir in srcSet.java.srcDirs) {
                   classpathFiles += dir.absolutePath
