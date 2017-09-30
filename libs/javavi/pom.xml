@@ -72,16 +72,16 @@
                 <configuration>
                     <executable>java</executable>
                     <arguments>
-                                  <argument>-Xms512m</argument>
-                                  <argument>-Xmx512m</argument>
-                                  <argument>-XX:NewRatio=3</argument>
-                        <argument>-XX:+PrintGCTimeStamps</argument>
-                                  <argument>-XX:+PrintGCDetails</argument>
-                                  <argument>-Xloggc:gc.log</argument>
-                                  <argument>-classpath</argument>
-                                  <classpath/>
-                                  <argument>kg.ash.javavi.Javavi</argument>
-                                </arguments>
+                      <argument>-Xms512m</argument>
+                      <argument>-Xmx512m</argument>
+                      <argument>-XX:NewRatio=3</argument>
+                      <argument>-XX:+PrintGCTimeStamps</argument>
+                      <argument>-XX:+PrintGCDetails</argument>
+                      <argument>-Xloggc:gc.log</argument>
+                      <argument>-classpath</argument>
+                      <classpath/>
+                      <argument>kg.ash.javavi.Javavi</argument>
+                    </arguments>
                 </configuration>
             </plugin>
             <plugin>
