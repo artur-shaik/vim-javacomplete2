@@ -137,7 +137,7 @@ Default mappings:
 
 4. Javavi library will be automatcally compiled when you
 use first time. 
-If no lib/javavi/target is generated, check that you have the write permission
+If no libs/javavi/target is generated, check that you have the write permission
 and jdk installed.
 
 ==============================================================================
@@ -292,6 +292,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
     To avoid this behavior use:
     
         let g:JavaComplete_ImportDefault = -1
+
+    Import selection is activated automatically when completing new class
+    name. This can be avoided by setting:
+
+        let g:JavaComplete_InsertImports = 0
 
     Use your own executable file for gradle:
 
