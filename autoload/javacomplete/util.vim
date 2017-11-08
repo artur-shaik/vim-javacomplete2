@@ -275,6 +275,9 @@ function! javacomplete#util#RunSystem(command, shellName, handler)
       \ 'err_cb' : function('s:JobVimOnErrorHandler'),
       \ 'close_cb' : function('s:JobVimOnCloseHandler')
       \ }
+    if has('win32') && type(a:command) == 3
+      let a:command[0] = exepath(a:command[0])
+    endif
     let job = job_start(a:command, options)
     let jobId = s:ChannelId(job_getchannel(job))
     call s:NewJob(jobId, a:handler)
