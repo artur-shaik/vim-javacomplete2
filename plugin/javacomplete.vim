@@ -6,7 +6,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 if exists('g:JavaComplete_PluginLoaded')
-    finish
+  finish
 endif
 let g:JavaComplete_PluginLoaded = 1
 
@@ -40,6 +40,9 @@ let g:JavaComplete_ImportOrder =
 
 let g:JavaComplete_RegularClasses =
       \ get(g:, 'JavaComplete_RegularClasses', ['java.lang.String', 'java.lang.Object', 'java.lang.Exception', 'java.lang.StringBuilder', 'java.lang.Override', 'java.lang.UnsupportedOperationException', 'java.math.BigDecimal', 'java.lang.Byte', 'java.lang.Short', 'java.lang.Integer', 'java.lang.Long', 'java.lang.Float', 'java.lang.Double', 'java.lang.Character', 'java.lang.Boolean'])
+
+let g:JaveComplete_AutoStartServer = 
+      \ get(g:, 'JaveComplete_AutoStartServer', 1)
 
 command! JCDisable call javacomplete#Disable()
 command! JCEnable call javacomplete#Enable()
@@ -82,7 +85,9 @@ command! JCclasspathGenerate call javacomplete#classpath#classpath#RebuildClassP
 command! JCclassNew call javacomplete#newclass#CreateClass()
 command! JCclassInFile call javacomplete#newclass#CreateInFile()
 
-autocmd Filetype java,jsp JCstart
+if g:JaveComplete_AutoStartServer
+  autocmd Filetype java,jsp JCstart
+endif
 
 function! s:nop(s)
   return ''
