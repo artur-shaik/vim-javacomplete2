@@ -192,6 +192,8 @@ Default mappings:
 
 `let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'` - set directory that contains custom templates, for class creation. By default this options is null.
 
+`let g:JaveComplete_AutoStartServer = 0` - Disable automatic startup of server
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
