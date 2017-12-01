@@ -124,5 +124,6 @@ inoremap <silent> <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javaco
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
-" vim:set fdm=marker sw=2 nowrap:
+
 autocmd User CmSetup call cm#sources#java#register()
+" vim:set fdm=marker sw=2 nowrap:
