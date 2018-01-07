@@ -64,6 +64,9 @@ public class ClasspathPackageSearcher implements PackageSeacherIFace {
                     try {
                         for (Enumeration entries = new ZipFile(filePath).entries(); entries.hasMoreElements(); ) {
                             String entry = entries.nextElement().toString();
+                            if (filePath.endsWith(".jmod") && entry.startsWith("classes/")) {
+                                entry = entry.substring(8);
+                            }
                             result.add(new PackageEntry(entry, JavaClassMap.SOURCETYPE_CLASSPATH, filePath));
                         }
                     } catch (Exception e) {

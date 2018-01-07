@@ -19,7 +19,7 @@ public class ClasspathCollector {
     private ByExtensionVisitor finder 
         = new ByExtensionVisitor(
                 Arrays.asList(
-                    "*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class"));
+                    "*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class", "*.jmod"));
     
     private String pSep = File.pathSeparator;
     
@@ -27,9 +27,11 @@ public class ClasspathCollector {
         List<String> result = new ArrayList<>();
 
         String extdirs = System.getProperty("java.ext.dirs");
-        Stream.of(extdirs.split(pSep))
-            .map(path -> addPathFromDir(path + File.separator))
-            .forEach(result::addAll);
+        if (extdirs != null) {
+            Stream.of(extdirs.split(pSep))
+                .map(path -> addPathFromDir(path + File.separator))
+                .forEach(result::addAll);
+        }
 
         result.addAll(addPathFromDir(System.getProperty("java.home")));
 
