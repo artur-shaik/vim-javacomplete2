@@ -342,6 +342,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
 	let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'
 	By default this options is null.
 
+    Order imports such that static imports are at the top:
+
+        let g:JavaComplete_StaticImportsAtTop = '1' 
+        By default this options is 0.
+
 
 
 2.4 Commands					*javacomplete-commands*
