@@ -162,7 +162,7 @@ Default mappings:
 
 ### Optional
 
-`g:JavaComplete_LibsPath` - path to additional jar files. This path appends with you libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
+`g:JavaComplete_LibsPath` - path to additional jar files. This path appends with your libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
 
 `g:JavaComplete_SourcesPath` - path of additional sources. Don't try to add all sources you have, this will slow down the parsing process. Instead, add your project sources and necessary library sources. If you have compiled classes add them to the previous config (`g:JavaComplete_LibsPath`) instead. By default the plugin will search the `src` directory and add it automatically.
 
