@@ -189,6 +189,10 @@ function! javacomplete#imports#SortImports()
     call sort(importsList)
     let importsListSorted = s:SortImportsList(importsList)
 
+    if g:JavaComplete_StaticImportsAtTop
+      let importsListSorted = s:StaticImportsFirst(importsListSorted)
+    endif
+
     let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
     for imp in importsListSorted
@@ -305,6 +309,21 @@ endfunction
 if !exists('s:RegularClassesDict') && exists('g:JavaComplete_RegularClasses')
   let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
 endif
+
+function! s:StaticImportsFirst(importsList)
+  let staticImportsList = []
+  let l_a = copy(a:importsList)
+  for imp in l_a
+    if imp =~ '^static'
+      call remove(a:importsList, index(a:importsList, imp))
+      call add(staticImportsList, imp)
+    endif
+  endfor
+  if len(staticImportsList) > 0
+    call add(staticImportsList, '')
+  endif
+  return staticImportsList + a:importsList
+endfunction
 
 function! s:SortImportsList(importsList, ...)
   let sortType = a:0 > 0 ? a:1 : g:JavaComplete_ImportSortType
