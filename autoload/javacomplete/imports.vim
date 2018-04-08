@@ -429,6 +429,29 @@ function! javacomplete#imports#Add(...)
   endif
 endfunction
 
+function! javacomplete#imports#getType(...)
+  call javacomplete#server#Start()
+
+  let i = 0
+  let classname = ''
+  while empty(classname)
+    let offset = col('.') - i
+    if offset <= 0
+      return
+    endif
+    let classname = javacomplete#util#GetClassNameWithScope(offset)
+    let i += 1
+  endwhile
+
+  if classname =~ '^@.*'
+    let classname = classname[1:]
+  endif
+  if index(keys(s:RegularClassesDict), classname) != -1
+    echo s:RegularClassesDict[classname]
+  else
+  endif
+endfunction
+
 function! s:ChooseImportOption(options, classname)
   let import = ''
   let options = a:options
