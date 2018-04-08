@@ -1,13 +1,16 @@
 package kg.ash.javavi.clazz;
 
+import com.github.javaparser.ast.Modifier;
+
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 public class SourceClass {
     
     private String pakage = null;
     private String name = null;
-    private int modifiers;
+    private EnumSet<Modifier> modifiers;
     private boolean isInterface = false;
     private List<ClassConstructor> constructors = new ArrayList<>();
     private List<ClassMethod> methods = new ArrayList<>();
@@ -70,11 +73,11 @@ public class SourceClass {
         }
     }
 
-    public int getModifiers() {
+    public EnumSet<Modifier> getModifiers() {
         return modifiers;
     }
 
-    public void setModifiers(int modifiers) {
+    public void setModifiers(EnumSet<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
 

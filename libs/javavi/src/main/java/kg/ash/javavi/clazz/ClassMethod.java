@@ -1,5 +1,8 @@
 package kg.ash.javavi.clazz;
 
+import com.github.javaparser.ast.Modifier;
+
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -7,7 +10,7 @@ import java.util.Objects;
 public class ClassMethod {
 
     private String name;
-    private int modifiers;
+    private EnumSet<Modifier> modifiers;
     private String declaration;
     private String typeName;
     private List<ClassTypeParameter> typeParameters = new LinkedList<>();
@@ -20,11 +23,11 @@ public class ClassMethod {
         return name;
     }
 
-    public void setModifiers(int modifiers) {
+    public void setModifiers(EnumSet<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
 
-    public int getModifiers() {
+    public EnumSet<Modifier> getModifiers() {
         return modifiers;
     }
 

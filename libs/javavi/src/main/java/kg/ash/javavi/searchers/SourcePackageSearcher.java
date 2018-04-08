@@ -13,6 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
 
@@ -68,11 +71,11 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
             return null;
         }
 
-        if (cu.getPackage() != null) {
+        if (cu.getPackageDeclaration().isPresent()) {
             int lastslash = sourcePath.replace('\\', '/').lastIndexOf('/');
             if (lastslash >= 0) {
                 String className  = sourcePath.substring(lastslash + 1);
-                String path = cu.getPackage().getName().toString().replace(".", File.separator);
+                String path = cu.getPackageDeclaration().get().getNameAsString().replace(".", File.separator);
                 return path + File.separator + className;
             }
         }

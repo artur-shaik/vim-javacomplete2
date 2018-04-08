@@ -1,7 +1,6 @@
 package kg.ash.javavi.output;
 
-import java.lang.reflect.Modifier;
-
+import com.github.javaparser.ast.Modifier;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +10,8 @@ import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+
+import java.util.EnumSet;
 
 public class OutputClassInfoTest {
 
@@ -25,7 +26,7 @@ public class OutputClassInfoTest {
         clazz.setName("Bar");
         clazz.setPackage("foo.bar");
         clazz.setIsInterface(false);
-        clazz.setModifiers(Modifier.PUBLIC);
+        clazz.setModifiers(EnumSet.of(Modifier.PUBLIC));
     }
 
     @Test
@@ -37,7 +38,7 @@ public class OutputClassInfoTest {
     public void testConstructors() {
         ClassConstructor cc = new ClassConstructor();
         cc.setDeclaration("public Bar(Foo foo)");
-        cc.setModifiers(Modifier.PUBLIC);
+        cc.setModifiers(EnumSet.of(Modifier.PUBLIC));
         ClassTypeParameter ctp = new ClassTypeParameter("Foo");
         cc.addTypeParameter(ctp);
 
@@ -49,14 +50,14 @@ public class OutputClassInfoTest {
     @Test
     public void testTwoConstructors() {
         ClassConstructor cc = new ClassConstructor();
-        cc.setModifiers(Modifier.PUBLIC);
+        cc.setModifiers(EnumSet.of(Modifier.PUBLIC));
         cc.setDeclaration("public Bar()");
 
         clazz.addConstructor(cc);
 
         cc = new ClassConstructor();
         cc.setDeclaration("public Bar(Foo foo)");
-        cc.setModifiers(Modifier.PUBLIC);
+        cc.setModifiers(EnumSet.of(Modifier.PUBLIC));
         ClassTypeParameter ctp = new ClassTypeParameter("Foo");
         cc.addTypeParameter(ctp);
 
@@ -70,14 +71,14 @@ public class OutputClassInfoTest {
         ClassField field = new ClassField();
         field.setTypeName("Foo");
         field.setName("foo");
-        field.setModifiers(Modifier.PUBLIC);
+        field.setModifiers(EnumSet.of(Modifier.PUBLIC));
 
         clazz.addField(field);
 
         field = new ClassField();
         field.setTypeName("Bar");
         field.setName("bar");
-        field.setModifiers(Modifier.PRIVATE);
+        field.setModifiers(EnumSet.of(Modifier.PRIVATE));
 
         clazz.addField(field);
 
@@ -89,7 +90,7 @@ public class OutputClassInfoTest {
         ClassMethod method = new ClassMethod();
         method.setTypeName("Foo");
         method.setName("foo");
-        method.setModifiers(Modifier.PUBLIC);
+        method.setModifiers(EnumSet.of(Modifier.PUBLIC));
         method.setDeclaration("public Foo foo()");
 
         clazz.addMethod(method);
@@ -97,7 +98,7 @@ public class OutputClassInfoTest {
         method = new ClassMethod();
         method.setTypeName("Bar");
         method.setName("bar");
-        method.setModifiers(Modifier.PRIVATE);
+        method.setModifiers(EnumSet.of(Modifier.PRIVATE));
         method.setDeclaration("private Bar bar()");
 
         clazz.addMethod(method);
@@ -129,7 +130,7 @@ public class OutputClassInfoTest {
     public void testCompleteClass() {
         ClassConstructor cc = new ClassConstructor();
         cc.setDeclaration("public Bar(Foo foo)");
-        cc.setModifiers(Modifier.PUBLIC);
+        cc.setModifiers(EnumSet.of(Modifier.PUBLIC));
         ClassTypeParameter ctp = new ClassTypeParameter("Foo");
         cc.addTypeParameter(ctp);
         clazz.addConstructor(cc);
@@ -137,13 +138,13 @@ public class OutputClassInfoTest {
         ClassField field = new ClassField();
         field.setTypeName("Foo");
         field.setName("foo");
-        field.setModifiers(Modifier.PUBLIC);
+        field.setModifiers(EnumSet.of(Modifier.PUBLIC));
         clazz.addField(field);
 
         ClassMethod method = new ClassMethod();
         method.setTypeName("Foo");
         method.setName("foo");
-        method.setModifiers(Modifier.PUBLIC);
+        method.setModifiers(EnumSet.of(Modifier.PUBLIC));
         method.setDeclaration("public Foo foo()");
         clazz.addMethod(method);
 

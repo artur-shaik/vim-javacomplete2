@@ -1,7 +1,8 @@
 package kg.ash.javavi.output;
 
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
+
+import com.github.javaparser.ast.Modifier;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.SourceClass;
@@ -34,7 +35,7 @@ public class OutputClassPackages {
                         if (seacher.find(target, sources)) {
                             ClassReader reader = seacher.getReader();
                             SourceClass clazz = reader.read(target);
-                            if (clazz != null && Modifier.isStatic(clazz.getModifiers())) {
+                            if (clazz != null && clazz.getModifiers().contains(Modifier.STATIC)) {
                                 scope = "static " + scope;
                             }
                         }

@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -175,7 +176,7 @@ public class Reflection implements ClassReader {
 
         SourceClass clazz = new SourceClass();
         clazz.setName(name);
-        clazz.setModifiers(cls.getModifiers());
+        clazz.setModifiers(Parser.EnumSetModifierFromInt(cls.getModifiers()));
         clazz.setIsInterface(cls.isInterface());
         if (cls.getPackage() != null) {
             clazz.setPackage(cls.getPackage().getName());
@@ -233,7 +234,7 @@ public class Reflection implements ClassReader {
                         typeArgumentsAccordance, 
                         ctor.toGenericString());
             constructor.setDeclaration(genericDeclaration);
-            constructor.setModifiers(ctor.getModifiers());
+            constructor.setModifiers(Parser.EnumSetModifierFromInt(ctor.getModifiers()));
 
             Stream.of(ctor.getGenericParameterTypes())
                 .map(t -> 
@@ -252,7 +253,7 @@ public class Reflection implements ClassReader {
         fieldsSet.forEach(f -> {
             ClassField field = new ClassField();
             field.setName(f.getName());
-            field.setModifiers(f.getModifiers());
+            field.setModifiers(Parser.EnumSetModifierFromInt(f.getModifiers()));
 
             String genericType = getGenericName(
                     typeArgumentsAccordance, 
@@ -286,7 +287,7 @@ public class Reflection implements ClassReader {
 
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
-            method.setModifiers(m.getModifiers());
+            method.setModifiers(Parser.EnumSetModifierFromInt(m.getModifiers()));
 
             String genericDeclaration =
                 getGenericName(tAA, m.toGenericString());

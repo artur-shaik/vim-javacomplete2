@@ -4,11 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 
+import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import kg.ash.javavi.clazz.ClassImport;
 
 public class GetMissingImportsAction extends ImportsAction {
+    private static String removeComments(Node n) {
+        PrettyPrinterConfiguration config = new PrettyPrinterConfiguration();
+        config.setPrintComments(false);
+        return new PrettyPrinter(config).print(n);
+    }
 
     @Override
     public String action() {
@@ -17,7 +25,7 @@ public class GetMissingImportsAction extends ImportsAction {
         if (compilationUnit.getImports() != null) {
             for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
                 ClassImport classImport =
-                    new ClassImport(importDeclaration.getName().toStringWithoutComments(), importDeclaration.isStatic(), importDeclaration.isAsterisk());
+                    new ClassImport(removeComments(importDeclaration.getName()), importDeclaration.isStatic(), importDeclaration.isAsterisk());
                 if (classImport.isAsterisk()) {
                     asteriskImports.add(classImport.getName());
                 } else {
@@ -26,9 +34,10 @@ public class GetMissingImportsAction extends ImportsAction {
             }
         }
 
-        if (compilationUnit.getPackage() != null) {
-            asteriskImports.add(compilationUnit.getPackage().getName().toStringWithoutComments());
+        if (compilationUnit.getPackageDeclaration().isPresent()) {
+            asteriskImports.add(removeComments(compilationUnit.getPackageDeclaration().get().getName()));
         }
+
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {

@@ -1,11 +1,14 @@
 package kg.ash.javavi.clazz;
 
+import com.github.javaparser.ast.Modifier;
+
+import java.util.EnumSet;
 import java.util.Objects;
 
 public class ClassField {
 
     private String name;
-    private int modifiers;
+    private EnumSet<Modifier> modifiers;
     private String typeName;
 
     public void setName(String name) {
@@ -16,11 +19,11 @@ public class ClassField {
         return name;
     }
 
-    public void setModifiers(int modifiers) {
+    public void setModifiers(EnumSet<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
 
-    public int getModifiers() {
+    public EnumSet<Modifier> getModifiers() {
         return modifiers;
     }
 

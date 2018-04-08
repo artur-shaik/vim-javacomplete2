@@ -1,14 +1,17 @@
 package kg.ash.javavi.output;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
+import com.github.javaparser.ast.Modifier;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.readers.Parser;
 
 public class OutputClassInfo {
 
@@ -56,7 +59,7 @@ public class OutputClassInfo {
         sb.append("{")
             .append("'tag':'CLASSDEF',").append(Javavi.NEWLINE)
             .append("'flags':'")
-            .append(Integer.toString(clazz.getModifiers(), 2)).append("',")
+            .append(Integer.toString(Parser.EnumSetModifierToInt(clazz.getModifiers()), 2)).append("',")
             .append(Javavi.NEWLINE)
             .append("'name':'")
             .append(clazz.getName()).append("',")
@@ -104,7 +107,7 @@ public class OutputClassInfo {
         for (ClassConstructor ctor : clazz.getConstructors()) {
             sb.append("{");
 
-            appendModifier(sb, ctor.getModifiers());
+            appendModifier(sb, Parser.EnumSetModifierToInt(ctor.getModifiers()));
             appendParameterTypes(sb, ctor.getTypeParameters());
 
             sb.append(KEY_DESCRIPTION).append("'")
@@ -129,7 +132,7 @@ public class OutputClassInfo {
                     .append("'").append(field.getTypeName()).append("',");
             }
 
-            appendModifier(sb, field.getModifiers());
+            appendModifier(sb, Parser.EnumSetModifierToInt(field.getModifiers()));
             sb.append(KEY_TYPE)
                 .append("'").append(field.getTypeName()).append("'")
                 .append("},").append(Javavi.NEWLINE);
@@ -151,7 +154,7 @@ public class OutputClassInfo {
                     .append("'").append(method.getTypeName()).append("',");
             }
 
-            appendModifier(sb, method.getModifiers());
+            appendModifier(sb, Parser.EnumSetModifierToInt(method.getModifiers()));
 
             sb.append(KEY_RETURNTYPE)
                 .append("'").append(method.getTypeName()).append("',");

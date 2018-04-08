@@ -3,7 +3,6 @@ package kg.ash.javavi.readers.source;
 import com.github.javaparser.ast.CompilationUnit;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,11 +11,11 @@ public class ClassNamesFetcherTest {
 
     private String testClassDeclarationPath = 
         "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
-    private String fetcherTestClassdeclarationPath = 
+    private String fetcherTestClassDeclarationPath =
         "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
 
     @Test
-    public void testClassnamesFetch() throws Exception {
+    public void testClassnamesFetch() {
         CompilationUnit cu = CompilationUnitCreator
             .createFromFile(testClassDeclarationPath);
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
@@ -44,11 +43,10 @@ public class ClassNamesFetcherTest {
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
         CompilationUnit cu = CompilationUnitCreator
-            .createFromFile(fetcherTestClassdeclarationPath);
+            .createFromFile(fetcherTestClassDeclarationPath);
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 
         Assert.assertEquals(waitForList, result);
     }
-
 }

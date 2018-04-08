@@ -2,6 +2,9 @@ package kg.ash.javavi.actions;
 
 import com.github.javaparser.ast.ImportDeclaration;
 
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.printer.PrettyPrinter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import kg.ash.javavi.clazz.ClassImport;
 
 public class GetUnusedImportsAction extends ImportsAction {
@@ -13,7 +16,7 @@ public class GetUnusedImportsAction extends ImportsAction {
             if (importDeclaration.isAsterisk()) continue;
 
             ClassImport classImport =
-                new ClassImport(importDeclaration.getName().toStringWithoutComments(), importDeclaration.isStatic(), importDeclaration.isAsterisk());
+                new ClassImport(removeComments(importDeclaration.getName()), importDeclaration.isStatic(), importDeclaration.isAsterisk());
 
             String classname = classImport.getTail();
             if (!classnames.contains(classname)) {
@@ -21,6 +24,12 @@ public class GetUnusedImportsAction extends ImportsAction {
             }
         }
         return result.append("]").toString();
+    }
+
+    private static String removeComments(Node n) {
+        PrettyPrinterConfiguration config = new PrettyPrinterConfiguration();
+        config.setPrintComments(false);
+        return new PrettyPrinter(config).print(n);
     }
 
 }
