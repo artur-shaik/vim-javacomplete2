@@ -1,5 +1,6 @@
 package kg.ash.javavi.actions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,7 @@ public class GetClassesArchiveNamesAction extends ActionWithTarget {
                         if (result.containsKey(fileName)) {
                             result.get(fileName).add(classFqn);
                         } else {
-                            result.put(fileName, Arrays.asList(classFqn));
+                            result.put(fileName, new ArrayList<>(Arrays.asList(classFqn)));
                         }
                         return;
                     }
