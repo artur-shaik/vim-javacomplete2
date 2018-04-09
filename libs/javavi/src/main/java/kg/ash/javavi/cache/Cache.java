@@ -1,6 +1,5 @@
 package kg.ash.javavi.cache;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,16 +14,17 @@ import kg.ash.javavi.searchers.PackagesLoader;
 
 public class Cache {
 
-    public static final Logger logger = 
-        LogManager.getLogger();
+    public static final Logger logger = LogManager.getLogger();
+    public static final String PACKAGES_EMPTY_ERROR
+        = "message: packages still empty, try later. indexing...";
 
-    private int cacheCode;
-
-    private int autosavePeriod = 60;
+    private CacheSerializator serializator = new CacheSerializator();
+    private HashMap<String, JavaClassMap> classPackages = new HashMap<>();
+    private HashMap<String, SourceClass> classes = new HashMap<>();
     private Timer autosaveCacheTimer = new Timer();
-    private TimerTask autosaveCacheTask;
-
-    public static String PACKAGES_EMPTY_ERROR = "message: packages still empty, try later. indexing...";
+    private boolean collectIsRunning = false;
+    private int autosavePeriod = 60;
+    private int cacheCode;
 
     private static Cache instance;
 
@@ -34,17 +34,11 @@ public class Cache {
         }
         return instance;
     }
-    
-    private HashMap<String, SourceClass> classes = new HashMap<>();
-
-    private HashMap<String, JavaClassMap> classPackages = new HashMap<>();
-
-    private CacheSerializator serializator = new CacheSerializator();
-
-    private boolean collectIsRunning = false;
 
     public synchronized void collectPackages() {
-        if (collectIsRunning) return;
+        if (collectIsRunning) {
+            return;
+        }
 
         collectIsRunning = true;
         new Thread(() -> {
@@ -61,8 +55,7 @@ public class Cache {
             cacheCode = getClassPackages().hashCode();
             collectIsRunning = false;
 
-            autosaveCacheTimer.schedule(
-                    new AutosaveTask(this), autosavePeriod * 1000);
+            autosaveCacheTimer.schedule(new AutosaveTask(this), autosavePeriod * 1000);
         }).start();
     }
 
@@ -72,10 +65,12 @@ public class Cache {
         if (o != null) {
             try {
                 classPackages = (HashMap<String, JavaClassMap>) o;
-            } catch (ClassCastException e) {}
-        } 
+            } catch (ClassCastException e) {
+                logger.warn("Couldn't load cache");
+            }
+        }
     }
-    
+
     public void saveCache() {
         serializator.saveCache("class_packages", classPackages);
     }
@@ -105,11 +100,7 @@ public class Cache {
                 cache.saveCache();
                 cache.cacheCode = cache.getClassPackages().hashCode();
             }
-
-            cache.autosaveCacheTimer.schedule(
-                    new AutosaveTask(cache), cache.autosavePeriod * 1000);
+            cache.autosaveCacheTimer.schedule(new AutosaveTask(cache), cache.autosavePeriod * 1000);
         }
-
     }
-
 }

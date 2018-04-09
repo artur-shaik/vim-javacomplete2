@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
+import java.util.Map;
 
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
@@ -21,9 +21,12 @@ public class CacheSerializator {
 
     public CacheSerializator() {
         if (Javavi.system.containsKey("base")) {
-            base = Javavi.system.get("base");
+            Map<String, String> system = Javavi.system;
+
+            base = system.get("base");
             project = "default";
-            if (Javavi.system.containsKey("project")) {
+
+            if (system.containsKey("project")) {
                 project = Javavi.system.get("project");
             }
 
@@ -32,18 +35,13 @@ public class CacheSerializator {
                 cacheFile.mkdir();
             }
         }
-
     }
-    
+
     public void saveCache(String name, Object data) {
         if (base != null) {
-            try (
-                FileOutputStream fout = new FileOutputStream(
-                    base + File.separator + 
-                    "cache" + File.separator + 
-                    name + "_" + project + ".dat");
-                ObjectOutputStream oos = new ObjectOutputStream(fout)
-            ) {
+            try (FileOutputStream fout = new FileOutputStream(
+                base + File.separator + "cache" + File.separator + name + "_" + project + ".dat");
+                 ObjectOutputStream oos = new ObjectOutputStream(fout)) {
                 oos.writeObject(data);
             } catch (Throwable e) {
                 logger.error(e);
@@ -53,18 +51,14 @@ public class CacheSerializator {
 
     public Object loadCache(String name) {
         if (base != null) {
-            try (
-                FileInputStream fin = new FileInputStream(
-                    base + File.separator + 
-                    "cache" + File.separator + 
-                    name + "_" + project + ".dat");
-                ObjectInputStream ois = new ObjectInputStream(fin)
-            ) {
+            try (FileInputStream fin = new FileInputStream(
+                base + File.separator + "cache" + File.separator + name + "_" + project + ".dat");
+                 ObjectInputStream ois = new ObjectInputStream(fin)) {
                 return ois.readObject();
-            } catch (Throwable e) {}
+            } catch (Throwable e) {
+                logger.warn("Couldn't load cache");
+            }
         }
-
         return null;
     }
-
 }
