@@ -5,7 +5,7 @@ import kg.ash.javavi.Javavi;
 public class GetAppVersion implements Action {
 
     @Override
-    public String perform(String[] string) {
+    public String perform(String[] args) {
         return Javavi.VERSION;
     }
 }

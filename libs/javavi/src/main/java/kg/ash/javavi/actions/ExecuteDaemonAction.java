@@ -30,16 +30,4 @@ public class ExecuteDaemonAction implements Action {
 
         return "";
     }
-
-    private void parseArgs(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "-t": {
-                    timeoutSeconds = Integer.parseInt(args[i+1]);
-                    break;
-                }
-            }
-        }
-    }
-    
 }

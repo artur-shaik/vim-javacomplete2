@@ -1,5 +1,7 @@
 package kg.ash.javavi.actions;
 
+import static kg.ash.javavi.actions.ActionFactory.getJavaViSources;
+
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.TargetParser;
 
@@ -9,8 +11,7 @@ public abstract class ActionWithTarget implements Action {
     protected String sources;
 
     public ActionWithTarget() {
-        String javaViSources = Javavi.system.get("sources");
-        sources = javaViSources != null ? javaViSources.replace('\\', '/') : "";
+        sources = getJavaViSources(Javavi.system);
         targetParser = new TargetParser(sources);
     }
 

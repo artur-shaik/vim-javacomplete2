@@ -13,14 +13,20 @@ public class GetUnusedImportsAction extends ImportsAction {
     public String action() {
         StringBuilder result = new StringBuilder("[");
         for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
-            if (importDeclaration.isAsterisk()) continue;
+            if (importDeclaration.isAsterisk()) {
+                continue;
+            }
 
-            ClassImport classImport =
-                new ClassImport(removeComments(importDeclaration.getName()), importDeclaration.isStatic(), importDeclaration.isAsterisk());
+            ClassImport classImport = new ClassImport(removeComments(importDeclaration.getName()),
+                importDeclaration.isStatic(), importDeclaration.isAsterisk());
 
             String classname = classImport.getTail();
             if (!classnames.contains(classname)) {
-                result.append("'").append(classImport.getHead()).append(classImport.isStatic() ? "$" : ".").append(classname).append("',");
+                result.append("'")
+                    .append(classImport.getHead())
+                    .append(classImport.isStatic() ? "$" : ".")
+                    .append(classname)
+                    .append("',");
             }
         }
         return result.append("]").toString();
@@ -31,5 +37,4 @@ public class GetUnusedImportsAction extends ImportsAction {
         config.setPrintComments(false);
         return new PrettyPrinter(config).print(n);
     }
-
 }
