@@ -56,6 +56,8 @@ command! JCimportsSort call javacomplete#imports#SortImports()
 command! JCimportAddSmart call javacomplete#imports#Add(1)
 command! JCimportAdd call javacomplete#imports#Add()
 
+command! JCGetSymbolType call javacomplete#imports#getType()
+
 command! JCserverShowPort call javacomplete#server#ShowPort()
 command! JCserverShowPID call javacomplete#server#ShowPID()
 command! JCserverStart call javacomplete#server#Start()
