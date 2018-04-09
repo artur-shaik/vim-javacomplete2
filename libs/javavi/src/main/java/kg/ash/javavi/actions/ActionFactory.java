@@ -1,7 +1,6 @@
 package kg.ash.javavi.actions;
 
 public class ActionFactory {
-
     public static Action get(String action) {
         switch (action) {
             case "-E":
@@ -39,8 +38,6 @@ public class ActionFactory {
             case "-add-source-to-cache":
                 return new AddClassToCacheAction();
         }
-
         return null;
     }
-    
 }
