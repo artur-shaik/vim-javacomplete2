@@ -10,10 +10,9 @@ import kg.ash.javavi.actions.ActionFactory;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.searchers.ClasspathCollector;
 
-
 public class Javavi {
 
-    public static final String VERSION	= "2.3.8";
+    public static final String VERSION = "2.3.8";
 
     public static String NEWLINE = "";
 
@@ -25,7 +24,9 @@ public class Javavi {
 
     private static void usage() {
         version();
-        System.out.println("  java [-classpath] kg.ash.javavi.Javavi [-sources sourceDirs] [-h] [-v] [-d] [-D port] [action]");
+        System.out.println(
+            "  java [-classpath] kg.ash.javavi.Javavi [-sources sourceDirs] [-h] [-v] [-d] [-D "
+                + "port] [action]");
         System.out.println("Options:");
         System.out.println("  -h	        help");
         System.out.println("  -v	        version");
@@ -35,21 +36,18 @@ public class Javavi {
     }
 
     private static void version() {
-        System.out.println("Reflection and parsing for javavi " +
-                "vim plugin (" + VERSION + ")");
+        System.out.println("Reflection and parsing for javavi " + "vim plugin (" + VERSION + ")");
     }
 
-    public static HashMap<String,String> system = new HashMap<>();
+    public static HashMap<String, String> system = new HashMap<>();
     public static Daemon daemon = null;
 
     public static void main(String[] args) throws Exception {
-        logger.info("starting javavi server on port: {}", 
-                System.getProperty("daemon.port", "0"));
+        logger.info("starting javavi server on port: {}", System.getProperty("daemon.port", "0"));
 
         if (logger.isTraceEnabled()) {
             logger.trace("output included libraries");
-            new ClasspathCollector()
-                .collectClassPath().forEach(logger::trace);
+            new ClasspathCollector().collectClassPath().forEach(logger::trace);
         }
 
         String response = makeResponse(args);
@@ -102,19 +100,18 @@ public class Javavi {
 
         String result = "";
         if (action != null) {
-            logger.debug("new {} action: \"{}\"", 
-                    asyncRun ? "async" : "", 
-                    action.getClass().getSimpleName());
+            logger.debug("new {} action: \"{}\"", asyncRun ? "async" : "",
+                action.getClass().getSimpleName());
 
             if (asyncRun) {
                 final Action a = action;
-                new Thread(() -> { a.perform(args); }).start();
+                new Thread(() -> {
+                    a.perform(args);
+                }).start();
             } else {
                 result = action.perform(args);
             }
         }
-
         return result;
     }
-
 }

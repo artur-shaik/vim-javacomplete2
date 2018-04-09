@@ -96,6 +96,10 @@ public class TargetParser {
     }
 
     public String getTypeArgumentsString() {
+        return getTypeArgumentsString(this.typeArguments);
+    }
+
+    public static String getTypeArgumentsString(List<String> typeArguments) {
         if (typeArguments.isEmpty()) return "";
 
         StringBuilder builder = new StringBuilder("<");
@@ -105,5 +109,4 @@ public class TargetParser {
         builder.setCharAt(builder.length() - 1, '>');
         return builder.toString();
     }
-
 }

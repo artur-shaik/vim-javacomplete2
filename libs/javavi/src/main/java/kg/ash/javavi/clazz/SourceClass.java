@@ -1,7 +1,9 @@
 package kg.ash.javavi.clazz;
 
 import com.github.javaparser.ast.Modifier;
+import kg.ash.javavi.TargetParser;
 
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -33,16 +35,8 @@ public class SourceClass {
         if (pkg != null) {
             sb.append(pkg).append(".");
         }
-        sb.append(name);
+        sb.append(name).append(TargetParser.getTypeArgumentsString(typeArguments));
 
-        if (typeArguments.size() > 0) {
-            sb.append("<");
-
-            for (int i = 0; i < typeArguments.size() - 1; i++) {
-                sb.append(typeArguments.get(i)).append(",");
-            }
-            sb.append(typeArguments.get(typeArguments.size() - 1)).append(">");
-        }
         return sb.toString();
     }
 
