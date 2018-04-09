@@ -9,20 +9,15 @@ public abstract class ActionWithTarget implements Action {
     protected String sources;
 
     public ActionWithTarget() {
-        if (Javavi.system.containsKey("sources")) {
-            sources = Javavi.system.get("sources").replace('\\', '/');
-        } else {
-            sources = "";
-        }
+        String javaViSources = Javavi.system.get("sources");
+        sources = javaViSources != null ? javaViSources.replace('\\', '/') : "";
         targetParser = new TargetParser(sources);
     }
 
     protected String parseTarget(String[] args) {
         if (args.length > 0) {
             return targetParser.parse(args[args.length - 1]);
-        } else {
-            return "";
         }
+        return "";
     }
-    
 }
