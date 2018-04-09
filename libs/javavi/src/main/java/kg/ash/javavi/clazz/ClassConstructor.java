@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class ClassConstructor {
-    
+
     private String declaration = "";
     private EnumSet<Modifier> modifiers;
-    private List<ClassTypeParameter> typeParameters 
-        = new LinkedList<>();
+    private List<ClassTypeParameter> typeParameters = new LinkedList<>();
 
     public void setDeclaration(String declaration) {
         this.declaration = declaration;
@@ -46,8 +45,10 @@ public class ClassConstructor {
         if (getClass() != obj.getClass()) {
             return false;
         }
+
         final ClassConstructor other = (ClassConstructor) obj;
-        if (!Objects.equals(this.declaration, other.declaration) && (this.declaration == null || !this.declaration.equals(other.declaration))) {
+        if (!Objects.equals(this.declaration, other.declaration) && (this.declaration == null
+            || !this.declaration.equals(other.declaration))) {
             return false;
         }
         return this.modifiers == other.modifiers;
@@ -60,5 +61,4 @@ public class ClassConstructor {
         hash = 17 * hash + (this.declaration != null ? this.declaration.hashCode() : 0);
         return hash;
     }
-
 }

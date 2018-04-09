@@ -14,7 +14,7 @@ public class ClassField {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -36,25 +36,28 @@ public class ClassField {
     }
 
     @Override
-    public boolean equals( Object obj ) {
-        if ( obj == null ) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
-        if ( getClass() != obj.getClass() ) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        final ClassField other = ( ClassField ) obj;
-        if ( !Objects.equals( this.name, other.name ) && ( this.name == null || !this.name.equals( other.name ) ) ) {
+
+        final ClassField other = (ClassField) obj;
+        if (!Objects.equals(this.name, other.name) && (this.name == null || !this.name.equals(
+            other.name))) {
             return false;
         }
-        return this.typeName == other.typeName || (this.typeName != null && this.typeName.equals( other.typeName ));
+        return this.typeName == other.typeName || (this.typeName != null && this.typeName.equals(
+            other.typeName));
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 17 * hash + ( this.name != null ? this.name.hashCode() : 0 );
-        hash = 17 * hash + ( this.typeName != null ? this.typeName.hashCode() : 0 );
+        hash = 17 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 17 * hash + (this.typeName != null ? this.typeName.hashCode() : 0);
         return hash;
     }
 }

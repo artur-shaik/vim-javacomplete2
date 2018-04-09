@@ -7,8 +7,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class SourceClass {
-    
-    private String pakage = null;
+
+    private String pkg = null;
     private String name = null;
     private EnumSet<Modifier> modifiers;
     private boolean isInterface = false;
@@ -28,11 +28,22 @@ public class SourceClass {
     private CodeRegion region = new CodeRegion();
 
     public String getName() {
-        String args = "";
-        for (String type : typeArguments) {
-            args += type + ",";
+        StringBuilder sb = new StringBuilder();
+
+        if (pkg != null) {
+            sb.append(pkg).append(".");
         }
-        return String.format("%s%s%s", pakage == null ? "" : pakage + ".", name, args.length() > 0 ? "<" + args.substring(0, args.length() - 1) + ">" : "");
+        sb.append(name);
+
+        if (typeArguments.size() > 0) {
+            sb.append("<");
+
+            for (int i = 0; i < typeArguments.size() - 1; i++) {
+                sb.append(typeArguments.get(i)).append(",");
+            }
+            sb.append(typeArguments.get(typeArguments.size() - 1)).append(">");
+        }
+        return sb.toString();
     }
 
     public void setName(String name) {
@@ -82,11 +93,11 @@ public class SourceClass {
     }
 
     public String getPackage() {
-        return pakage;
+        return pkg;
     }
 
     public void setPackage(String pakage) {
-        this.pakage = pakage;
+        this.pkg = pakage;
     }
 
     public void setSuperclass(String superclass) {
@@ -127,14 +138,6 @@ public class SourceClass {
 
     public List<SourceClass> getLinkedClasses() {
         return linkedClasses;
-    }
-
-    public boolean containsInLinked(String fqn) {
-        for (SourceClass sc : getLinkedClasses()) {
-            if (sc.getName().equals(fqn)) return true;
-        }
-
-        return false;
     }
 
     public void addTypeArgument(String type) {
