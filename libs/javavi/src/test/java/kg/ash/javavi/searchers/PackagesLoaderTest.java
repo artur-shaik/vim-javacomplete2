@@ -26,10 +26,13 @@ public class PackagesLoaderTest {
     public void testCorrect() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("java/util/List.class", JavaClassMap.SOURCETYPE_CLASSPATH));
-            entries.add(new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(
+                new PackageEntry("java/util/List.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(
+                new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             entries.add(new PackageEntry("foo.bar.class", JavaClassMap.SOURCETYPE_CLASSPATH));
-            entries.add(new PackageEntry("kg/ash/javavi/Javavi.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(
+                new PackageEntry("kg/ash/javavi/Javavi.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 
@@ -80,10 +83,14 @@ public class PackagesLoaderTest {
     public void testNestedClasses() {
         PackageSeacherIFace searcher = () -> {
             List<PackageEntry> entries = new ArrayList<>();
-            entries.add(new PackageEntry("java/util/HashMap$KeySet.class", JavaClassMap.SOURCETYPE_CLASSPATH));
-            entries.add(new PackageEntry("java/util/HashMap$TreeNode.class", JavaClassMap.SOURCETYPE_CLASSPATH));
-            entries.add(new PackageEntry("foo/bar/TreeNode.class", JavaClassMap.SOURCETYPE_CLASSPATH));
-            entries.add(new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("java/util/HashMap$KeySet.class",
+                JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(new PackageEntry("java/util/HashMap$TreeNode.class",
+                JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(
+                new PackageEntry("foo/bar/TreeNode.class", JavaClassMap.SOURCETYPE_CLASSPATH));
+            entries.add(
+                new PackageEntry("java/util/ArrayList.class", JavaClassMap.SOURCETYPE_CLASSPATH));
             return entries;
         };
 
@@ -94,5 +101,4 @@ public class PackagesLoaderTest {
         Assert.assertTrue(result.get("TreeNode").contains("java.util.HashMap$"));
         Assert.assertTrue(result.get("TreeNode").contains("foo.bar"));
     }
-
 }

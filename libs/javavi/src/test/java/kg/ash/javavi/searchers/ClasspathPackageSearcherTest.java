@@ -18,11 +18,9 @@ public class ClasspathPackageSearcherTest {
         new MockUp<ClasspathCollector>() {
             @Mock
             private List<String> collectClassPath() {
-                return Arrays.asList(
-                        "/directory/foo/bar/Classname.class", 
-                        "/directory/foo/bar/Classname2.class", 
-                        "/directory/foo/baz/Classname.class",
-                        "");
+                return Arrays.asList("/directory/foo/bar/Classname.class",
+                    "/directory/foo/bar/Classname2.class", "/directory/foo/baz/Classname.class",
+                    "");
             }
 
         };
@@ -33,7 +31,6 @@ public class ClasspathPackageSearcherTest {
                 if (path.split("\\.").length > 2) {
                     return path.substring(0, path.lastIndexOf('.'));
                 }
-
                 return null;
             }
         };
@@ -41,5 +38,4 @@ public class ClasspathPackageSearcherTest {
         List<PackageEntry> entries = new ClasspathPackageSearcher().loadEntries();
         Assert.assertEquals(3, entries.size());
     }
-
 }

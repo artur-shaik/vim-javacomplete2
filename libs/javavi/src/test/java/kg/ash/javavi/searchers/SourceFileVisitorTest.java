@@ -46,5 +46,4 @@ public class SourceFileVisitorTest {
 
         Assert.assertEquals(null, visitor.getTargetFile());
     }
-
 }
