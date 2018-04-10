@@ -1,11 +1,11 @@
 package kg.ash.javavi;
 
+import kg.ash.javavi.searchers.ClassSearcher;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import kg.ash.javavi.searchers.ClassSearcher;
 
 public class TargetParser {
 

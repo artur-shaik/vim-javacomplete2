@@ -1,7 +1,7 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.output.OutputClassPackages;
 import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.output.OutputClassPackages;
 
 public class GetClassPackagesAction extends ActionWithTarget {
 

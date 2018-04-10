@@ -1,13 +1,12 @@
 package kg.ash.javavi.actions;
 
 import com.github.javaparser.ast.CompilationUnit;
+import kg.ash.javavi.readers.source.ClassNamesFetcher;
+import kg.ash.javavi.readers.source.CompilationUnitCreator;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Set;
-
-import kg.ash.javavi.readers.source.ClassNamesFetcher;
-import kg.ash.javavi.readers.source.CompilationUnitCreator;
 
 public abstract class ImportsAction implements Action {
 

@@ -1,7 +1,7 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.output.OutputSimilarAnnotations;
 import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.output.OutputSimilarAnnotations;
 
 public class FilterSimilarAnnotationsAction extends ActionWithTarget {
 

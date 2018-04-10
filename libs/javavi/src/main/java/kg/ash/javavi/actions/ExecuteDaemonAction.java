@@ -1,10 +1,9 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
 import kg.ash.javavi.Daemon;
 import kg.ash.javavi.Javavi;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 
 public class ExecuteDaemonAction implements Action {
 

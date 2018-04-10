@@ -1,14 +1,13 @@
 package kg.ash.javavi.actions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
-
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import kg.ash.javavi.clazz.ClassImport;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GetMissingImportsAction extends ImportsAction {
     // TODO(joshleeb): Move this somewhere nice.

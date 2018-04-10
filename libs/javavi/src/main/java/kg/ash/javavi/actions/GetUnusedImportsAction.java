@@ -1,7 +1,6 @@
 package kg.ash.javavi.actions;
 
 import com.github.javaparser.ast.ImportDeclaration;
-
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;

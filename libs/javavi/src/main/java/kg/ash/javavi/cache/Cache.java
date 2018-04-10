@@ -1,16 +1,15 @@
 package kg.ash.javavi.cache;
 
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import kg.ash.javavi.Javavi;
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.Javavi;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.searchers.JavaClassMap;
 import kg.ash.javavi.searchers.PackagesLoader;
+
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Cache {
 

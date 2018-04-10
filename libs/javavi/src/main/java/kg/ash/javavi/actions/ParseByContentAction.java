@@ -3,12 +3,12 @@ package kg.ash.javavi.actions;
 import static kg.ash.javavi.actions.ActionFactory.getArgWithName;
 import static kg.ash.javavi.actions.ActionFactory.getJavaViSources;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Base64;
-
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.output.OutputClassInfo;
 import kg.ash.javavi.readers.Parser;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 
 public class ParseByContentAction implements Action {
 

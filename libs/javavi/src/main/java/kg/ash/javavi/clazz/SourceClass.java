@@ -3,7 +3,6 @@ package kg.ash.javavi.clazz;
 import com.github.javaparser.ast.Modifier;
 import kg.ash.javavi.TargetParser;
 
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;

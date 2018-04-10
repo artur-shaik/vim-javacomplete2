@@ -1,14 +1,12 @@
 package kg.ash.javavi;
 
-import java.util.HashMap;
-
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
 import kg.ash.javavi.actions.Action;
 import kg.ash.javavi.actions.ActionFactory;
-import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 import kg.ash.javavi.searchers.ClasspathCollector;
+
+import java.util.HashMap;
 
 public class Javavi {
 

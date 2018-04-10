@@ -1,5 +1,9 @@
 package kg.ash.javavi;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+import kg.ash.javavi.cache.Cache;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,11 +14,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.cache.Cache;
 
 public class Daemon extends Thread {
 

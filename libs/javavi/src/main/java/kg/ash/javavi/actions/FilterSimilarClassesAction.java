@@ -1,7 +1,7 @@
 package kg.ash.javavi.actions;
 
-import kg.ash.javavi.output.OutputSimilarClasses;
 import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.output.OutputSimilarClasses;
 
 public class FilterSimilarClassesAction extends ActionWithTarget {
 
