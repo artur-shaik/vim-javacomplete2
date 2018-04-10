@@ -1,14 +1,14 @@
 package kg.ash.javavi.output;
 
-import java.util.HashMap;
-
 import com.github.javaparser.ast.Modifier;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.ClassReader;
-import kg.ash.javavi.searchers.JavaClassMap;
 import kg.ash.javavi.searchers.ClassSearcher;
+import kg.ash.javavi.searchers.JavaClassMap;
+
+import java.util.HashMap;
 
 public class OutputClassPackages {
 

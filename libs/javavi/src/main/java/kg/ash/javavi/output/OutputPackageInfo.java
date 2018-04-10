@@ -1,8 +1,9 @@
 package kg.ash.javavi.output;
 
-import java.util.HashMap;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.JavaClassMap;
+
+import java.util.HashMap;
 
 public class OutputPackageInfo {
 

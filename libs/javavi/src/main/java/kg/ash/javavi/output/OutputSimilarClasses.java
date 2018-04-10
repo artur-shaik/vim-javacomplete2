@@ -1,10 +1,11 @@
 package kg.ash.javavi.output;
 
+import kg.ash.javavi.searchers.JavaClassMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.Collectors;
-import kg.ash.javavi.searchers.JavaClassMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OutputSimilarClasses extends OutputSimilar {
 

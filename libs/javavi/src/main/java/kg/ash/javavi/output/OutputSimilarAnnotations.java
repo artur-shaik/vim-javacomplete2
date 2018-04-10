@@ -1,10 +1,11 @@
 package kg.ash.javavi.output;
 
+import kg.ash.javavi.searchers.JavaClassMap;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.Predicate;
-import kg.ash.javavi.searchers.JavaClassMap;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class OutputSimilarAnnotations extends OutputSimilar {
     

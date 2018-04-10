@@ -1,11 +1,12 @@
 package kg.ash.javavi.output;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.JavaClassMap;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class OutputSimilar {
 
