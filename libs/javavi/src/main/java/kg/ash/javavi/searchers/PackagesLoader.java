@@ -59,7 +59,7 @@ public class PackagesLoader {
     private void processClass(PackageEntry entry, int seppos) {
         String name = entry.getEntry();
         String parent = name.substring(0, seppos);
-        String child  = name.substring(seppos + 1, name.length() - 6);
+        String child = name.substring(seppos + 1, name.length() - 6);
 
         boolean nested = false;
         String parentDots = makeDots(parent);
@@ -75,14 +75,14 @@ public class PackagesLoader {
             classMap.add(parentDots, source, JavaClassMap.TYPE_SUBPACKAGE, entry.getArchiveName());
             if (entry.getJavaFile() != null) {
                 classMap.setJavaFile(entry.getJavaFile());
-            } 
+            }
             if (entry.getClassFile() != null) {
                 classMap.setClassFile(entry.getClassFile());
             }
 
             if (!nested) {
-                getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE)
-                    .add(child, source, JavaClassMap.TYPE_CLASS, null);
+                getClassMap(parentDots, JavaClassMap.TYPE_SUBPACKAGE).add(child, source,
+                    JavaClassMap.TYPE_CLASS, null);
             }
 
             addToParent(parent, source);
@@ -102,8 +102,8 @@ public class PackagesLoader {
         String parent = name.substring(0, seppos);
         String child = name.substring(seppos + 1);
 
-        getClassMap(makeDots(parent), JavaClassMap.TYPE_SUBPACKAGE)
-            .add(child, source, JavaClassMap.TYPE_SUBPACKAGE, null);
+        getClassMap(makeDots(parent), JavaClassMap.TYPE_SUBPACKAGE).add(child, source,
+            JavaClassMap.TYPE_SUBPACKAGE, null);
 
         addToParent(parent, source);
     }

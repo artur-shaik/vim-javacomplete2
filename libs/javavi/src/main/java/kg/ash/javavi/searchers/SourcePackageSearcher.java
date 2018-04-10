@@ -2,6 +2,8 @@ package kg.ash.javavi.searchers;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,26 +15,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.printer.PrettyPrinter;
-import com.github.javaparser.printer.PrettyPrinterConfiguration;
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
 public class SourcePackageSearcher implements PackageSeacherIFace {
 
     public static final Logger logger = LogManager.getLogger();
 
     private String sourceDirectories = "";
-    private ByExtensionVisitor finder = 
-        new ByExtensionVisitor(Arrays.asList("*.java"));
+    private ByExtensionVisitor finder = new ByExtensionVisitor(Arrays.asList("*.java"));
 
     public SourcePackageSearcher(String sourceDirectories) {
         if (sourceDirectories != null) {
             this.sourceDirectories = sourceDirectories;
         }
     }
-    
+
     public List<PackageEntry> loadEntries() {
         List<PackageEntry> result = new ArrayList<>();
         for (String directory : getExistDirectories()) {
@@ -46,25 +41,29 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
                         logger.trace(path);
 
                         packagePath = packagePath.substring(0, packagePath.length() - 4) + "class";
-                        result.add(new PackageEntry(packagePath, JavaClassMap.SOURCETYPE_SOURCES, path, PackageEntry.FILETYPE_JAVA));
+                        result.add(
+                            new PackageEntry(packagePath, JavaClassMap.SOURCETYPE_SOURCES, path,
+                                PackageEntry.FILETYPE_JAVA));
                     }
                 }
             } catch (IOException e) {
                 logger.error(e, e);
             }
         }
+
         return result;
     }
 
     private List<String> getExistDirectories() {
         String[] splitted = sourceDirectories.split(File.pathSeparator);
-        return Arrays.asList(splitted).stream()
+        return Arrays.asList(splitted)
+            .stream()
             .filter(d -> new File(d).isDirectory())
-            .map(d -> d).collect(Collectors.toList());
+            .collect(Collectors.toList());
     }
 
     private String fetchPackagePath(String sourcePath) {
-        CompilationUnit cu = null;
+        CompilationUnit cu;
         try (FileInputStream in = new FileInputStream(sourcePath)) {
             cu = JavaParser.parse(in);
         } catch (Exception ex) {
@@ -74,11 +73,15 @@ public class SourcePackageSearcher implements PackageSeacherIFace {
         if (cu.getPackageDeclaration().isPresent()) {
             int lastslash = sourcePath.replace('\\', '/').lastIndexOf('/');
             if (lastslash >= 0) {
-                String className  = sourcePath.substring(lastslash + 1);
-                String path = cu.getPackageDeclaration().get().getNameAsString().replace(".", File.separator);
+                String className = sourcePath.substring(lastslash + 1);
+                String path = cu.getPackageDeclaration()
+                    .get()
+                    .getNameAsString()
+                    .replace(".", File.separator);
                 return path + File.separator + className;
             }
         }
+
         return null;
     }
 }

@@ -48,18 +48,6 @@ public class PackageEntry {
         return classFile;
     }
 
-    public void setJavaFile(String javaFile) {
-        this.javaFile = javaFile;
-    }
-
-    public void setClassFile(String classFile) {
-        this.classFile = classFile;
-    }
-
-    public void setArchiveName(String archiveName) {
-        this.archiveName = archiveName;
-    }
-
     public String getArchiveName() {
         return archiveName;
     }
@@ -68,5 +56,5 @@ public class PackageEntry {
     public String toString() {
         return String.format("{%s, %d, %s, %s}", entry, source, javaFile, classFile);
     }
-    
+
 }
