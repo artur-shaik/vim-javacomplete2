@@ -1,9 +1,12 @@
 package kg.ash.javavi.readers;
 
+import com.github.javaparser.Position;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.TypeParameter;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
@@ -11,14 +14,10 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
-
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -26,9 +25,15 @@ import kg.ash.javavi.clazz.ClassImport;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.FqnSearcher;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
 
 public class Parser implements ClassReader {
 
@@ -37,7 +42,6 @@ public class Parser implements ClassReader {
     private String sources;
     private String sourceFile = null;
     private String sourceContent = null;
-    private String targetClass = null;
     private ClassOrInterfaceDeclaration parentClass = null;
 
     public Parser(String sources) {
@@ -53,10 +57,6 @@ public class Parser implements ClassReader {
         this.sourceContent = sourceContent;
     }
 
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
     @Override
     public ClassReader setTypeArguments(List<String> typeArguments) {
         // Not supported yet.
@@ -65,8 +65,8 @@ public class Parser implements ClassReader {
 
     @Override
     public SourceClass read(String targetClass) {
-        if ((sourceFile == null || sourceFile.isEmpty()) && 
-                (sourceContent == null || sourceContent.isEmpty())) {
+        if ((sourceFile == null || sourceFile.isEmpty()) && (sourceContent == null
+            || sourceContent.isEmpty())) {
             return null;
         }
 
@@ -80,10 +80,9 @@ public class Parser implements ClassReader {
             return Cache.getInstance().getClasses().get(targetClass);
         }
 
-        CompilationUnit cu = 
-            sourceFile != null ? 
-            CompilationUnitCreator.createFromFile(sourceFile) :
-            CompilationUnitCreator.createFromContent(sourceContent);
+        CompilationUnit cu = sourceFile != null
+            ? CompilationUnitCreator.createFromFile(sourceFile)
+            : CompilationUnitCreator.createFromContent(sourceContent);
 
         if (cu == null) {
             return null;
@@ -92,14 +91,22 @@ public class Parser implements ClassReader {
         SourceClass clazz = new SourceClass();
         Cache.getInstance().getClasses().put(targetClass, clazz);
 
-        if (cu.getPackage() != null) {
-            clazz.setPackage(cu.getPackage().getName().toString());
+        Optional<PackageDeclaration> packageDeclaration = cu.getPackageDeclaration();
+        if (packageDeclaration.isPresent()) {
+            clazz.setPackage(packageDeclaration.get().getNameAsString());
         }
-        clazz.setRegion(cu.getBegin().line, cu.getBegin().column, cu.getEnd().line, cu.getEnd().column);
+
+        Optional<Position> beginning = cu.getBegin();
+        Optional<Position> ending = cu.getEnd();
+        if (beginning.isPresent() && ending.isPresent()) {
+            clazz.setRegion(beginning.get().line, beginning.get().column, ending.get().line,
+                ending.get().column);
+        }
 
         if (cu.getImports() != null) {
             for (ImportDeclaration id : cu.getImports()) {
-                clazz.addImport(new ClassImport(id.getName().toString(), id.isStatic(), id.isAsterisk()));
+                clazz.addImport(
+                    new ClassImport(id.getName().toString(), id.isStatic(), id.isAsterisk()));
             }
         }
 
@@ -108,7 +115,7 @@ public class Parser implements ClassReader {
         clazz = coiVisitor.getClazz();
 
         ClassVisitor visitor = new ClassVisitor(clazz);
-        visitChildren(parentClass.getChildrenNodes(), visitor);
+        visitChildren(parentClass.getChildNodes(), visitor);
         clazz = visitor.getClazz();
 
         List<String> impls = new ArrayList<>();
@@ -125,9 +132,13 @@ public class Parser implements ClassReader {
                     clazz.addLinkedClass(implClass);
                     for (ClassConstructor c : implClass.getConstructors()) {
 
-                        if (implClass.getName().equals("java.lang.Object")) continue;
-                        c.setDeclaration(c.getDeclaration().replace(implClass.getName(), clazz.getName()));
-                        c.setDeclaration(c.getDeclaration().replace(implClass.getSimpleName(), clazz.getSimpleName()));
+                        if (implClass.getName().equals("java.lang.Object")) {
+                            continue;
+                        }
+                        c.setDeclaration(
+                            c.getDeclaration().replace(implClass.getName(), clazz.getName()));
+                        c.setDeclaration(c.getDeclaration()
+                            .replace(implClass.getSimpleName(), clazz.getSimpleName()));
                         clazz.addConstructor(c);
                     }
                     for (ClassMethod method : implClass.getMethods()) {
@@ -146,13 +157,31 @@ public class Parser implements ClassReader {
     private void visitChildren(List<Node> nodes, ClassVisitor visitor) {
         for (Node n : nodes) {
             if (n instanceof FieldDeclaration) {
-                visitor.visit((FieldDeclaration)n, null);
+                visitor.visit((FieldDeclaration) n, null);
             } else if (n instanceof MethodDeclaration) {
-                visitor.visit((MethodDeclaration)n, null);
+                visitor.visit((MethodDeclaration) n, null);
             } else if (n instanceof ConstructorDeclaration) {
-                visitor.visit((ConstructorDeclaration)n, null);
+                visitor.visit((ConstructorDeclaration) n, null);
             } else if (n instanceof ClassOrInterfaceDeclaration) {
-                visitor.visit((ClassOrInterfaceDeclaration)n, null);
+                visitor.visit((ClassOrInterfaceDeclaration) n, null);
+            }
+        }
+    }
+
+    public void setExtendedAndInterfaceTypes(SourceClass clazz, ClassOrInterfaceDeclaration n) {
+        NodeList<ClassOrInterfaceType> extendedTypes = n.getExtendedTypes();
+        if (extendedTypes != null && extendedTypes.size() > 0) {
+            String className = extendedTypes.get(0).getNameAsString();
+            clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
+        } else {
+            clazz.setSuperclass("java.lang.Object");
+            addConstructorIfNotEmpty(clazz);
+        }
+
+        NodeList<ClassOrInterfaceType> implementedTypes = n.getImplementedTypes();
+        if (implementedTypes != null) {
+            for (ClassOrInterfaceType iface : implementedTypes) {
+                clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, iface.getNameAsString()));
             }
         }
     }
@@ -172,32 +201,28 @@ public class Parser implements ClassReader {
         @Override
         public void visit(ClassOrInterfaceDeclaration n, Object arg) {
             parentClass = n;
-            clazz.setName(n.getName());
+            clazz.setName(n.getNameAsString());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
-            clazz.setRegion(n.getBegin().line, n.getBegin().column, n.getEnd().line, n.getEnd().column);
-            if (n.getExtends() != null && n.getExtends().size() > 0) {
-                String className = n.getExtends().get(0).getName();
-                clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
-            } else {
-                clazz.setSuperclass("java.lang.Object");
-                if (clazz.getConstructors().isEmpty()) {
-                    ClassConstructor ctor = new ClassConstructor();
-                    ctor.setDeclaration(String.format("public %s()", clazz.getName()));
 
-                    ctor.setModifiers(1);
-                    clazz.addConstructor(ctor);
-                }
+            Optional<Position> beginning = n.getBegin();
+            Optional<Position> ending = n.getEnd();
+            if (beginning.isPresent() && ending.isPresent()) {
+                clazz.setRegion(beginning.get().line, beginning.get().column, ending.get().line,
+                    ending.get().column);
             }
 
-            if (n.getImplements() != null) {
-                for (ClassOrInterfaceType iface : n.getImplements()) {
-                    String className = iface.getName();
-                    clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
-                }
-            }
+            setExtendedAndInterfaceTypes(clazz, n);
         }
+    }
 
+    private void addConstructorIfNotEmpty(SourceClass clazz) {
+        if (clazz.getConstructors().isEmpty()) {
+            ClassConstructor ctor = new ClassConstructor();
+            ctor.setDeclaration(String.format("public %s()", clazz.getName()));
+            ctor.setModifiers(EnumSet.of(Modifier.PUBLIC));
+            clazz.addConstructor(ctor);
+        }
     }
 
     private class ClassVisitor extends VoidVisitorAdapter<Object> {
@@ -219,7 +244,8 @@ public class Parser implements ClassReader {
             constructor.setModifiers(n.getModifiers());
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
-                    constructor.addTypeParameter(new ClassTypeParameter(parameter.getName()));
+                    constructor.addTypeParameter(
+                        new ClassTypeParameter(parameter.getNameAsString()));
                 }
             }
             clazz.addConstructor(constructor);
@@ -228,7 +254,7 @@ public class Parser implements ClassReader {
         @Override
         public void visit(MethodDeclaration n, Object arg) {
             ClassMethod method = new ClassMethod();
-            method.setName(n.getName());
+            method.setName(n.getNameAsString());
             method.setModifiers(n.getModifiers());
             method.setDeclaration(n.getDeclarationAsString());
 
@@ -237,13 +263,14 @@ public class Parser implements ClassReader {
 
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
-                    method.addTypeParameter(new ClassTypeParameter(parameter.getName()));
+                    method.addTypeParameter(new ClassTypeParameter(parameter.getNameAsString()));
                 }
             }
 
             if (n.getParameters() != null) {
                 for (Parameter parameter : n.getParameters()) {
-                    method.addTypeParameter(new ClassTypeParameter(parameter.getType().toStringWithoutComments()));
+                    method.addTypeParameter(new ClassTypeParameter(
+                        parameter.getType().toString(ClassNamesFetcher.withoutComments())));
                 }
             }
             clazz.addMethod(method);
@@ -253,10 +280,10 @@ public class Parser implements ClassReader {
         public void visit(FieldDeclaration n, Object arg) {
             for (VariableDeclarator v : n.getVariables()) {
                 ClassField field = new ClassField();
-                field.setName(v.getId().getName());
+                field.setName(v.getNameAsString());
                 field.setModifiers(n.getModifiers());
 
-                String className = n.getType().toString();
+                String className = n.getElementType().asString();
                 field.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));
 
                 clazz.addField(field);
@@ -269,32 +296,20 @@ public class Parser implements ClassReader {
             clazz.setName(this.clazz.getSimpleName() + "$" + n.getName());
             clazz.setModifiers(n.getModifiers());
             clazz.setIsInterface(n.isInterface());
-            clazz.setRegion(n.getBegin().line, n.getBegin().column, n.getEnd().line, n.getEnd().column);
-            if (n.getExtends() != null && n.getExtends().size() > 0) {
-                String className = n.getExtends().get(0).getName();
-                clazz.setSuperclass(new FqnSearcher(sources).getFqn(clazz, className));
-            } else {
-                clazz.setSuperclass("java.lang.Object");
-                if (clazz.getConstructors().isEmpty()) {
-                    ClassConstructor ctor = new ClassConstructor();
-                    ctor.setDeclaration(String.format("public %s()", clazz.getName()));
 
-                    ctor.setModifiers(1);
-                    clazz.addConstructor(ctor);
-                }
+            Optional<Position> beginning = n.getBegin();
+            Optional<Position> ending = n.getEnd();
+            if (beginning.isPresent() && ending.isPresent()) {
+                clazz.setRegion(beginning.get().line, beginning.get().column, ending.get().line,
+                    ending.get().column);
             }
 
-            if (n.getImplements() != null) {
-                for (ClassOrInterfaceType iface : n.getImplements()) {
-                    String className = iface.getName();
-                    clazz.addInterface(new FqnSearcher(sources).getFqn(clazz, className));
-                }
-            }
+            setExtendedAndInterfaceTypes(clazz, n);
 
             clazz.setPackage(this.clazz.getPackage());
 
             ClassVisitor visitor = new ClassVisitor(clazz);
-            visitChildren(n.getChildrenNodes(), visitor);
+            visitChildren(n.getChildNodes(), visitor);
             this.clazz.addNestedClass(clazz.getName());
             this.clazz.addLinkedClass(clazz);
 
@@ -302,18 +317,4 @@ public class Parser implements ClassReader {
         }
 
     }
-
-    private static String getDeclarationName(String code) {
-        code = code.replaceAll("//.*$", "");
-        code = code.replaceAll("@\\S+(\\s|$)", "");
-        code = code.replaceAll("\n", "");
-        code = code.replaceAll("/\\*.*\\*/", "");
-        int index = code.indexOf('{');
-        if (index >= 0) {
-            return code.substring(0, index).trim();
-        }
-
-        return code;
-    }
-
 }

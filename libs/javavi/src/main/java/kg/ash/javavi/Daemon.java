@@ -1,5 +1,9 @@
 package kg.ash.javavi;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+import kg.ash.javavi.cache.Cache;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,15 +15,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.cache.Cache;
-
 public class Daemon extends Thread {
 
-    public static final Logger logger = 
-        LogManager.getLogger();
+    public static final Logger logger = LogManager.getLogger();
 
     private int port;
     private int timeoutSeconds;
@@ -32,9 +30,8 @@ public class Daemon extends Thread {
     }
 
     public void run() {
-        Cache.getInstance().collectPackages();
-
         ServerSocket echoServer = null;
+        Cache.getInstance().collectPackages();
 
         while (true) {
             if (timeoutSeconds > 0) {
@@ -47,27 +44,23 @@ public class Daemon extends Thread {
                     echoServer = new ServerSocket(port);
                 }
             } catch (IOException e) {
-                System.out.println(e);
+                logger.warn(e);
                 break;
             }
 
             try (Socket clientSocket = echoServer.accept()) {
+                if (timeoutTask != null) {
+                    timeoutTask.cancel();
+                }
 
-                if (timeoutTask != null) timeoutTask.cancel();
-
-                try (
-                    BufferedReader is = new BufferedReader(
-                        new InputStreamReader(
-                            clientSocket.getInputStream()));
-                    PrintStream os = new PrintStream(
-                        clientSocket.getOutputStream())
-                ) {
+                try (BufferedReader is = new BufferedReader(
+                    new InputStreamReader(clientSocket.getInputStream()));
+                     PrintStream os = new PrintStream(clientSocket.getOutputStream())) {
                     while (true) {
                         String[] request = parseRequest(is.readLine());
                         if (request != null) {
                             os.print(Javavi.makeResponse(request));
                         }
-
                         break;
                     }
                 } catch (Throwable e) {
@@ -81,7 +74,9 @@ public class Daemon extends Thread {
     }
 
     public String[] parseRequest(String request) {
-        if (request == null) return null;
+        if (request == null) {
+            return null;
+        }
 
         List<String> args = new LinkedList<>();
 
@@ -101,14 +96,16 @@ public class Daemon extends Thread {
                 }
                 if (ch == '"' && !slashFlag) {
                     if (buff.length() == 0) {
-                        args.add(new String());
+                        args.add("");
                     }
                     quoteFlag = false;
                     continue;
                 }
             }
 
-            if (ch == '"' && !slashFlag) quoteFlag = true;
+            if (ch == '"' && !slashFlag) {
+                quoteFlag = true;
+            }
 
             if (!quoteFlag) {
                 if (ch == ' ') {
@@ -127,13 +124,15 @@ public class Daemon extends Thread {
                 buff.append(ch);
             }
 
-            if (slashFlag) slashFlag = false;
+            if (slashFlag) {
+                slashFlag = false;
+            }
         }
         if (buff.length() > 0) {
             args.add(buff.toString());
         }
 
-        return (String[])args.toArray(new String[0]);
+        return args.toArray(new String[0]);
     }
 
     class TimeoutTask extends TimerTask {
@@ -142,5 +141,4 @@ public class Daemon extends Thread {
             System.exit(0);
         }
     }
-
 }

@@ -1,8 +1,5 @@
 package kg.ash.javavi.searchers;
 
-import java.util.Collections;
-import java.util.List;
-
 public class ClassNameMap extends JavaClassMap {
 
     public String javaFile = null;
@@ -12,7 +9,8 @@ public class ClassNameMap extends JavaClassMap {
         super(name);
     }
 
-    @Override public int getType() {
+    @Override
+    public int getType() {
         return JavaClassMap.TYPE_CLASS;
     }
 
@@ -32,8 +30,9 @@ public class ClassNameMap extends JavaClassMap {
         return classFile;
     }
 
-    @Override public String toString() {
-        return String.format("name = %s, type = %d, javaFile = %s, classFile = %s", name, getType(), javaFile, classFile);
+    @Override
+    public String toString() {
+        return String.format("name = %s, type = %d, javaFile = %s, classFile = %s", name, getType(),
+            javaFile, classFile);
     }
-
 }

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ClassWithClasses extends LinkedList {
-    
+
     List list = new ArrayList<String>();
 
     public String method() {

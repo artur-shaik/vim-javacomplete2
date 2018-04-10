@@ -1,12 +1,24 @@
 package kg.ash.javavi.readers;
 
-import java.lang.reflect.Constructor;
+import com.github.javaparser.ast.Modifier;
+import kg.ash.javavi.TargetParser;
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.clazz.ClassConstructor;
+import kg.ash.javavi.clazz.ClassField;
+import kg.ash.javavi.clazz.ClassMethod;
+import kg.ash.javavi.clazz.ClassTypeParameter;
+import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.searchers.ClassNameMap;
+import kg.ash.javavi.searchers.ClassSearcher;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,22 +26,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Stream;
-
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.TargetParser;
-import kg.ash.javavi.cache.Cache;
-import kg.ash.javavi.clazz.ClassConstructor;
-import kg.ash.javavi.clazz.ClassField;
-import kg.ash.javavi.clazz.ClassMethod;
-import kg.ash.javavi.clazz.ClassTypeParameter;
-import kg.ash.javavi.clazz.SourceClass;
-import kg.ash.javavi.readers.FileClassLoader;
-import kg.ash.javavi.searchers.ClassNameMap;
-import kg.ash.javavi.searchers.ClassSearcher;
 
 public class Reflection implements ClassReader {
 
@@ -63,7 +60,6 @@ public class Reflection implements ClassReader {
         if (typeArguments != null && !typeArguments.isEmpty()) {
             name += "<" + String.join(",", typeArguments) + ">";
         }
-
         return name;
     }
 
@@ -73,8 +69,7 @@ public class Reflection implements ClassReader {
 
         logger.debug("read class with reflections: {}", nameWithArguments);
 
-        HashMap<String, SourceClass> cachedClasses = 
-            Cache.getInstance().getClasses();
+        HashMap<String, SourceClass> cachedClasses = Cache.getInstance().getClasses();
         if (cachedClasses.containsKey(nameWithArguments)) {
             return cachedClasses.get(nameWithArguments);
         }
@@ -90,11 +85,12 @@ public class Reflection implements ClassReader {
         String binaryName = name;
         while (result == null) {
             int lastDotPos = binaryName.lastIndexOf('.');
-            if (lastDotPos == -1) break;
+            if (lastDotPos == -1) {
+                break;
+            }
 
-            binaryName = String.format("%s$%s",
-                    binaryName.substring(0, lastDotPos),
-                    binaryName.substring(lastDotPos+1, binaryName.length()));
+            binaryName = String.format("%s$%s", binaryName.substring(0, lastDotPos),
+                binaryName.substring(lastDotPos + 1, binaryName.length()));
 
             result = lookup(binaryName);
         }
@@ -105,13 +101,15 @@ public class Reflection implements ClassReader {
     private SourceClass loadFromCompiledSource(String name) {
         String last = name.substring(name.lastIndexOf(".") + 1);
         ClassNameMap classMap = (ClassNameMap) Cache.getInstance()
-            .getClassPackages().get(getNameWithArguments(last));
+            .getClassPackages()
+            .get(getNameWithArguments(last));
         if (classMap != null) {
             if (classMap.getClassFile() != null && classMap.getJavaFile() != null) {
                 logger.debug("loading class from compiled source: {}", classMap);
 
                 ClassLoader parentClassLoader = FileClassLoader.class.getClassLoader();
-                FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader, classMap.getClassFile());
+                FileClassLoader fileClassLoader = new FileClassLoader(parentClassLoader,
+                    classMap.getClassFile());
                 Class clazz = fileClassLoader.loadClass(name);
                 if (clazz != null) {
                     try {
@@ -122,6 +120,7 @@ public class Reflection implements ClassReader {
                 }
             }
         }
+
         return null;
     }
 
@@ -147,18 +146,14 @@ public class Reflection implements ClassReader {
         return "java.lang.Object";
     }
 
-    private String getGenericName(
-            TreeMap<String,String> taa, 
-            String genericName) {
+    private String getGenericName(TreeMap<String, String> taa, String genericName) {
 
         if (typeArguments == null || typeArguments.isEmpty()) {
             return genericName;
         }
         for (Entry<String, String> kv : taa.entrySet()) {
-            genericName = genericName
-                .replaceAll(
-                        String.format("\\b%s\\b", kv.getKey()), 
-                        kv.getValue());
+            genericName = genericName.replaceAll(String.format("\\b%s\\b", kv.getKey()),
+                kv.getValue());
         }
         return genericName;
     }
@@ -175,13 +170,13 @@ public class Reflection implements ClassReader {
 
         SourceClass clazz = new SourceClass();
         clazz.setName(name);
-        clazz.setModifiers(cls.getModifiers());
+        clazz.setModifiers(EnumSetModifierFromInt(cls.getModifiers()));
         clazz.setIsInterface(cls.isInterface());
         if (cls.getPackage() != null) {
             clazz.setPackage(cls.getPackage().getName());
         }
 
-        TreeMap<String,String> typeArgumentsAccordance = new TreeMap<>();
+        TreeMap<String, String> typeArgumentsAccordance = new TreeMap<>();
         if (typeArguments != null && !typeArguments.isEmpty()) {
             List<String> arguments = new ArrayList<>(typeArguments);
             Stream.of(cls.getTypeParameters()).forEachOrdered(type -> {
@@ -191,34 +186,29 @@ public class Reflection implements ClassReader {
         }
 
         List<Class> linked = new ArrayList<>();
-        Stream.of(cls.getDeclaredClasses())
-            .forEach(c -> {
-                linked.add(c);
-                clazz.addNestedClass(c.getName());
-            });
+        Stream.of(cls.getDeclaredClasses()).forEach(c -> {
+            linked.add(c);
+            clazz.addNestedClass(c.getName());
+        });
 
-        Optional.ofNullable(cls.getSuperclass())
-            .ifPresent(c -> {
-                linked.add(c);
-                clazz.setSuperclass(c.getName());
-            });
+        Optional.ofNullable(cls.getSuperclass()).ifPresent(c -> {
+            linked.add(c);
+            clazz.setSuperclass(c.getName());
+        });
 
         Stream.of(cls.getGenericInterfaces())
             .map(i -> getGenericName(typeArgumentsAccordance, i.getTypeName()))
             .forEach(clazz::addInterface);
 
         ClassSearcher seacher = new ClassSearcher();
-        clazz.getInterfaces().stream()
-            .forEach(i -> {
-                TargetParser parser = new TargetParser(sources);
-                String ifaceClassName = parser.parse(i);
-                if (seacher.find(ifaceClassName, sources)) {
-                    clazz.addLinkedClass(
-                        seacher.getReader()
-                            .setTypeArguments(parser.getTypeArguments())
-                            .read(i));
-                }
-            });
+        clazz.getInterfaces().stream().forEach(i -> {
+            TargetParser parser = new TargetParser(sources);
+            String ifaceClassName = parser.parse(i);
+            if (seacher.find(ifaceClassName, sources)) {
+                clazz.addLinkedClass(
+                    seacher.getReader().setTypeArguments(parser.getTypeArguments()).read(i));
+            }
+        });
 
         linked.stream()
             .filter(c -> !knownClasses.contains(c.getName()))
@@ -228,20 +218,14 @@ public class Reflection implements ClassReader {
         Stream.of(cls.getConstructors()).forEachOrdered(ctor -> {
             ClassConstructor constructor = new ClassConstructor();
 
-            String genericDeclaration = 
-                getGenericName(
-                        typeArgumentsAccordance, 
-                        ctor.toGenericString());
+            String genericDeclaration = getGenericName(typeArgumentsAccordance,
+                ctor.toGenericString());
             constructor.setDeclaration(genericDeclaration);
-            constructor.setModifiers(ctor.getModifiers());
+            constructor.setModifiers(EnumSetModifierFromInt(ctor.getModifiers()));
 
             Stream.of(ctor.getGenericParameterTypes())
-                .map(t -> 
-                        getGenericName(
-                            typeArgumentsAccordance, t.getTypeName()))
-                .forEach(t -> 
-                        constructor.addTypeParameter(
-                            new ClassTypeParameter(t)));
+                .map(t -> getGenericName(typeArgumentsAccordance, t.getTypeName()))
+                .forEach(t -> constructor.addTypeParameter(new ClassTypeParameter(t)));
 
             clazz.addConstructor(constructor);
         });
@@ -252,11 +236,10 @@ public class Reflection implements ClassReader {
         fieldsSet.forEach(f -> {
             ClassField field = new ClassField();
             field.setName(f.getName());
-            field.setModifiers(f.getModifiers());
+            field.setModifiers(EnumSetModifierFromInt(f.getModifiers()));
 
-            String genericType = getGenericName(
-                    typeArgumentsAccordance, 
-                    f.getGenericType().getTypeName());
+            String genericType = getGenericName(typeArgumentsAccordance,
+                f.getGenericType().getTypeName());
             field.setTypeName(genericType);
 
             clazz.addField(field);
@@ -266,51 +249,117 @@ public class Reflection implements ClassReader {
         methodsSet.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methodsSet.addAll(Arrays.asList(cls.getMethods()));
         methodsSet.forEach(m -> {
-
-            // workaround for Iterable<T> that give us
-            // another generic name in List::forEach method
-            TreeMap<String,String> tAA = 
-                (TreeMap<String,String>)typeArgumentsAccordance.clone();
+            // Workaround for Iterable<T> that give us another generic name in List::forEach method.
+            TreeMap<String, String> tAA = (TreeMap<String, String>) typeArgumentsAccordance.clone();
             List<String> keySet = new ArrayList<>(tAA.keySet());
-            Stream.of(m.getDeclaringClass().getTypeParameters())
-                .forEach(type -> {
-                    Optional<String> key = Optional.ofNullable(
-                            keySet.isEmpty() ? null : keySet.get(0));
-                    key
-                        .filter(k -> !k.equals(type.getTypeName()))
-                        .ifPresent(k -> {
-                            tAA.put(type.getTypeName(), tAA.get(k));
-                            keySet.remove(0);
-                        });
+            Stream.of(m.getDeclaringClass().getTypeParameters()).forEach(type -> {
+                Optional<String> key = Optional.ofNullable(keySet.isEmpty() ? null : keySet.get(0));
+                key.filter(k -> !k.equals(type.getTypeName())).ifPresent(k -> {
+                    tAA.put(type.getTypeName(), tAA.get(k));
+                    keySet.remove(0);
                 });
+            });
 
             ClassMethod method = new ClassMethod();
             method.setName(m.getName());
-            method.setModifiers(m.getModifiers());
+            method.setModifiers(EnumSetModifierFromInt(m.getModifiers()));
 
-            String genericDeclaration =
-                getGenericName(tAA, m.toGenericString());
+            String genericDeclaration = getGenericName(tAA, m.toGenericString());
             method.setDeclaration(genericDeclaration);
 
-            String genericReturnType =
-                getGenericName(tAA, m.getGenericReturnType().getTypeName());
+            String genericReturnType = getGenericName(tAA, m.getGenericReturnType().getTypeName());
             method.setTypeName(genericReturnType);
 
             Type[] parameterTypes = m.getGenericParameterTypes();
             Stream.of(parameterTypes)
-                .map(t -> 
-                        getGenericName(tAA, t.getTypeName()))
-                .forEachOrdered(t -> 
-                        method.addTypeParameter(
-                            new ClassTypeParameter(t)));
+                .map(t -> getGenericName(tAA, t.getTypeName()))
+                .forEachOrdered(t -> method.addTypeParameter(new ClassTypeParameter(t)));
 
             clazz.addMethod(method);
 
         });
 
-        Cache.getInstance().getClasses()
-            .put(getNameWithArguments(cls.getName()), clazz);
+        Cache.getInstance().getClasses().put(getNameWithArguments(cls.getName()), clazz);
         return clazz;
     }
 
+    public static EnumSet<Modifier> EnumSetModifierFromInt(int i) {
+        EnumSet set = EnumSet.noneOf(Modifier.class);
+
+        if (java.lang.reflect.Modifier.isPublic(i)) {
+            set.add(Modifier.PUBLIC);
+        }
+        if (java.lang.reflect.Modifier.isPrivate(i)) {
+            set.add(Modifier.PRIVATE);
+        }
+        if (java.lang.reflect.Modifier.isProtected(i)) {
+            set.add(Modifier.PROTECTED);
+        }
+        if (java.lang.reflect.Modifier.isStatic(i)) {
+            set.add(Modifier.STATIC);
+        }
+        if (java.lang.reflect.Modifier.isFinal(i)) {
+            set.add(Modifier.FINAL);
+        }
+        if (java.lang.reflect.Modifier.isSynchronized(i)) {
+            set.add(Modifier.SYNCHRONIZED);
+        }
+        if (java.lang.reflect.Modifier.isVolatile(i)) {
+            set.add(Modifier.VOLATILE);
+        }
+        if (java.lang.reflect.Modifier.isTransient(i)) {
+            set.add(Modifier.TRANSIENT);
+        }
+        if (java.lang.reflect.Modifier.isNative(i)) {
+            set.add(Modifier.NATIVE);
+        }
+        if (java.lang.reflect.Modifier.isAbstract(i)) {
+            set.add(Modifier.ABSTRACT);
+        }
+        if (java.lang.reflect.Modifier.isStrict(i)) {
+            set.add(Modifier.STRICTFP);
+        }
+
+        return set;
+    }
+
+    public static int EnumSetModifierToInt(EnumSet<Modifier> set) {
+        int mod = 0;
+
+        if (set.contains(Modifier.PUBLIC)) {
+            mod |= java.lang.reflect.Modifier.PUBLIC;
+        }
+        if (set.contains(Modifier.PRIVATE)) {
+            mod |= java.lang.reflect.Modifier.PRIVATE;
+        }
+        if (set.contains(Modifier.PROTECTED)) {
+            mod |= java.lang.reflect.Modifier.PROTECTED;
+        }
+        if (set.contains(Modifier.STATIC)) {
+            mod |= java.lang.reflect.Modifier.STATIC;
+        }
+        if (set.contains(Modifier.FINAL)) {
+            mod |= java.lang.reflect.Modifier.FINAL;
+        }
+        if (set.contains(Modifier.SYNCHRONIZED)) {
+            mod |= java.lang.reflect.Modifier.SYNCHRONIZED;
+        }
+        if (set.contains(Modifier.VOLATILE)) {
+            mod |= java.lang.reflect.Modifier.VOLATILE;
+        }
+        if (set.contains(Modifier.TRANSIENT)) {
+            mod |= java.lang.reflect.Modifier.TRANSIENT;
+        }
+        if (set.contains(Modifier.NATIVE)) {
+            mod |= java.lang.reflect.Modifier.NATIVE;
+        }
+        if (set.contains(Modifier.ABSTRACT)) {
+            mod |= java.lang.reflect.Modifier.ABSTRACT;
+        }
+        if (set.contains(Modifier.STRICTFP)) {
+            mod |= java.lang.reflect.Modifier.STRICT;
+        }
+
+        return mod;
+    }
 }

@@ -17,17 +17,20 @@ public class FqnSeacherTest {
         FqnSearcher seacher = new FqnSearcher(sourcesDirectory);
 
         Assert.assertEquals("FakeClass", seacher.getFqn(new SourceClass(), "FakeClass"));
-        Assert.assertEquals("kg.ash.javavi.clazz.SourceClass", seacher.getFqn(clazz, "SourceClass"));
+        Assert.assertEquals("kg.ash.javavi.clazz.SourceClass",
+            seacher.getFqn(clazz, "SourceClass"));
         Assert.assertEquals("java.util.List", seacher.getFqn(clazz, "List"));
-        Assert.assertEquals("java.util.List<kg.ash.javavi.clazz.SourceClass>", seacher.getFqn(clazz, "List<SourceClass>"));
+        Assert.assertEquals("java.util.List<kg.ash.javavi.clazz.SourceClass>",
+            seacher.getFqn(clazz, "List<SourceClass>"));
 
         clazz = new SourceClass();
         clazz.setPackage("kg.ash.javavi.clazz");
         clazz.getImports().add(new ClassImport("java.util.*", false, true));
 
-        Assert.assertEquals("kg.ash.javavi.clazz.SourceClass", seacher.getFqn(clazz, "SourceClass"));
+        Assert.assertEquals("kg.ash.javavi.clazz.SourceClass",
+            seacher.getFqn(clazz, "SourceClass"));
         Assert.assertEquals("java.util.List", seacher.getFqn(clazz, "List"));
-        Assert.assertEquals("java.util.List<kg.ash.javavi.clazz.SourceClass>", seacher.getFqn(clazz, "List<SourceClass>"));
+        Assert.assertEquals("java.util.List<kg.ash.javavi.clazz.SourceClass>",
+            seacher.getFqn(clazz, "List<SourceClass>"));
     }
-
 }

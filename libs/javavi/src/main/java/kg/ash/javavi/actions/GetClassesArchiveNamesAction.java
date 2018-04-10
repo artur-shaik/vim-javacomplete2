@@ -1,24 +1,23 @@
 package kg.ash.javavi.actions;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+import kg.ash.javavi.cache.Cache;
+import kg.ash.javavi.searchers.JavaClassMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.cache.Cache;
-import kg.ash.javavi.searchers.JavaClassMap;
-
 public class GetClassesArchiveNamesAction extends ActionWithTarget {
 
     public static final Logger logger = LogManager.getLogger();
 
     @Override
-    public String perform(String[] string) {
-        String classes = parseTarget(string);
+    public String perform(String[] args) {
+        String classes = parseTarget(args);
 
         Map<String, List<String>> result = new HashMap<>();
         for (String _classFqn : classes.split(",")) {
@@ -34,33 +33,28 @@ public class GetClassesArchiveNamesAction extends ActionWithTarget {
                 String classPackage = removeLastElementAndJoin(classFqnArray);
 
                 logger.debug("class name: {}", className);
-                
+
                 JavaClassMap cm = classPackages.get(className);
-                Arrays.stream(new String[]{"", "$"}).forEach(s -> {
+                Arrays.stream(new String[] { "", "$" }).forEach(s -> {
                     if (cm.getSubpackages().get(classPackage + s) != null) {
                         String fileName = cm.getSubpackages().get(classPackage + s);
                         if (result.containsKey(fileName)) {
                             result.get(fileName).add(classFqn);
                         } else {
-                            result.put(fileName, new ArrayList(Arrays.asList(new String[]{classFqn})));
+                            result.put(fileName, new ArrayList<>(Arrays.asList(classFqn)));
                         }
-
-                        return;
                     }
                 });
             }
-
         }
-
         return String.format("[%s]", buildResult(result));
     }
 
     private String removeStaticKeyword(String classFqn) {
-            if (classFqn.contains(" ")) {
-                return classFqn.split(" ")[1];
-            }
-
-            return classFqn;
+        if (classFqn.contains(" ")) {
+            return classFqn.split(" ")[1];
+        }
+        return classFqn;
     }
 
     private HashMap<String, JavaClassMap> getClassPackages() {
@@ -80,8 +74,6 @@ public class GetClassesArchiveNamesAction extends ActionWithTarget {
             l.forEach(classFqn -> builder.append("'").append(classFqn).append("',"));
             builder.append("]],");
         });
-
         return builder;
     }
-    
 }

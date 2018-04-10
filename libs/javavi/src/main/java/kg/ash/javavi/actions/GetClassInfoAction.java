@@ -11,27 +11,24 @@ public class GetClassInfoAction extends ActionWithTarget {
     public String perform(String[] args) {
         String target = parseTarget(args);
 
-        ClassSearcher seacher = new ClassSearcher();
+        ClassSearcher searcher = new ClassSearcher();
         boolean found = true;
-        while (!seacher.find(target, sources)) {
+        while (!searcher.find(target, sources)) {
             if (!target.contains(".")) {
                 found = false;
                 break;
             }
-
             target = target.substring(0, target.lastIndexOf("."));
         }
 
         if (found) {
-            ClassReader reader = seacher.getReader();
+            ClassReader reader = searcher.getReader();
             reader.setTypeArguments(targetParser.getTypeArguments());
             SourceClass clazz = reader.read(target);
             if (clazz != null) {
                 return new OutputClassInfo().get(clazz);
             }
         }
-
         return "";
     }
-
 }

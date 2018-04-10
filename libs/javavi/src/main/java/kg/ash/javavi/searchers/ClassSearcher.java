@@ -1,24 +1,21 @@
 package kg.ash.javavi.searchers;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+import kg.ash.javavi.readers.ClassReader;
+import kg.ash.javavi.readers.Parser;
+import kg.ash.javavi.readers.Reflection;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
-import kg.ash.javavi.readers.ClassReader;
-import kg.ash.javavi.readers.Parser;
-import kg.ash.javavi.readers.Reflection;
-
 public class ClassSearcher {
 
-    public static final Logger logger = 
-        LogManager.getLogger();
+    public static final Logger logger = LogManager.getLogger();
 
     private boolean isReflected = false;
-    private boolean isInSource = false;
     private String sources;
     private String sourceFile = null;
 
@@ -42,7 +39,6 @@ public class ClassSearcher {
 
                     if (visitor.getTargetFile() != null) {
                         sourceFile = visitor.getTargetFile().replace('\\', '/');
-                        isInSource = true;
                         return true;
                     }
                 } catch (IOException e) {
@@ -66,12 +62,7 @@ public class ClassSearcher {
         return isReflected;
     }
 
-    public boolean isInSource() {
-        return isInSource;
-    }
-
     public String getSourceFile() {
         return sourceFile;
     }
-    
 }

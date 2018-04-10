@@ -1,6 +1,5 @@
 package kg.ash.javavi.output;
 
-import java.util.HashMap;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.JavaClassMap;
@@ -8,10 +7,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
+
 public class OutputPackageInfoTest {
 
     private String target = "foo.bar";
-    private HashMap<String,JavaClassMap> classPackages;
+    private HashMap<String, JavaClassMap> classPackages;
 
     @Before
     public void Init() {
@@ -29,19 +30,21 @@ public class OutputPackageInfoTest {
         OutputPackageInfo opi = new OutputPackageInfo(classPackages);
         String result = opi.get(target);
 
-        Assert.assertEquals(String.format("{'%s':{'tag':'PACKAGE','subpackages':['bax','baz',],'classes':['Bat',]},}", target), result);
+        Assert.assertEquals(String.format(
+            "{'%s':{'tag':'PACKAGE','subpackages':['bax','baz',],'classes':['Bat',]},}", target),
+            result);
     }
-    
+
     @Test
     public void testCorrectUknownTarget() {
         Assert.assertEquals("{}", new OutputPackageInfo(classPackages).get("foo.baa"));
     }
-    
+
     @Test
     public void testNullTarget() {
         Assert.assertEquals("{}", new OutputPackageInfo(classPackages).get(null));
     }
-    
+
     @Test
     public void testNullPackages() {
         Assert.assertEquals(Cache.PACKAGES_EMPTY_ERROR, new OutputPackageInfo(null).get(target));

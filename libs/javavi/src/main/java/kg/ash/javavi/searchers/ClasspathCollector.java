@@ -1,5 +1,8 @@
 package kg.ash.javavi.searchers;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,20 +12,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
 public class ClasspathCollector {
 
     public static final Logger logger = LogManager.getLogger();
 
-    private ByExtensionVisitor finder 
-        = new ByExtensionVisitor(
-                Arrays.asList(
-                    "*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class", "*.jmod"));
-    
+    private ByExtensionVisitor finder = new ByExtensionVisitor(
+        Arrays.asList("*.jar", "*.JAR", "*.zip", "*.ZIP", "*.class", "*.jmod"));
+
     private String pSep = File.pathSeparator;
-    
+
     public List<String> collectClassPath() {
         List<String> result = new ArrayList<>();
 
@@ -36,17 +34,14 @@ public class ClasspathCollector {
         result.addAll(addPathFromDir(System.getProperty("java.home")));
 
         String classPath = System.getProperty("java.class.path");
-        Stream.of(classPath.split(pSep))
-            .filter(p -> p.length() >= 4)
-            .forEach(path -> {
-                String ext = path.substring(path.length() - 4)
-                    .toLowerCase();
-                if (ext.endsWith(".jar") || ext.endsWith(".zip")) {
-                    result.add(path);
-                } else {
-                    result.addAll(addPathFromDir(path));
-                }
-            });
+        Stream.of(classPath.split(pSep)).filter(p -> p.length() >= 4).forEach(path -> {
+            String ext = path.substring(path.length() - 4).toLowerCase();
+            if (ext.endsWith(".jar") || ext.endsWith(".zip")) {
+                result.add(path);
+            } else {
+                result.addAll(addPathFromDir(path));
+            }
+        });
 
         return result;
     }

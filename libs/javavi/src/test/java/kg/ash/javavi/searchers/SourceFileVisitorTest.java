@@ -1,9 +1,9 @@
 package kg.ash.javavi.searchers;
 
-import java.io.File;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
 
 public class SourceFileVisitorTest {
 
@@ -46,5 +46,4 @@ public class SourceFileVisitorTest {
 
         Assert.assertEquals(null, visitor.getTargetFile());
     }
-
 }
