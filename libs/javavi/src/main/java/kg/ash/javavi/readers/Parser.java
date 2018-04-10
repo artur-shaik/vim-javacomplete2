@@ -37,8 +37,6 @@ import java.util.Optional;
 
 public class Parser implements ClassReader {
 
-
-
     public static final Logger logger = LogManager.getLogger();
 
     private String sources;

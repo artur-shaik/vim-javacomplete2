@@ -76,5 +76,4 @@ public class ResourceClassForClassFetcherTest {
     private class InnerClass {
         private unusualClassName UnusualObjectName;
     }
-
 }
