@@ -98,7 +98,6 @@ public class OutputClassInfo {
 
         clazz.getInterfaces().forEach(iface -> sb.append("'").append(iface).append("',"));
         sb.append("],").append(Javavi.NEWLINE);
-        ;
     }
 
     private void hasNested(StringBuilder sb, SourceClass clazz) {

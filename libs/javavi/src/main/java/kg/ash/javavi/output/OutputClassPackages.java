@@ -40,9 +40,10 @@ public class OutputClassPackages {
                             }
                         }
                     }
-                    builder
-                        .append("'")
-                        .append(scope).append(scope.endsWith("$") ? "" : ".").append(targetClass)
+                    builder.append("'")
+                        .append(scope)
+                        .append(scope.endsWith("$") ? "" : ".")
+                        .append(targetClass)
                         .append("',")
                         .append(Javavi.NEWLINE);
                 });
@@ -51,5 +52,5 @@ public class OutputClassPackages {
 
         return String.format("[%s]", builder);
     }
-    
+
 }

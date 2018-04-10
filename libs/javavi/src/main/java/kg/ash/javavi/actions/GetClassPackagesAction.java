@@ -7,7 +7,7 @@ public class GetClassPackagesAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        return new OutputClassPackages(
-            Cache.getInstance().getClassPackages()).get(parseTarget(args));
+        return new OutputClassPackages(Cache.getInstance().getClassPackages()).get(
+            parseTarget(args));
     }
 }

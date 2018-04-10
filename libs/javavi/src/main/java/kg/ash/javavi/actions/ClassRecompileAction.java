@@ -24,8 +24,8 @@ public class ClassRecompileAction extends ActionWithTarget {
             String sourceFile = classMap.getJavaFile();
             String classDir = classFile.substring(0, classFile.lastIndexOf(File.separator));
 
-            int offset = findOffset(
-                sourceFile.substring(0, sourceFile.lastIndexOf(File.separator)), classDir);
+            int offset = findOffset(sourceFile.substring(0, sourceFile.lastIndexOf(File.separator)),
+                classDir);
             classDir = classFile.substring(0, offset);
 
             if (classDir.isEmpty()) {

@@ -33,8 +33,7 @@ public class OutputClassInfoTest {
         Assert.assertEquals(
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
-                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}",
-            oci.get(clazz));
+                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -51,8 +50,7 @@ public class OutputClassInfoTest {
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
                 + "'nested':[],'ctors':[{'m':'1','p':['Foo',],'d':'public Bar(Foo foo)'},],"
-                + "'fields':[],'methods':[],},}",
-            oci.get(clazz));
+                + "'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -75,8 +73,7 @@ public class OutputClassInfoTest {
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
                 + "'nested':[],'ctors':[{'m':'1','d':'public Bar()'},{'m':'1','p':['Foo',],"
-                + "'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}",
-            oci.get(clazz));
+                + "'d':'public Bar(Foo foo)'},],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -99,8 +96,7 @@ public class OutputClassInfoTest {
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
                 + "'nested':[],'ctors':[],'fields':[{'n':'foo','c':'Foo','m':'1','t':'Foo'},"
-                + "{'n':'bar','c':'Bar','m':'10','t':'Bar'},],'methods':[],},}",
-            oci.get(clazz));
+                + "{'n':'bar','c':'Bar','m':'10','t':'Bar'},],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -126,8 +122,7 @@ public class OutputClassInfoTest {
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
                 + "'nested':[],'ctors':[],'fields':[],'methods':[{'n':'foo','c':'Foo','m':'1',"
                 + "'r':'Foo','d':'public Foo foo()'},{'n':'bar','c':'Bar','m':'10','r':'Bar',"
-                + "'d':'private Bar bar()'},],},}",
-            oci.get(clazz));
+                + "'d':'private Bar bar()'},],},}", oci.get(clazz));
     }
 
     @Test
@@ -194,8 +189,7 @@ public class OutputClassInfoTest {
                 + "'implements':['foo.baz.Baz','foo.bas.Bas',],'nested':[],'ctors':[{'m':'1',"
                 + "'p':['Foo',],'d':'public Bar(Foo foo)'},],'fields':[{'n':'foo','c':'Foo',"
                 + "'m':'1','t':'Foo'},],'methods':[{'n':'foo','c':'Foo','m':'1','r':'Foo',"
-                + "'d':'public Foo foo()'},],},}",
-            oci.get(clazz));
+                + "'d':'public Foo foo()'},],},}", oci.get(clazz));
     }
 
     @Test
@@ -209,8 +203,7 @@ public class OutputClassInfoTest {
         Assert.assertEquals(
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
-                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}",
-            oci.get(clazz));
+                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
@@ -219,15 +212,16 @@ public class OutputClassInfoTest {
         Assert.assertEquals(
             "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
                 + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
-                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}",
-            oci.get(clazz));
+                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}", oci.get(clazz));
     }
 
     @Test
     public void testNullMethod() {
         clazz.addMethod(null);
         Assert.assertEquals(
-            "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1','pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],'nested':[],'ctors':[],'fields':[],'methods':[],},}",
+            "{'foo.bar.Bar':{'tag':'CLASSDEF','flags':'1','name':'foo.bar.Bar','classpath':'1',"
+                + "'pos':[-1,-1],'endpos':[-1,-1],'fqn':'foo.bar.Bar','implements':[],"
+                + "'nested':[],'ctors':[],'fields':[],'methods':[],},}",
             oci.get(clazz));
     }
 }

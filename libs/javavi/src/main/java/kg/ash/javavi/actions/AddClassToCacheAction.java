@@ -24,7 +24,8 @@ public class AddClassToCacheAction implements Action {
         }
 
         cnm.setJavaFile(sourceFileArg);
-        cnm.add(packageNameArg, JavaClassMap.SOURCETYPE_SOURCES, JavaClassMap.TYPE_SUBPACKAGE, null);
+        cnm.add(packageNameArg, JavaClassMap.SOURCETYPE_SOURCES, JavaClassMap.TYPE_SUBPACKAGE,
+            null);
 
         Cache.getInstance().getClassPackages().put(classNameArg, cnm);
         return "";

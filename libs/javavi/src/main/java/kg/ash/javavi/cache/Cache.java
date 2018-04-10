@@ -95,7 +95,7 @@ public class Cache {
         public void run() {
             int newCode = cache.getClassPackages().hashCode();
             if (newCode != cache.cacheCode) {
-                cache.logger.info("autosave cache: {} != {}", newCode, cache.cacheCode);
+                logger.info("autosave cache: {} != {}", newCode, cache.cacheCode);
                 cache.saveCache();
                 cache.cacheCode = cache.getClassPackages().hashCode();
             }

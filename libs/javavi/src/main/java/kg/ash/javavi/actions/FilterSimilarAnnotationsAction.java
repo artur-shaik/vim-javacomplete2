@@ -7,7 +7,7 @@ public class FilterSimilarAnnotationsAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        return new OutputSimilarAnnotations(
-            Cache.getInstance().getClassPackages()).get(parseTarget(args));
+        return new OutputSimilarAnnotations(Cache.getInstance().getClassPackages()).get(
+            parseTarget(args));
     }
 }

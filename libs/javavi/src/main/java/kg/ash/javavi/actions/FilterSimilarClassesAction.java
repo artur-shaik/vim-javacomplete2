@@ -7,7 +7,7 @@ public class FilterSimilarClassesAction extends ActionWithTarget {
 
     @Override
     public String perform(String[] args) {
-        return new OutputSimilarClasses(
-            Cache.getInstance().getClassPackages()).get(parseTarget(args));
+        return new OutputSimilarClasses(Cache.getInstance().getClassPackages()).get(
+            parseTarget(args));
     }
 }

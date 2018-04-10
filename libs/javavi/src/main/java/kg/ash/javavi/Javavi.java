@@ -40,7 +40,7 @@ public class Javavi {
     public static HashMap<String, String> system = new HashMap<>();
     public static Daemon daemon = null;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         logger.info("starting javavi server on port: {}", System.getProperty("daemon.port", "0"));
 
         if (logger.isTraceEnabled()) {

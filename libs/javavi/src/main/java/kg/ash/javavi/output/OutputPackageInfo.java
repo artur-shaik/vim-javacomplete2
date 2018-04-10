@@ -22,12 +22,18 @@ public class OutputPackageInfo {
         if (classPackages.containsKey(targetPackage)) {
             JavaClassMap classMap = classPackages.get(targetPackage);
 
-            sb.append("'").append(targetPackage).append("':")
+            sb.append("'")
+                .append(targetPackage)
+                .append("':")
                 .append("{'tag':'PACKAGE'")
-                .append(",'subpackages':[").append(classMap.getCachedSubpackages()).append("]")
-                .append(",'classes':[").append(classMap.getCachedClasses().toString()).append("]")
+                .append(",'subpackages':[")
+                .append(classMap.getCachedSubpackages())
+                .append("]")
+                .append(",'classes':[")
+                .append(classMap.getCachedClasses().toString())
+                .append("]")
                 .append("},");
-        } 
+        }
 
         return String.format("{%s}", sb);
     }

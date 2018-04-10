@@ -19,7 +19,9 @@ public abstract class OutputSimilar {
     }
 
     public String get(String target) {
-        if (target == null) target = "";
+        if (target == null) {
+            target = "";
+        }
 
         if (classPackages == null || classPackages.isEmpty()) {
             return Cache.PACKAGES_EMPTY_ERROR;
@@ -31,10 +33,12 @@ public abstract class OutputSimilar {
         StringBuilder builder = new StringBuilder();
         for (String key : keys) {
             classPackages.get(key).getPaths().forEach(scope -> {
-                builder
-                    .append("{").append("'word':'")
-                    .append(wordPrefix).append(key)
-                    .append("', 'menu':'").append(scope)
+                builder.append("{")
+                    .append("'word':'")
+                    .append(wordPrefix)
+                    .append(key)
+                    .append("', 'menu':'")
+                    .append(scope)
                     .append("', 'type': 'c'},")
                     .append(Javavi.NEWLINE);
             });

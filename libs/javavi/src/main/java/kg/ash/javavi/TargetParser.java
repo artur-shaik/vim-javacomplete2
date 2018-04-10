@@ -39,7 +39,7 @@ public class TargetParser {
         arguments = arguments.replaceAll("(\\(|\\))", "");
         String[] argumentVariants = arguments.split("\\|");
         boolean added = false;
-        for (String arg : argumentVariants) { 
+        for (String arg : argumentVariants) {
             Matcher argMatcher = pattern.matcher(arg);
             boolean matchResult = argMatcher.find();
             if (matchResult) {
@@ -100,7 +100,9 @@ public class TargetParser {
     }
 
     public static String getTypeArgumentsString(List<String> typeArguments) {
-        if (typeArguments.isEmpty()) return "";
+        if (typeArguments.isEmpty()) {
+            return "";
+        }
 
         StringBuilder builder = new StringBuilder("<");
         for (String arg : typeArguments) {

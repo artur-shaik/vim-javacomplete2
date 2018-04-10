@@ -10,5 +10,5 @@ public class CollectPackagesAction implements Action {
         Cache.getInstance().collectPackages();
         return "";
     }
-    
+
 }
