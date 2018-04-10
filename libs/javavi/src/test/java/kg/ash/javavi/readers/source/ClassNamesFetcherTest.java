@@ -10,13 +10,11 @@ import java.util.Set;
 
 public class ClassNamesFetcherTest {
 
-    private String testClassDeclarationPath
-        = "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
-    private String fetcherTestClassDeclarationPath
-        = "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
 
     @Test
     public void testClassnamesFetch() {
+        String testClassDeclarationPath = "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
+
         CompilationUnit cu = CompilationUnitCreator.createFromFile(testClassDeclarationPath);
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
@@ -31,6 +29,8 @@ public class ClassNamesFetcherTest {
 
     @Test
     public void testClassnamesFetchComplex() {
+        String fetcherTestClassDeclarationPath
+            = "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
         String waitFor = "UserTransaction, TestException, WebService, "
             + "HashMap, TestResponse, Resource, TestClass, String, "
             + "Logger, WebMethod, TestClassForbiddenException, Long, "
@@ -39,7 +39,7 @@ public class ClassNamesFetcherTest {
             + "SomeClass, unusualClassName, FakeAttr, StaticClassName, "
             + "AnotherStatic, ParentAnnotation, ChildAnnotation, format, "
             + "AnnotationForConstractor";
-        Set<String> waitForList = new HashSet<String>();
+        Set<String> waitForList = new HashSet<>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
         CompilationUnit cu = CompilationUnitCreator.createFromFile(fetcherTestClassDeclarationPath);

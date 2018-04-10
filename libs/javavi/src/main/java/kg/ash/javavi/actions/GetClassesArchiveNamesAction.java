@@ -43,7 +43,6 @@ public class GetClassesArchiveNamesAction extends ActionWithTarget {
                         } else {
                             result.put(fileName, new ArrayList<>(Arrays.asList(classFqn)));
                         }
-                        return;
                     }
                 });
             }

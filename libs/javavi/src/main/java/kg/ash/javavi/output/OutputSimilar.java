@@ -32,16 +32,16 @@ public abstract class OutputSimilar {
 
         StringBuilder builder = new StringBuilder();
         for (String key : keys) {
-            classPackages.get(key).getPaths().forEach(scope -> {
-                builder.append("{")
+            classPackages.get(key)
+                .getPaths()
+                .forEach(scope -> builder.append("{")
                     .append("'word':'")
                     .append(wordPrefix)
                     .append(key)
                     .append("', 'menu':'")
                     .append(scope)
                     .append("', 'type': 'c'},")
-                    .append(Javavi.NEWLINE);
-            });
+                    .append(Javavi.NEWLINE));
         }
         return String.format("[%s]", builder);
     }

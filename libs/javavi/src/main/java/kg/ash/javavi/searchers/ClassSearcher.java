@@ -16,7 +16,6 @@ public class ClassSearcher {
     public static final Logger logger = LogManager.getLogger();
 
     private boolean isReflected = false;
-    private boolean isInSource = false;
     private String sources;
     private String sourceFile = null;
 
@@ -40,7 +39,6 @@ public class ClassSearcher {
 
                     if (visitor.getTargetFile() != null) {
                         sourceFile = visitor.getTargetFile().replace('\\', '/');
-                        isInSource = true;
                         return true;
                     }
                 } catch (IOException e) {

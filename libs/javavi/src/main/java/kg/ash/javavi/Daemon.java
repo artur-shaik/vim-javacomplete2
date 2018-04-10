@@ -44,7 +44,7 @@ public class Daemon extends Thread {
                     echoServer = new ServerSocket(port);
                 }
             } catch (IOException e) {
-                System.out.println(e);
+                logger.warn(e);
                 break;
             }
 
@@ -96,7 +96,7 @@ public class Daemon extends Thread {
                 }
                 if (ch == '"' && !slashFlag) {
                     if (buff.length() == 0) {
-                        args.add(new String());
+                        args.add("");
                     }
                     quoteFlag = false;
                     continue;

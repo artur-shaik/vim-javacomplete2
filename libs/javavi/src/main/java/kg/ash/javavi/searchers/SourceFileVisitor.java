@@ -16,8 +16,8 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     public static final Logger logger = LogManager.getLogger();
 
     private final PathMatcher matcher;
-    private String targetFile = null;
-    private String pattern = null;
+    private String targetFile;
+    private String pattern;
 
     public SourceFileVisitor(String pattern) {
         String path;

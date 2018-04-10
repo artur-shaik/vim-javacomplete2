@@ -103,9 +103,7 @@ public class Javavi {
 
             if (asyncRun) {
                 final Action a = action;
-                new Thread(() -> {
-                    a.perform(args);
-                }).start();
+                new Thread(() -> a.perform(args)).start();
             } else {
                 result = action.perform(args);
             }
