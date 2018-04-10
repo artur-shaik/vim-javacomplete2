@@ -16,16 +16,8 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-
-import com.github.javaparser.printer.PrettyPrinterConfiguration;
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
-
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -33,104 +25,25 @@ import kg.ash.javavi.clazz.ClassImport;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.FqnSearcher;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+
 public class Parser implements ClassReader {
 
-    public static PrettyPrinterConfiguration withoutComments() {
-        PrettyPrinterConfiguration pp = new PrettyPrinterConfiguration();
-        pp.setPrintComments(false);
-        return pp;
-    }
 
-    public static EnumSet<Modifier> EnumSetModifierFromInt(int i) {
-        EnumSet set = EnumSet.noneOf(Modifier.class);
-
-        if (java.lang.reflect.Modifier.isPublic(i)) {
-            set.add(Modifier.PUBLIC);
-        }
-        if (java.lang.reflect.Modifier.isPrivate(i)) {
-            set.add(Modifier.PRIVATE);
-        }
-        if (java.lang.reflect.Modifier.isProtected(i)) {
-            set.add(Modifier.PROTECTED);
-        }
-        if (java.lang.reflect.Modifier.isStatic(i)) {
-            set.add(Modifier.STATIC);
-        }
-        if (java.lang.reflect.Modifier.isFinal(i)) {
-            set.add(Modifier.FINAL);
-        }
-        if (java.lang.reflect.Modifier.isSynchronized(i)) {
-            set.add(Modifier.SYNCHRONIZED);
-        }
-        if (java.lang.reflect.Modifier.isVolatile(i)) {
-            set.add(Modifier.VOLATILE);
-        }
-        if (java.lang.reflect.Modifier.isTransient(i)) {
-            set.add(Modifier.TRANSIENT);
-        }
-        if (java.lang.reflect.Modifier.isNative(i)) {
-            set.add(Modifier.NATIVE);
-        }
-        if (java.lang.reflect.Modifier.isAbstract(i)) {
-            set.add(Modifier.ABSTRACT);
-        }
-        if (java.lang.reflect.Modifier.isStrict(i)) {
-            set.add(Modifier.STRICTFP);
-        }
-
-        return set;
-    }
-
-    public static int EnumSetModifierToInt(EnumSet<Modifier> set) {
-        int mod = 0;
-
-        if (set.contains(Modifier.PUBLIC)) {
-            mod |= java.lang.reflect.Modifier.PUBLIC;
-        }
-        if (set.contains(Modifier.PRIVATE)) {
-            mod |= java.lang.reflect.Modifier.PRIVATE;
-        }
-        if (set.contains(Modifier.PROTECTED)) {
-            mod |= java.lang.reflect.Modifier.PROTECTED;
-        }
-        if (set.contains(Modifier.STATIC)) {
-            mod |= java.lang.reflect.Modifier.STATIC;
-        }
-        if (set.contains(Modifier.FINAL)) {
-            mod |= java.lang.reflect.Modifier.FINAL;
-        }
-        if (set.contains(Modifier.SYNCHRONIZED)) {
-            mod |= java.lang.reflect.Modifier.SYNCHRONIZED;
-        }
-        if (set.contains(Modifier.VOLATILE)) {
-            mod |= java.lang.reflect.Modifier.VOLATILE;
-        }
-        if (set.contains(Modifier.TRANSIENT)) {
-            mod |= java.lang.reflect.Modifier.TRANSIENT;
-        }
-        if (set.contains(Modifier.NATIVE)) {
-            mod |= java.lang.reflect.Modifier.NATIVE;
-        }
-        if (set.contains(Modifier.ABSTRACT)) {
-            mod |= java.lang.reflect.Modifier.ABSTRACT;
-        }
-        if (set.contains(Modifier.STRICTFP)) {
-            mod |= java.lang.reflect.Modifier.STRICT;
-        }
-
-        return mod;
-    }
 
     public static final Logger logger = LogManager.getLogger();
 
     private String sources;
     private String sourceFile = null;
     private String sourceContent = null;
-    private String targetClass = null;
     private ClassOrInterfaceDeclaration parentClass = null;
 
     public Parser(String sources) {
@@ -146,10 +59,6 @@ public class Parser implements ClassReader {
         this.sourceContent = sourceContent;
     }
 
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
     @Override
     public ClassReader setTypeArguments(List<String> typeArguments) {
         // Not supported yet.
@@ -158,8 +67,8 @@ public class Parser implements ClassReader {
 
     @Override
     public SourceClass read(String targetClass) {
-        if ((sourceFile == null || sourceFile.isEmpty()) &&
-                (sourceContent == null || sourceContent.isEmpty())) {
+        if ((sourceFile == null || sourceFile.isEmpty()) && (sourceContent == null
+            || sourceContent.isEmpty())) {
             return null;
         }
 
@@ -173,10 +82,9 @@ public class Parser implements ClassReader {
             return Cache.getInstance().getClasses().get(targetClass);
         }
 
-        CompilationUnit cu =
-            sourceFile != null ?
-            CompilationUnitCreator.createFromFile(sourceFile) :
-            CompilationUnitCreator.createFromContent(sourceContent);
+        CompilationUnit cu = sourceFile != null
+            ? CompilationUnitCreator.createFromFile(sourceFile)
+            : CompilationUnitCreator.createFromContent(sourceContent);
 
         if (cu == null) {
             return null;
@@ -199,7 +107,8 @@ public class Parser implements ClassReader {
 
         if (cu.getImports() != null) {
             for (ImportDeclaration id : cu.getImports()) {
-                clazz.addImport(new ClassImport(id.getName().toString(), id.isStatic(), id.isAsterisk()));
+                clazz.addImport(
+                    new ClassImport(id.getName().toString(), id.isStatic(), id.isAsterisk()));
             }
         }
 
@@ -225,9 +134,13 @@ public class Parser implements ClassReader {
                     clazz.addLinkedClass(implClass);
                     for (ClassConstructor c : implClass.getConstructors()) {
 
-                        if (implClass.getName().equals("java.lang.Object")) continue;
-                        c.setDeclaration(c.getDeclaration().replace(implClass.getName(), clazz.getName()));
-                        c.setDeclaration(c.getDeclaration().replace(implClass.getSimpleName(), clazz.getSimpleName()));
+                        if (implClass.getName().equals("java.lang.Object")) {
+                            continue;
+                        }
+                        c.setDeclaration(
+                            c.getDeclaration().replace(implClass.getName(), clazz.getName()));
+                        c.setDeclaration(c.getDeclaration()
+                            .replace(implClass.getSimpleName(), clazz.getSimpleName()));
                         clazz.addConstructor(c);
                     }
                     for (ClassMethod method : implClass.getMethods()) {
@@ -246,13 +159,13 @@ public class Parser implements ClassReader {
     private void visitChildren(List<Node> nodes, ClassVisitor visitor) {
         for (Node n : nodes) {
             if (n instanceof FieldDeclaration) {
-                visitor.visit((FieldDeclaration)n, null);
+                visitor.visit((FieldDeclaration) n, null);
             } else if (n instanceof MethodDeclaration) {
-                visitor.visit((MethodDeclaration)n, null);
+                visitor.visit((MethodDeclaration) n, null);
             } else if (n instanceof ConstructorDeclaration) {
-                visitor.visit((ConstructorDeclaration)n, null);
+                visitor.visit((ConstructorDeclaration) n, null);
             } else if (n instanceof ClassOrInterfaceDeclaration) {
-                visitor.visit((ClassOrInterfaceDeclaration)n, null);
+                visitor.visit((ClassOrInterfaceDeclaration) n, null);
             }
         }
     }
@@ -333,7 +246,8 @@ public class Parser implements ClassReader {
             constructor.setModifiers(n.getModifiers());
             if (n.getTypeParameters() != null) {
                 for (TypeParameter parameter : n.getTypeParameters()) {
-                    constructor.addTypeParameter(new ClassTypeParameter(parameter.getNameAsString()));
+                    constructor.addTypeParameter(
+                        new ClassTypeParameter(parameter.getNameAsString()));
                 }
             }
             clazz.addConstructor(constructor);
@@ -357,7 +271,8 @@ public class Parser implements ClassReader {
 
             if (n.getParameters() != null) {
                 for (Parameter parameter : n.getParameters()) {
-                    method.addTypeParameter(new ClassTypeParameter(parameter.getType().toString(withoutComments())));
+                    method.addTypeParameter(new ClassTypeParameter(
+                        parameter.getType().toString(ClassNamesFetcher.withoutComments())));
                 }
             }
             clazz.addMethod(method);
@@ -404,18 +319,4 @@ public class Parser implements ClassReader {
         }
 
     }
-
-    public static String getDeclarationName(String code) {
-        code = code.replaceAll("//.*$", "");
-        code = code.replaceAll("@\\S+(\\s|$)", "");
-        code = code.replaceAll("\n", "");
-        code = code.replaceAll("/\\*.*\\*/", "");
-        int index = code.indexOf('{');
-        if (index >= 0) {
-            return code.substring(0, index).trim();
-        }
-
-        return code;
-    }
-
 }
