@@ -1,15 +1,14 @@
 package kg.ash.javavi.output;
 
 import com.github.javaparser.ast.Modifier;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
 import kg.ash.javavi.clazz.ClassMethod;
 import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.EnumSet;
 

@@ -1,11 +1,12 @@
 package kg.ash.javavi.readers.source;
 
 import com.github.javaparser.ast.CompilationUnit;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ClassNamesFetcherTest {
 

@@ -1,6 +1,5 @@
 package kg.ash.javavi.output;
 
-import java.util.HashMap;
 import kg.ash.javavi.Javavi;
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.searchers.ClassNameMap;
@@ -8,6 +7,8 @@ import kg.ash.javavi.searchers.JavaClassMap;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 public class OutputClassPackagesTest {
 

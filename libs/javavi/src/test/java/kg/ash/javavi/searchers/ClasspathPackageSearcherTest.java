@@ -1,14 +1,14 @@
 package kg.ash.javavi.searchers;
 
-import java.util.Arrays;
-import java.util.List;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.integration.junit4.JMockit;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.List;
 
 @RunWith(JMockit.class)
 public class ClasspathPackageSearcherTest {

@@ -1,16 +1,15 @@
 package kg.ash.javavi.actions;
 
-import java.util.HashMap;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import kg.ash.javavi.searchers.ClassNameMap;
 import kg.ash.javavi.searchers.JavaClassMap;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.integration.junit4.JMockit;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.HashMap;
 
 @RunWith(JMockit.class)
 public class GetClassesArchiveNamesActionTest {

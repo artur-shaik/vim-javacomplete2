@@ -1,29 +1,18 @@
 package kg.ash.javavi;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import static java.text.MessageFormat.format;
+
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.transaction.HeuristicMixedException;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import static java.text.MessageFormat.format;
 /**
  *
  * @author Artur Shaikhullin <ashaihullin@gmail.com>
