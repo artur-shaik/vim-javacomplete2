@@ -6,30 +6,28 @@ boolean isResolvable(Configuration conf) {
   return true
 }
 
-Collection getBuildCacheForDependency(File dependency) {
+
+File getBuildCacheForDependency(File dependency) {
   String name = dependency.getName()
   String home = System.getProperty("user.home")
-  String gradleCache = home + '/.gradle/caches'
+  String gradleCache = home + File.separator + '.gradle' + File.separator + 'caches' + File.separator
   if (file(gradleCache).exists()) {
-    String include = '**/' + name +  '/**/classes.jar'
-    return fileTree(dir: gradleCache, include: include).files.findAll { it.isFile() }
+    String include = 'transforms*' + File.separator + '**' + File.separator + name + File.separator + '**' + File.separator + 'classes.jar'
+    return fileTree(dir: gradleCache, include: include).files.find { it.isFile() }
   } else {
-    return zipTree(dependency)
+    return zipTree(dependency).files.find { it.isFile() && it.name.endsWith('jar') }
   }
 }
 
 task classpath {
   doLast {
     HashSet<String> classpathFiles = new HashSet<String>()
+    HashSet<String> paths = new HashSet<String>()
     for (proj in allprojects) {
       for (conf in proj.configurations) {
         if (isResolvable(conf)) {
           for (dependency in conf) {
-            if (dependency.name.endsWith("jar")) {
-              classpathFiles += dependency
-            } else {
-              classpathFiles += getBuildCacheForDependency(dependency)
-            }
+            classpathFiles += dependency
           }
         }
       }
@@ -44,25 +42,21 @@ task classpath {
         classpathFiles += proj.android.getBootClasspath()
         if (proj.android.hasProperty("applicationVariants")) {
           proj.android.applicationVariants.all { v ->
+            if (v.hasProperty("javaCompile")) {
+              classpathFiles += v.javaCompile.classpath
+            }
             if (v.hasProperty("compileConfiguration")) {
               v.compileConfiguration.each { dependency ->
-                if (dependency.name.endsWith("jar")) {
-                  classpathFiles += dependency
-                } else {
-                  classpathFiles += getBuildCacheForDependency(dependency)
-                }
+                classpathFiles += dependency
               }
             }
             if (v.hasProperty("runtimeConfiguration")) {
               v.runtimeConfiguration.each { dependency ->
-                if (dependency.name.endsWith("jar")) {
-                  classpathFiles += dependency
-                } else {
-                  classpathFiles += getBuildCacheForDependency(dependency)
-                }
+                classpathFiles += dependency
               }
             }
             if (v.hasProperty("getApkLibraries")) {
+              println v.getApkLibraries()
               classpathFiles += v.getApkLibraries()
             }
             if (v.hasProperty("getCompileLibraries")) {
@@ -70,7 +64,7 @@ task classpath {
             }
             for (srcSet in v.getSourceSets()) {
               for (dir in srcSet.java.srcDirs) {
-                  classpathFiles += dir.absolutePath
+                  paths += dir.absolutePath
               }
             }
           }
@@ -81,7 +75,7 @@ task classpath {
             classpathFiles += v.javaCompile.classpath.files
             for (srcSet in v.getSourceSets()) {
               for (dir in srcSet.java.srcDirs) {
-                  classpathFiles += dir.absolutePath
+                  paths += dir.absolutePath
               }
             }
           }
@@ -91,13 +85,26 @@ task classpath {
       if (proj.hasProperty("sourceSets")) {
         for (srcSet in proj.sourceSets) {
             for (dir in srcSet.java.srcDirs) {
-                classpathFiles += dir.absolutePath
+                paths += dir.absolutePath
             }
         }
       }
     }
-    def paths = classpathFiles.join(File.pathSeparator)
-    println "CLASSPATH:" + paths
+
+    HashSet<String> computedPaths = new HashSet<String>()
+    for (dependency in classpathFiles) {
+      if (dependency.name.endsWith("jar")) {
+        computedPaths += dependency
+      } else {
+        computedPaths += getBuildCacheForDependency(dependency)
+      }
+    }
+
+
+    computedPaths += paths
+
+    def classpath = computedPaths.join(File.pathSeparator)
+    println "CLASSPATH:" + classpath
     println "END CLASSPATH GENERATION"
   }
 }
