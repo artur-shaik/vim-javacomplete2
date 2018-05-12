@@ -47,6 +47,9 @@ let g:JavaComplete_RegularClasses =
 let g:JaveComplete_AutoStartServer = 
       \ get(g:, 'JaveComplete_AutoStartServer', 1)
 
+let g:JavaComplete_ResultSort =
+      \ get(g:, 'JavaComplete_ResultSort', 0)
+
 command! JCDisable call javacomplete#Disable()
 command! JCEnable call javacomplete#Enable()
 

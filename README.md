@@ -196,6 +196,8 @@ Default mappings:
 
 `let g:JaveComplete_AutoStartServer = 0` - Disable automatic startup of server
 
+`let g:JavaComplete_ResultSort = 1` - Sort results alphabetically.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
