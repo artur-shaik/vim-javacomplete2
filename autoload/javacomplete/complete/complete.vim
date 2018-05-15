@@ -35,7 +35,7 @@ function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
         \    (a:base =~ '^@') ? a:base[:2] : a:base[:1]
   let result = javacomplete#complete#context#ExecuteContext(base)
 
-  if g:JavaComplete_ResultSort
+  if g:JavaComplete_CompletionResultSort
     call sort(result)
   endif
 
