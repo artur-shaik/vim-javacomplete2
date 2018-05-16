@@ -34,6 +34,11 @@ function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
   let base = (a:is_filter) ? a:base :
         \    (a:base =~ '^@') ? a:base[:2] : a:base[:1]
   let result = javacomplete#complete#context#ExecuteContext(base)
+
+  if g:JavaComplete_CompletionResultSort
+    call sort(result)
+  endif
+
   if len(result) > 0
     " filter according to b:incomplete
     if a:is_filter && b:incomplete != '' && b:incomplete != '+'
