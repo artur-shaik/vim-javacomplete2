@@ -196,7 +196,7 @@ Default mappings:
 
 `let g:JaveComplete_AutoStartServer = 0` - Disable automatic startup of server
 
-`let g:JavaComplete_ResultSort = 1` - Sort results alphabetically.
+`let g:JavaComplete_CompletionResultSort = 1` - Sort completion results alphabetically.
 
 ## Commands
 
