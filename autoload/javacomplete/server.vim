@@ -190,7 +190,7 @@ function! javacomplete#server#Compile()
 
   let s:compilationIsRunning = 1
   if executable('mvn')
-    let command = ['mvn', '-f', '"'. javaviDir. g:FILE_SEP. 'pom.xml"', 'compile']
+    let command = ['mvn', '-f', '"'. javaviDir. 'pom.xml"', 'compile']
   else
     call mkdir(javaviDir. join(['target', 'classes'], g:FILE_SEP), "p")
     let deps = s:GetJavaviDeps()
