@@ -27,7 +27,7 @@ function! javacomplete#classpath#maven#Generate(force) abort
     let s:mavenPath = path
     let s:mavenPom = g:JavaComplete_PomPath
     let s:mavenSettingsOutput = []
-    let mvnCmd = ['mvn', '--file', g:JavaComplete_PomPath, 'help:effective-pom', 'dependency:build-classpath', '-DincludeScope=test']
+    let mvnCmd = ['mvn', '-B', '--file', g:JavaComplete_PomPath, 'help:effective-pom', 'dependency:build-classpath', '-DincludeScope=test']
     call javacomplete#server#BlockStart()
     call javacomplete#util#RunSystem(mvnCmd, 'maven classpath build process', 'javacomplete#classpath#maven#BuildClasspathHandler')
     return ""
