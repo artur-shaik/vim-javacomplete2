@@ -174,9 +174,9 @@ Default mappings:
 
 `let g:JavaComplete_ClosingBrace = 1` - add close brace automatically, when complete method declaration. Disable if it conflicts with another plugins.
 
-`let g:JavaComplete_JavaviLogfileDirectory = ''` - directory, where to write server logs.
+`let g:JavaComplete_JavaviLogDirectory = ''` - directory, where to write server logs.
 
-`let g:JavaComplete_JavaviDebug = 1` - enables server side logging.
+`let g:JavaComplete_JavaviLogLevel = 'debug'` - enables server side logging (log4j logging levels).
 
 `let g:JavaComplete_BaseDir = '~/.your_cache_dir'` - set the base cache directory of javacomplete2. By default it is `~/.cache`.
 
