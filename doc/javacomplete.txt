@@ -280,11 +280,11 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
     Where to write server logs:
 
-        let g:JavaComplete_JavaviLogfileDirectory = ''
+        let g:JavaComplete_JavaviLogDirectory = ''
 
-    Enables server side logging:
+    Enables server side logging for a given log4j logging level:
 
-        let g:JavaComplete_JavaviDebug = 1
+        let g:JavaComplete_JavaviLogLevel = 'debug'
 
     Base cache directory of javacomplete2 (default is ~/.cache):
 
