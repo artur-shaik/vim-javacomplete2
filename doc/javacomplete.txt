@@ -260,7 +260,7 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
     Disable automatic startup of server:
 
-        let g:JaveComplete_AutoStartServer = 0 
+        let g:JavaComplete_AutoStartServer = 0 
         By default this option is disabled (1).
 
     Use fully qualified name in description:
