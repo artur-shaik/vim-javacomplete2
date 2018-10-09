@@ -160,6 +160,12 @@ Default mappings:
   nmap <silent> <buffer> <leader>jN <Plug>(JavaComplete-Generate-ClassInFile)
 ```
 
+The default mappings could be disabled with following setting:
+
+```vim
+let g:JavaComplete_EnableDefaultMappings = 0
+```
+
 ### Optional
 
 `g:JavaComplete_LibsPath` - path to additional jar files. This path appends with your libraries specified in `pom.xml`. Here you can add, for example, your glassfish libs directory or your project libs. It will be automatically append your JRE home path.
