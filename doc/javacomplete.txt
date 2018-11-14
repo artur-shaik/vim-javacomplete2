@@ -347,6 +347,10 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_StaticImportsAtTop = '1' 
         By default this options is 0.
 
+    Ignore errors generated in autocomplete:
+
+        let g:JavaComplete_IgnoreErrorMsg = 1
+        By default this options is 0.
 
 
 2.4 Commands					*javacomplete-commands*
