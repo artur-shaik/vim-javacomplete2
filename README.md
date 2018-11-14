@@ -204,6 +204,8 @@ let g:JavaComplete_EnableDefaultMappings = 0
 
 `let g:JavaComplete_CompletionResultSort = 1` - Sort completion results alphabetically.
 
+`let g:JavaComplete_IgnoreErrorMsg = 1` When it is greater than 0, the error message will be ignored. By default it is 0.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
