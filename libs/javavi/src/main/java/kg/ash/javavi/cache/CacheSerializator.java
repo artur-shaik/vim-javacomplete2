@@ -23,8 +23,6 @@ public class CacheSerializator {
             Map<String, String> system = Javavi.system;
 
             base = system.get("base");
-            project = "default";
-
             if (system.containsKey("project")) {
                 project = Javavi.system.get("project");
             }
@@ -37,9 +35,16 @@ public class CacheSerializator {
     }
 
     public void saveCache(String name, Object data) {
-        if (base != null) {
-            try (FileOutputStream fout = new FileOutputStream(
-                base + File.separator + "cache" + File.separator + name + "_" + project + ".dat");
+        if (base != null && project != null) {
+            String filename = String.format(
+                    "%s%scache%s%s_%s.dat",
+                    base,
+                    File.separator,
+                    File.separator,
+                    name,
+                    project);
+            logger.info("saving cache {} to file {}", name, filename);
+            try (FileOutputStream fout = new FileOutputStream(filename);
                  ObjectOutputStream oos = new ObjectOutputStream(fout)) {
                 oos.writeObject(data);
             } catch (Throwable e) {
@@ -49,9 +54,16 @@ public class CacheSerializator {
     }
 
     public Object loadCache(String name) {
-        if (base != null) {
-            try (FileInputStream fin = new FileInputStream(
-                base + File.separator + "cache" + File.separator + name + "_" + project + ".dat");
+        if (base != null && project != null) {
+            String filename = String.format(
+                    "%s%scache%s%s_%s.dat",
+                    base,
+                    File.separator,
+                    File.separator,
+                    name,
+                    project);
+            logger.info("loading cache {} from file {}", name, filename);
+            try (FileInputStream fin = new FileInputStream(filename);
                  ObjectInputStream ois = new ObjectInputStream(fin)) {
                 return ois.readObject();
             } catch (Throwable e) {

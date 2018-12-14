@@ -41,9 +41,12 @@ public class Cache {
 
         collectIsRunning = true;
         new Thread(() -> {
+            logger.info("start collecting cache");
             loadCache();
 
             if (classPackages.isEmpty()) {
+                logger.info("collecting empty cache");
+
                 HashMap<String, JavaClassMap> classPackagesTemp = new HashMap<>();
                 new PackagesLoader(Javavi.system.get("sources")).collectPackages(classPackagesTemp);
                 classPackages.putAll(classPackagesTemp);
