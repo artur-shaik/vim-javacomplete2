@@ -43,7 +43,6 @@ public class ClasspathCollector {
             }
         });
 
-        logger.debug(result);
         return result;
     }
 
