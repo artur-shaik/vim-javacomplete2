@@ -427,4 +427,11 @@ function! javacomplete#util#GenMethodParamsDeclaration(method)
   return a:method.d
 endfunction
 
+function! javacomplete#util#GetClassPackage(class)
+  let lastDot = strridx(a:class, '.')
+  if lastDot > 0
+    return a:class[0:lastDot - 1]
+  return a:class
+endfunction
+
 " vim:set fdm=marker sw=2 nowrap:

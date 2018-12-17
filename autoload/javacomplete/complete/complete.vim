@@ -546,7 +546,7 @@ function! javacomplete#complete#complete#ArrayAccess(arraytype, expr)
   return {}
 endfunction
 
-function! s:CanAccess(mods, kind, outputkind)
+function! s:CanAccess(mods, kind, outputkind, samePackage)
   if a:outputkind == 14
     return javacomplete#util#CheckModifier(a:mods, [g:JC_MODIFIER_PUBLIC, g:JC_MODIFIER_PROTECTED, g:JC_MODIFIER_ABSTRACT]) && !javacomplete#util#CheckModifier(a:mods, g:JC_MODIFIER_FINAL)
   endif
@@ -555,20 +555,23 @@ function! s:CanAccess(mods, kind, outputkind)
   endif
   return (a:mods[-4:-4] || a:kind/10 == 0)
         \ &&   (a:kind == 1 || a:mods[-1:]
-        \	|| (a:mods[-3:-3] && (a:kind == 1 || a:kind == 2 || a:kind == 7))
+        \	|| (a:mods[-3:-3] && (a:kind == 1 || a:kind == 2 || a:kind == 7 || a:samePackage))
+        \	|| (a:mods == 0 && a:samePackage)
         \	|| (a:mods[-2:-2] && (a:kind == 1 || a:kind == 7)))
 endfunction
 
 function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind, returnAll, outputkind, ...)
   call s:Log("search member. name: ". a:name. ", kind: ". a:kind. ", outputkind: ". a:outputkind)
 
+  let samePackage = javacomplete#complete#complete#GetPackageName() ==
+        \ javacomplete#util#GetClassPackage(a:ci.name)
   let result = [[], [], [], []]
 
   if a:kind != 13
     if a:outputkind != 14
       for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_fields', []) : [])
         if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-          if s:CanAccess(m.m, a:kind, a:outputkind)
+          if s:CanAccess(m.m, a:kind, a:outputkind, samePackage)
             call add(result[2], m)
           endif
         endif
@@ -577,7 +580,9 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
 
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        if s:CanAccess(m.m, a:kind, a:outputkind)
+        call s:Log(m.n)
+        call s:Log(m.m)
+        if s:CanAccess(m.m, a:kind, a:outputkind, samePackage)
           call add(result[1], m)
         endif
       endif
