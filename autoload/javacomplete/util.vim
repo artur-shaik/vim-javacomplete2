@@ -431,6 +431,7 @@ function! javacomplete#util#GetClassPackage(class)
   let lastDot = strridx(a:class, '.')
   if lastDot > 0
     return a:class[0:lastDot - 1]
+  endif
   return a:class
 endfunction
 

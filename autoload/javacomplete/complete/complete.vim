@@ -580,8 +580,6 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
 
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        call s:Log(m.n)
-        call s:Log(m.m)
         if s:CanAccess(m.m, a:kind, a:outputkind, samePackage)
           call add(result[1], m)
         endif
