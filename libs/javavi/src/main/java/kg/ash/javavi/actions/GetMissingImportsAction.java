@@ -66,6 +66,11 @@ public class GetMissingImportsAction extends ImportsAction {
                     }
                 }
                 if (!found) {
+                    if (declarations.contains(classname)) {
+                        found = true;
+                    }
+                }
+                if (!found) {
                     result.append(packages).append(",");
                 }
             }

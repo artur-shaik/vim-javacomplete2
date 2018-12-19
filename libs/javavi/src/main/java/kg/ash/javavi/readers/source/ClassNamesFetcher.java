@@ -31,6 +31,7 @@ public class ClassNamesFetcher {
 
     private final CompilationUnit compilationUnit;
     private final Set<String> resultList = new HashSet<>();
+    private final Set<String> declarationList = new HashSet<>();
     private List<String> staticImportsList = new ArrayList<>();
 
     public static PrettyPrinterConfiguration withoutComments() {
@@ -60,10 +61,18 @@ public class ClassNamesFetcher {
         return resultList;
     }
 
+    public Set<String> getDeclarationList() {
+        if (resultList.isEmpty()) {
+            getNames();
+        }
+        return declarationList;
+    }
+
     private class ClassTypeVisitor extends VoidVisitorAdapter<Object> {
 
         @Override
         public void visit(ClassOrInterfaceDeclaration type, Object arg) {
+            new DeepVisitor(this, arg).visitBreadthFirst(type);
             if (type.getAnnotations() != null) {
                 for (AnnotationExpr expr : type.getAnnotations()) {
                     resultList.add(expr.getNameAsString());
@@ -218,6 +227,12 @@ public class ClassNamesFetcher {
                 if (name.matches("^[A-Z][A-Za-z0-9_]*")) {
                     resultList.add(name);
                 }
+            } else if (node instanceof ClassOrInterfaceDeclaration) {
+                ClassOrInterfaceDeclaration declaration = 
+                    (ClassOrInterfaceDeclaration) node;
+                declarationList.add(
+                        declaration.getName().toString(
+                            withoutComments()));
             }
         }
     }

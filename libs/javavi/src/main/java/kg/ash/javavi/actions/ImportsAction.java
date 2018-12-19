@@ -11,6 +11,7 @@ import java.util.Set;
 public abstract class ImportsAction implements Action {
 
     protected Set<String> classnames;
+    protected Set<String> declarations;
     protected CompilationUnit compilationUnit;
 
     @Override
@@ -26,6 +27,7 @@ public abstract class ImportsAction implements Action {
 
             ClassNamesFetcher classnamesFetcher = new ClassNamesFetcher(compilationUnit);
             classnames = classnamesFetcher.getNames();
+            declarations = classnamesFetcher.getDeclarationList();
 
             return action();
         } catch (UnsupportedEncodingException ex) {
