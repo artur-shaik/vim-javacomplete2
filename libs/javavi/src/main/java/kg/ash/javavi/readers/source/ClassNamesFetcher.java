@@ -45,7 +45,9 @@ public class ClassNamesFetcher {
         for (ImportDeclaration id : compilationUnit.getImports()) {
             if (id.isStatic()) {
                 String name = id.getName().toString();
-                staticImportsList.add(name.substring(name.lastIndexOf(".") + 1, name.length()));
+                staticImportsList.add(
+                        name.substring(
+                            name.lastIndexOf(".") + 1, name.length()));
             }
         }
     }
@@ -87,7 +89,8 @@ public class ClassNamesFetcher {
 
     private class AnnotationsVisitor extends VoidVisitorAdapter<Object> {
 
-        private void addAnnotations(List<AnnotationExpr> annotations, Object arg) {
+        private void addAnnotations(
+                List<AnnotationExpr> annotations, Object arg) {
             if (annotations != null) {
                 for (AnnotationExpr expr : annotations) {
                     resultList.add(expr.getNameAsString());
@@ -144,8 +147,10 @@ public class ClassNamesFetcher {
         }
 
         private void addStatic(Expression type) {
-            if (type.getChildNodes() != null && type.getChildNodes().size() > 0) {
-                String name = type.getChildNodes().get(0).toString(withoutComments());
+            if (type.getChildNodes() != null && 
+                    type.getChildNodes().size() > 0) {
+                String name = type.getChildNodes().
+                    get(0).toString(withoutComments());
                 if (!name.contains(".")) {
                     resultList.add(name);
                 }
@@ -158,7 +163,8 @@ public class ClassNamesFetcher {
             String fullName = type.toString(withoutComments());
             if (!fullName.startsWith(name)) {
                 if (!type.getChildNodes().isEmpty()) {
-                    name = type.getChildNodes().get(0).toString(withoutComments());
+                    name = type.getChildNodes().
+                        get(0).toString(withoutComments());
                 }
             }
             if (name.contains(".")) {
@@ -192,7 +198,9 @@ public class ClassNamesFetcher {
                 adapter.visit((ClassOrInterfaceType) node, arg);
             } else if (node instanceof UnionType) {
                 ((UnionType) node).getElements()
-                    .forEach(t -> resultList.add(t.toString(withoutComments())));
+                    .forEach(
+                            t -> resultList.add(
+                                t.toString(withoutComments())));
             } else if (node instanceof MethodCallExpr) {
                 MethodCallExpr methodCall = ((MethodCallExpr) node);
                 String name = methodCall.getNameAsString();
@@ -209,11 +217,14 @@ public class ClassNamesFetcher {
                 NameExpr nameExpr = (NameExpr) node;
                 String parent = "";
                 if (nameExpr.getParentNode().isPresent()) {
-                    parent = nameExpr.getParentNode().get().toString(withoutComments());
+                    parent = nameExpr.getParentNode().
+                        get().toString(withoutComments());
                 }
                 String name = nameExpr.getNameAsString();
                 if (name != null) {
-                    if (!parent.startsWith("@") && !parent.equals(name) && parent.endsWith(name)) {
+                    if (!parent.startsWith("@") && 
+                            !parent.equals(name) && 
+                            parent.endsWith(name)) {
                         return;
                     }
 

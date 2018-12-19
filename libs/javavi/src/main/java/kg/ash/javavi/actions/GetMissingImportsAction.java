@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetMissingImportsAction extends ImportsAction {
+
     // TODO(joshleeb): Move this somewhere nice.
     private static String removeComments(Node n) {
         PrettyPrinterConfiguration config = new PrettyPrinterConfiguration();
@@ -22,9 +23,12 @@ public class GetMissingImportsAction extends ImportsAction {
         List<String> importTails = new ArrayList<>();
         List<String> asteriskImports = new ArrayList<>();
         if (compilationUnit.getImports() != null) {
-            for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+            for (ImportDeclaration importDeclaration : 
+                    compilationUnit.getImports()) {
                 ClassImport classImport = new ClassImport(
-                    removeComments(importDeclaration.getName()), importDeclaration.isStatic(),
+                    removeComments(
+                        importDeclaration.getName()), 
+                    importDeclaration.isStatic(),
                     importDeclaration.isAsterisk());
                 if (classImport.isAsterisk()) {
                     asteriskImports.add(classImport.getName());
@@ -36,14 +40,18 @@ public class GetMissingImportsAction extends ImportsAction {
 
         if (compilationUnit.getPackageDeclaration().isPresent()) {
             asteriskImports.add(
-                removeComments(compilationUnit.getPackageDeclaration().get().getName()));
+                removeComments(
+                    compilationUnit.getPackageDeclaration().
+                    get().getName()));
         }
 
         StringBuilder result = new StringBuilder("[");
         for (String classname : classnames) {
             if (!importTails.contains(classname)) {
-                GetClassPackagesAction getPackagesAction = new GetClassPackagesAction();
-                String packages = getPackagesAction.perform(new String[] { classname });
+                GetClassPackagesAction getPackagesAction = 
+                    new GetClassPackagesAction();
+                String packages = getPackagesAction.perform(
+                        new String[] { classname });
 
                 if (packages.startsWith("message:")) {
                     return packages;
@@ -51,7 +59,8 @@ public class GetMissingImportsAction extends ImportsAction {
                     continue;
                 }
 
-                String[] splitted = packages.substring(1, packages.length() - 1).split(",");
+                String[] splitted = packages.substring(
+                        1, packages.length() - 1).split(",");
                 boolean found = false;
                 for (String foundPackage : splitted) {
                     if (foundPackage.trim().isEmpty()) {
@@ -59,7 +68,8 @@ public class GetMissingImportsAction extends ImportsAction {
                     }
 
                     for (String asteriskImport : asteriskImports) {
-                        if (isolatePackage(foundPackage).equals(asteriskImport)) {
+                        if (isolatePackage(foundPackage)
+                                .equals(asteriskImport)) {
                             found = true;
                             break;
                         }
