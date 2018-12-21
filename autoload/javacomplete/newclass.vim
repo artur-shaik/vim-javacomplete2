@@ -238,6 +238,10 @@ function! s:CreateClass(data)
     call mkdir(path, 'p')
   endif
   let fileName = fnamemodify(path. g:FILE_SEP. a:data['class'], ":p")
+  let bufname = bufname('')
+  if getbufvar(bufname, "&mod") == 1 && getbufvar(bufname, "&hidden") == 0
+    execute ':vs'
+  endif
   execute ':e '. fileName. '.java'
   let fileSize = getfsize(fileName. '.java')
   if (fileSize <= 0 && fileSize > -2) || (line('$') == 1 && getline(1) == '')
@@ -308,8 +312,6 @@ function! s:CreateClass(data)
         call javacomplete#generators#Accessors()
       endif
     endif
-  else
-    echoerr "file is not empty"
   endif
 endfunction
 
