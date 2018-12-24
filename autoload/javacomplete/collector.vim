@@ -323,7 +323,8 @@ function! s:CollectFQNs(typename, packagename, filekey, extends)
     let typename = a:typename
   endif
 
-  let directFqn = javacomplete#imports#SearchSingleTypeImport(typename, javacomplete#imports#GetImports('imports_fqn', a:filekey))
+  let imports = javacomplete#imports#GetImports('imports_fqn', a:filekey)
+  let directFqn = javacomplete#imports#SearchSingleTypeImport(typename, imports)
   if !empty(directFqn)
     return [directFqn. extra]
   endif
