@@ -185,10 +185,10 @@ public class ClassNamesFetcher {
 
     private class DeepVisitor extends TreeVisitor {
 
-        private VoidVisitorAdapter adapter;
+        private VoidVisitorAdapter<Object> adapter;
         private Object arg;
 
-        public DeepVisitor(VoidVisitorAdapter adapter, Object arg) {
+        public DeepVisitor(VoidVisitorAdapter<Object> adapter, Object arg) {
             this.adapter = adapter;
             this.arg = arg;
         }

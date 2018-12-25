@@ -284,7 +284,7 @@ public class Reflection implements ClassReader {
     }
 
     public static EnumSet<Modifier> EnumSetModifierFromInt(int i) {
-        EnumSet set = EnumSet.noneOf(Modifier.class);
+        EnumSet<Modifier> set = EnumSet.noneOf(Modifier.class);
 
         if (java.lang.reflect.Modifier.isPublic(i)) {
             set.add(Modifier.PUBLIC);
