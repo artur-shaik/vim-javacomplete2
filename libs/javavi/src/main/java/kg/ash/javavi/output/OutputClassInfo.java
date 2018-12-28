@@ -13,13 +13,13 @@ import java.util.List;
 
 public class OutputClassInfo {
 
-    public static final String KEY_NAME = "'n':";        // "'name':";
-    public static final String KEY_TYPE = "'t':";        // "'type':";
-    public static final String KEY_MODIFIER = "'m':";        // "'modifier':";
-    public static final String KEY_PARAMETERTYPES = "'p':";        // "'parameterTypes':";
-    public static final String KEY_RETURNTYPE = "'r':";        // "'returnType':";
-    public static final String KEY_DESCRIPTION = "'d':";        // "'description':";
-    public static final String KEY_DECLARING_CLASS = "'c':";        // "'declaringclass':";
+    public static final String KEY_NAME = "'n':";
+    public static final String KEY_TYPE = "'t':";
+    public static final String KEY_MODIFIER = "'m':";
+    public static final String KEY_PARAMETERTYPES = "'p':";
+    public static final String KEY_RETURNTYPE = "'r':";
+    public static final String KEY_DESCRIPTION = "'d':";
+    public static final String KEY_DECLARING_CLASS = "'c':";
 
     public String get(SourceClass clazz) {
         HashMap<String, String> classMap = new HashMap<>();
@@ -29,7 +29,8 @@ public class OutputClassInfo {
         if (classMap.size() > 0) {
             sb.append("{");
             for (String s : classMap.keySet()) {
-                sb.append("'").append(s).append("':").append(classMap.get(s)).append(",");
+                sb.append("'").append(s).append("':")
+                    .append(classMap.get(s)).append(",");
             }
             sb.append("}");
         }
@@ -37,7 +38,8 @@ public class OutputClassInfo {
         return sb.toString();
     }
 
-    private void putClassInfo(HashMap<String, String> map, SourceClass clazz) {
+    private void putClassInfo(
+            HashMap<String, String> map, SourceClass clazz) {
         if (clazz == null || map.containsKey(clazz.getName())) {
             return;
         }
@@ -49,7 +51,6 @@ public class OutputClassInfo {
         hasFields(sb, clazz);
         hasMethods(sb, clazz);
         finish(sb, clazz, map);
-
     }
 
     private StringBuilder init(SourceClass clazz) {
@@ -58,7 +59,9 @@ public class OutputClassInfo {
             .append("'tag':'CLASSDEF',")
             .append(Javavi.NEWLINE)
             .append("'flags':'")
-            .append(Integer.toString(Reflection.EnumSetModifierToInt(clazz.getModifiers()), 2))
+            .append(Integer.toString(
+                        Reflection.EnumSetModifierToInt(
+                            clazz.getModifiers()), 2))
             .append("',")
             .append(Javavi.NEWLINE)
             .append("'name':'")
@@ -90,19 +93,23 @@ public class OutputClassInfo {
             sb.append("'interface':'1','extends':[");
         } else {
             String superclass = clazz.getSuperclass();
-            if (superclass != null && !"java.lang.Object".equals(superclass)) {
-                sb.append("'extends':['").append(superclass).append("'],").append(Javavi.NEWLINE);
+            if (superclass != null 
+                    && !"java.lang.Object".equals(superclass)) {
+                sb.append("'extends':['").append(superclass)
+                    .append("'],").append(Javavi.NEWLINE);
             }
             sb.append("'implements':[");
         }
 
-        clazz.getInterfaces().forEach(iface -> sb.append("'").append(iface).append("',"));
+        clazz.getInterfaces().forEach(
+                iface -> sb.append("'").append(iface).append("',"));
         sb.append("],").append(Javavi.NEWLINE);
     }
 
     private void hasNested(StringBuilder sb, SourceClass clazz) {
         sb.append("'nested':[");
-        clazz.getNestedClasses().forEach(nested -> sb.append("'").append(nested).append("',"));
+        clazz.getNestedClasses().forEach(
+                nested -> sb.append("'").append(nested).append("',"));
         sb.append("],").append(Javavi.NEWLINE);
     }
 
@@ -111,10 +118,13 @@ public class OutputClassInfo {
         for (ClassConstructor ctor : clazz.getConstructors()) {
             sb.append("{");
 
-            appendModifier(sb, Reflection.EnumSetModifierToInt(ctor.getModifiers()));
+            appendModifier(sb, 
+                    Reflection.EnumSetModifierToInt(
+                        ctor.getModifiers()));
             appendParameterTypes(sb, ctor.getTypeParameters());
 
-            sb.append(KEY_DESCRIPTION).append("'").append(ctor.getDeclaration()).append("'");
+            sb.append(KEY_DESCRIPTION).append("'")
+                .append(ctor.getDeclaration()).append("'");
 
             sb.append("},").append(Javavi.NEWLINE);
         }
@@ -127,13 +137,16 @@ public class OutputClassInfo {
         sb.append("'fields':[");
         for (ClassField field : clazz.getFields()) {
             sb.append("{");
-            sb.append(KEY_NAME).append("'").append(field.getName()).append("',");
+            sb.append(KEY_NAME).append("'")
+                .append(field.getName()).append("',");
 
             if (!field.getTypeName().equals(clazz.getName())) {
-                sb.append(KEY_DECLARING_CLASS).append("'").append(field.getTypeName()).append("',");
+                sb.append(KEY_DECLARING_CLASS).append("'")
+                    .append(field.getTypeName()).append("',");
             }
 
-            appendModifier(sb, Reflection.EnumSetModifierToInt(field.getModifiers()));
+            appendModifier(sb, Reflection.EnumSetModifierToInt(
+                        field.getModifiers()));
             sb.append(KEY_TYPE)
                 .append("'")
                 .append(field.getTypeName())
@@ -150,7 +163,8 @@ public class OutputClassInfo {
         for (ClassMethod method : clazz.getMethods()) {
             sb.append("{");
 
-            sb.append(KEY_NAME).append("'").append(method.getName()).append("',");
+            sb.append(KEY_NAME).append("'")
+                .append(method.getName()).append("',");
 
             if (!method.getTypeName().equals(clazz.getName())) {
                 sb.append(KEY_DECLARING_CLASS)
@@ -159,9 +173,11 @@ public class OutputClassInfo {
                     .append("',");
             }
 
-            appendModifier(sb, Reflection.EnumSetModifierToInt(method.getModifiers()));
+            appendModifier(sb, Reflection.EnumSetModifierToInt(
+                        method.getModifiers()));
 
-            sb.append(KEY_RETURNTYPE).append("'").append(method.getTypeName()).append("',");
+            sb.append(KEY_RETURNTYPE).append("'")
+                .append(method.getTypeName()).append("',");
 
             appendParameterTypes(sb, method.getTypeParameters());
 
@@ -178,7 +194,9 @@ public class OutputClassInfo {
         sb.append("],").append(Javavi.NEWLINE);
     }
 
-    private void finish(StringBuilder sb, SourceClass clazz, HashMap<String, String> map) {
+    private void finish(
+            StringBuilder sb, SourceClass clazz,
+            HashMap<String, String> map) {
 
         sb.append("}");
 
@@ -187,23 +205,25 @@ public class OutputClassInfo {
         for (SourceClass sourceClass : clazz.getLinkedClasses()) {
             putClassInfo(map, sourceClass);
         }
-
     }
 
     private void appendModifier(StringBuilder sb, int modifier) {
-        sb.append(KEY_MODIFIER).append("'").append(Integer.toString(modifier, 2)).append("',");
+        sb.append(KEY_MODIFIER).append("'")
+            .append(Integer.toString(modifier, 2)).append("',");
     }
 
-    private void appendParameterTypes(StringBuilder sb, List<ClassTypeParameter> paramTypes) {
+    private void appendParameterTypes(
+            StringBuilder sb, List<ClassTypeParameter> paramTypes) {
         if (paramTypes == null || paramTypes.isEmpty()) {
             return;
         }
 
         sb.append(KEY_PARAMETERTYPES).append("[");
 
-        paramTypes.forEach(parameter -> sb.append("'").append(parameter.getName()).append("',"));
+        paramTypes.forEach(
+                parameter -> sb.append("'").append(
+                    parameter.getName()).append("',"));
 
         sb.append("],");
     }
-
 }
