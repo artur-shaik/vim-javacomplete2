@@ -16,8 +16,15 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+
 import kg.ash.javavi.apache.logging.log4j.LogManager;
 import kg.ash.javavi.apache.logging.log4j.Logger;
+
 import kg.ash.javavi.cache.Cache;
 import kg.ash.javavi.clazz.ClassConstructor;
 import kg.ash.javavi.clazz.ClassField;
@@ -29,11 +36,6 @@ import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.FqnSearcher;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
 
 public class Parser implements ClassReader {
 
@@ -257,6 +259,9 @@ public class Parser implements ClassReader {
             method.setName(n.getNameAsString());
             method.setModifiers(n.getModifiers());
             method.setDeclaration(n.getDeclarationAsString());
+
+            n.getAnnotationByClass(Deprecated.class)
+                .ifPresent(c -> method.setDeprecated(true));
 
             String className = n.getType().toString();
             method.setTypeName(new FqnSearcher(sources).getFqn(clazz, className));

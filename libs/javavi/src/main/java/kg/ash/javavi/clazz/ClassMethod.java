@@ -14,6 +14,7 @@ public class ClassMethod {
     private String declaration;
     private String typeName;
     private List<ClassTypeParameter> typeParameters = new LinkedList<>();
+    private boolean deprecated = false;
 
     public void setName(String name) {
         this.name = name;
@@ -53,6 +54,14 @@ public class ClassMethod {
 
     public List<ClassTypeParameter> getTypeParameters() {
         return typeParameters;
+    }
+
+    public void setDeprecated(boolean deprecated) {
+        this.deprecated = deprecated;
+    }
+
+    public boolean getDeprecated() {
+        return deprecated;
     }
 
     @Override

@@ -166,8 +166,11 @@ public class OutputClassInfo {
             appendParameterTypes(sb, method.getTypeParameters());
 
             sb.append(KEY_DESCRIPTION)
-                .append("'")
-                .append(method.getDeclaration())
+                .append("'");
+            if (method.getDeprecated()) {
+                sb.append("@Deprecated ");
+            }
+            sb.append(method.getDeclaration())
                 .append("'")
                 .append("},")
                 .append(Javavi.NEWLINE);

@@ -261,6 +261,9 @@ public class Reflection implements ClassReader {
             });
 
             ClassMethod method = new ClassMethod();
+            if (m.getAnnotationsByType(Deprecated.class).length > 0) {
+                method.setDeprecated(true);
+            }
             method.setName(m.getName());
             method.setModifiers(EnumSetModifierFromInt(m.getModifiers()));
 
