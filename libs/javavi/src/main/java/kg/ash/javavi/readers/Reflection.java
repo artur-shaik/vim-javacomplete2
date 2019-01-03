@@ -187,14 +187,14 @@ public class Reflection implements ClassReader {
             clazz.setPackage(cls.getPackage().getName());
         }
 
-        TreeMap<String, String> typeArgumentsAccordance = new TreeMap<>();
+        TreeMap<String, String> typeArgumentsMap = new TreeMap<>();
         if (typeArguments != null && !typeArguments.isEmpty()) {
             List<String> arguments = new ArrayList<>(typeArguments);
             Stream.of(cls.getTypeParameters()).forEachOrdered(type -> {
-                typeArgumentsAccordance.put(
+                typeArgumentsMap.put(
                         type.getTypeName(), popTypeArgument(arguments));
                 clazz.addTypeArgument(
-                        typeArgumentsAccordance.get(type.getTypeName()));
+                        typeArgumentsMap.get(type.getTypeName()));
             });
         }
 
@@ -211,7 +211,7 @@ public class Reflection implements ClassReader {
 
         Stream.of(cls.getGenericInterfaces())
             .map(i -> getGenericName(
-                        typeArgumentsAccordance, i.getTypeName()))
+                        typeArgumentsMap, i.getTypeName()))
             .forEach(clazz::addInterface);
 
         ClassSearcher seacher = new ClassSearcher();
@@ -234,7 +234,7 @@ public class Reflection implements ClassReader {
             ClassConstructor constructor = new ClassConstructor();
 
             String genericDeclaration =
-                getGenericName(typeArgumentsAccordance,
+                getGenericName(typeArgumentsMap,
                         ctor.toGenericString());
             constructor.setDeclaration(genericDeclaration);
             constructor.setModifiers(
@@ -242,7 +242,7 @@ public class Reflection implements ClassReader {
 
             Stream.of(ctor.getGenericParameterTypes())
                 .map(t -> getGenericName(
-                            typeArgumentsAccordance, t.getTypeName()))
+                            typeArgumentsMap, t.getTypeName()))
                 .forEach(t -> constructor.addTypeParameter(
                             new ClassTypeParameter(t)));
 
@@ -257,7 +257,7 @@ public class Reflection implements ClassReader {
             field.setName(f.getName());
             field.setModifiers(EnumSetModifierFromInt(f.getModifiers()));
 
-            String genericType = getGenericName(typeArgumentsAccordance,
+            String genericType = getGenericName(typeArgumentsMap,
                 f.getGenericType().getTypeName());
             field.setTypeName(genericType);
 
@@ -268,24 +268,6 @@ public class Reflection implements ClassReader {
         methodsSet.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methodsSet.addAll(Arrays.asList(cls.getMethods()));
         methodsSet.forEach(m -> {
-            // Workaround for Iterable<T> that give us another 
-            // generic name in List::forEach method.
-            TreeMap<String, String> tAA = 
-                (TreeMap<String, String>) typeArgumentsAccordance.clone();
-            List<String> keySet = new ArrayList<>(tAA.keySet());
-            Stream.of(m.getDeclaringClass().getTypeParameters())
-                .forEach(type -> {
-                    Optional<String> key = Optional.ofNullable(
-                            keySet.isEmpty() 
-                            ? null 
-                            : keySet.get(0));
-                    key.filter(k -> !k.equals(type.getTypeName()))
-                        .ifPresent(k -> {
-                            tAA.put(type.getTypeName(), tAA.get(k));
-                            keySet.remove(0);
-                        });
-                });
-
             ClassMethod method = new ClassMethod();
             if (m.getAnnotationsByType(Deprecated.class).length > 0) {
                 method.setDeprecated(true);
@@ -294,16 +276,17 @@ public class Reflection implements ClassReader {
             method.setModifiers(EnumSetModifierFromInt(m.getModifiers()));
 
             String genericDeclaration = getGenericName(
-                    tAA, m.toGenericString());
+                    typeArgumentsMap, m.toGenericString());
             method.setDeclaration(genericDeclaration);
 
             String genericReturnType = getGenericName(
-                    tAA, m.getGenericReturnType().getTypeName());
+                    typeArgumentsMap, 
+                    m.getGenericReturnType().getTypeName());
             method.setTypeName(genericReturnType);
 
             Type[] parameterTypes = m.getGenericParameterTypes();
             Stream.of(parameterTypes)
-                .map(t -> getGenericName(tAA, t.getTypeName()))
+                .map(t -> getGenericName(typeArgumentsMap, t.getTypeName()))
                 .forEachOrdered(
                         t -> method.addTypeParameter(
                             new ClassTypeParameter(t)));
