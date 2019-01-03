@@ -776,7 +776,7 @@ function! s:DoGetMemberList(ci, outputkind)
 
   if kind == 11
     let tmp = javacomplete#collector#DoGetClassInfo('this')
-    if a:ci.name && tmp.name == a:ci.name
+    if tmp.name == get(a:ci, 'name', '')
       let outputkind = 15
     endif
   endif
