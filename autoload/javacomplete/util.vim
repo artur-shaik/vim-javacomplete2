@@ -263,7 +263,7 @@ function! s:NewJob(id, handler)
 endfunction
 
 function! javacomplete#util#RunSystem(command, shellName, handler)
-  call s:Log("running command: ". a:command)
+  call s:Log("running command: ". string(a:command))
   if has('nvim')
     if exists('*jobstart')
       let callbacks = {
