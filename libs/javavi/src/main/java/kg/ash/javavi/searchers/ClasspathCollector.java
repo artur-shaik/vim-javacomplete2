@@ -37,6 +37,9 @@ public class ClasspathCollector {
         String classPath = System.getProperty("java.class.path");
         Stream.of(classPath.split(pSep))
             .filter(p -> p.length() >= 4).forEach(path -> {
+                if (path.contains("vim-javacomplete2/libs/")) {
+                    return;
+                }
                 String ext = path.substring(path.length() - 4)
                     .toLowerCase();
                 if (ext.endsWith(".jar") || ext.endsWith(".zip")) {
@@ -50,7 +53,6 @@ public class ClasspathCollector {
     }
 
     private List<String> addPathFromDir(String dirpath) {
-        logger.info(dirpath);
         List<String> result = new ArrayList<>();
         File dir = new File(dirpath);
         if (dir.isDirectory()) {
