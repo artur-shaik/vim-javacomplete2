@@ -87,7 +87,9 @@ endfunction
 
 function! javacomplete#server#Start()
   if s:Poll() == 0 && s:serverStartBlocked == 0
-    call s:ControlServerAppVersion()
+    if get(g:, 'JavaComplete_CheckServerVersionAtStartup', 1)
+      call s:ControlServerAppVersion()
+    endif
 
     JavacompletePy import vim
     let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"

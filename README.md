@@ -200,11 +200,13 @@ let g:JavaComplete_EnableDefaultMappings = 0
 
 `let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'` - set directory that contains custom templates, for class creation. By default this options is null.
 
-`let g:JavaComplete_AutoStartServer = 0` - Disable automatic startup of server
+`let g:JavaComplete_AutoStartServer = 0` - Disable automatic startup of server.
 
 `let g:JavaComplete_CompletionResultSort = 1` - Sort completion results alphabetically.
 
-`let g:JavaComplete_IgnoreErrorMsg = 1` When it is greater than 0, the error message will be ignored. By default it is 0.
+`let g:JavaComplete_IgnoreErrorMsg = 1` - When it is greater than 0, the error message will be ignored. By default it is 0.
+
+`let g:JavaComplete_CheckServerVersionAtStartup = 0` - Check server version on startup. Can be disabled on slow start, or infinite recompilation. By default it is 1.
 
 ## Commands
 

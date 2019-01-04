@@ -352,6 +352,12 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_IgnoreErrorMsg = 1
         By default this options is 0.
 
+    Check server version on startup. Can be disabled on slow start, or
+    infinite recompilation:
+
+        let g:JavaComplete_CheckServerVersionAtStartup = 0
+        By default this options is 1.
+
 
 2.4 Commands					*javacomplete-commands*
 
