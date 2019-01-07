@@ -55,6 +55,7 @@ public class Javavi {
 
     public static String makeResponse(String[] args) {
 
+        long ms = System.currentTimeMillis();
         Action action = null;
         boolean asyncRun = false;
         for (int i = 0; i < args.length; i++) {
@@ -108,6 +109,7 @@ public class Javavi {
                 result = action.perform(args);
             }
         }
+        logger.debug("action time: {}ms", (System.currentTimeMillis() - ms));
         return result;
     }
 }
