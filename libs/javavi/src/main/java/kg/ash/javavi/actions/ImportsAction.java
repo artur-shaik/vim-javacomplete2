@@ -1,13 +1,17 @@
 package kg.ash.javavi.actions;
 
+import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
-import kg.ash.javavi.readers.source.ClassNamesFetcher;
-import kg.ash.javavi.readers.source.CompilationUnitCreator;
-import kg.ash.javavi.readers.source.CompilationUnitResult;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+
+import kg.ash.javavi.readers.source.ClassNamesFetcher;
+import kg.ash.javavi.readers.source.CompilationUnitCreator;
+import kg.ash.javavi.readers.source.CompilationUnitResult;
 
 public abstract class ImportsAction implements Action {
 
@@ -29,10 +33,18 @@ public abstract class ImportsAction implements Action {
             } else if (compilationUnitResult.getProblems() != null) {
                 StringBuilder result = 
                     new StringBuilder("{'parse-problems':[");
+                Set<Range> ranges = new HashSet<>();
                 compilationUnitResult.getProblems().stream().forEach(p -> {
-                    result.append("{'message':'").append(p.getMessage()).append("'");
-                    result.append(",'lnum':'").append(p.getLocation().get().getBegin().getRange().get().begin.line).append("'");
-                    result.append(",'col':'").append(p.getLocation().get().getBegin().getRange().get().begin.column).append("'},");
+                    p.getLocation().get().getBegin().getRange()
+                        .filter(range -> !ranges.contains(range))
+                        .ifPresent(range -> {
+                            result.append("{'message':'").append(p.getMessage()).append("'");
+                            result.append(",'lnum':'")
+                                .append(range.begin.line).append("'");
+                            result.append(",'col':'")
+                                .append(range.begin.column).append("'},");
+                            ranges.add(range);
+                        });
                 });
                 return result.append("]}").toString();
             } else {
