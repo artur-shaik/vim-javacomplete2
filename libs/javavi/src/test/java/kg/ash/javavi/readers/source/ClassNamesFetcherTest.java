@@ -13,9 +13,13 @@ public class ClassNamesFetcherTest {
 
     @Test
     public void testClassnamesFetch() {
-        String testClassDeclarationPath = "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
+        String testClassDeclarationPath = 
+            "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
 
-        CompilationUnit cu = CompilationUnitCreator.createFromFile(testClassDeclarationPath);
+        CompilationUnitResult cur = CompilationUnitCreator.createFromFile(
+                testClassDeclarationPath);
+        Assert.assertNull(cur.getProblems());
+        CompilationUnit cu = cur.getCompilationUnit();
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 
@@ -42,7 +46,10 @@ public class ClassNamesFetcherTest {
         Set<String> waitForList = new HashSet<>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
-        CompilationUnit cu = CompilationUnitCreator.createFromFile(fetcherTestClassDeclarationPath);
+        CompilationUnitResult cur = CompilationUnitCreator.createFromFile(
+                fetcherTestClassDeclarationPath);
+        Assert.assertNull(cur.getProblems());
+        CompilationUnit cu = cur.getCompilationUnit();
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 

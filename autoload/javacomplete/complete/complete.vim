@@ -26,6 +26,8 @@ function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
     return
   endif
 
+  call javacomplete#highlights#Drop()
+
   if a:findstart
     call s:Init()
     return javacomplete#complete#context#FindContext()

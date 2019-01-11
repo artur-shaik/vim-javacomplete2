@@ -10,14 +10,17 @@ public class GetUnusedImportsAction extends ImportsAction {
 
     @Override
     public String action() {
-        StringBuilder result = new StringBuilder("[");
-        for (ImportDeclaration importDeclaration : compilationUnit.getImports()) {
+        StringBuilder result = new StringBuilder("{'imports':[");
+        for (ImportDeclaration importDeclaration : 
+                compilationUnit.getImports()) {
             if (importDeclaration.isAsterisk()) {
                 continue;
             }
 
-            ClassImport classImport = new ClassImport(removeComments(importDeclaration.getName()),
-                importDeclaration.isStatic(), importDeclaration.isAsterisk());
+            ClassImport classImport = new ClassImport(
+                    removeComments(importDeclaration.getName()),
+                importDeclaration.isStatic(), 
+                importDeclaration.isAsterisk());
 
             String classname = classImport.getTail();
             if (!classnames.contains(classname)) {
@@ -28,11 +31,12 @@ public class GetUnusedImportsAction extends ImportsAction {
                     .append("',");
             }
         }
-        return result.append("]").toString();
+        return result.append("]}").toString();
     }
 
     private static String removeComments(Node n) {
-        PrettyPrinterConfiguration config = new PrettyPrinterConfiguration();
+        PrettyPrinterConfiguration config = 
+            new PrettyPrinterConfiguration();
         config.setPrintComments(false);
         return new PrettyPrinter(config).print(n);
     }

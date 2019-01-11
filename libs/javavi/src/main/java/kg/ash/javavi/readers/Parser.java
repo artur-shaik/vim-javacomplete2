@@ -34,6 +34,7 @@ import kg.ash.javavi.clazz.ClassTypeParameter;
 import kg.ash.javavi.clazz.SourceClass;
 import kg.ash.javavi.readers.source.ClassNamesFetcher;
 import kg.ash.javavi.readers.source.CompilationUnitCreator;
+import kg.ash.javavi.readers.source.CompilationUnitResult;
 import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.searchers.FqnSearcher;
 
@@ -82,12 +83,17 @@ public class Parser implements ClassReader {
             return Cache.getInstance().getClasses().get(targetClass);
         }
 
-        CompilationUnit cu = sourceFile != null
+        CompilationUnitResult cur = sourceFile != null
             ? CompilationUnitCreator.createFromFile(sourceFile)
             : CompilationUnitCreator.createFromContent(sourceContent);
 
-        if (cu == null) {
+        CompilationUnit cu;
+        if (cur == null) {
             return null;
+        } else if (cur.getProblems() != null) {
+            return null;
+        } else {
+            cu = cur.getCompilationUnit();
         }
 
         SourceClass clazz = new SourceClass();

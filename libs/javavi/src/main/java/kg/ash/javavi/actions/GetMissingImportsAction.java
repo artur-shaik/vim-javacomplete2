@@ -45,7 +45,7 @@ public class GetMissingImportsAction extends ImportsAction {
                     get().getName()));
         }
 
-        StringBuilder result = new StringBuilder("[");
+        StringBuilder result = new StringBuilder("{'imports':[");
         for (String classname : classnames) {
             if (!importTails.contains(classname)) {
                 GetClassPackagesAction getPackagesAction = 
@@ -85,7 +85,7 @@ public class GetMissingImportsAction extends ImportsAction {
                 }
             }
         }
-        return result.append("]").toString();
+        return result.append("]}").toString();
     }
 
     private static String isolatePackage(String pkg) {

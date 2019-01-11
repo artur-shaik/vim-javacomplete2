@@ -235,7 +235,7 @@ function! javacomplete#server#Communicate(option, args, log)
     call s:Log("communicate: ". cmd. " [". a:log. "]")
     let result = ""
 JavacompletePy << EOPC
-vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
+vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")).replace('"', '\\"'))
 EOPC
 
     call s:Log(result)
