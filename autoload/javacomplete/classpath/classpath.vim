@@ -1,3 +1,8 @@
+function! s:Log(log)
+  let log = type(a:log) == type("") ? a:log : string(a:log)
+  call javacomplete#logger#Log("[classpath] ". log)
+endfunction
+
 function! javacomplete#classpath#classpath#BuildClassPath()
   call s:BuildClassPath(0)
 endfunction
@@ -12,6 +17,7 @@ function! s:BuildClassPath(force)
       let g:JavaComplete_PomPath = javacomplete#util#FindFile('pom.xml')
       if g:JavaComplete_PomPath != ""
         let g:JavaComplete_PomPath = fnamemodify(g:JavaComplete_PomPath, ':p')
+        call s:Log("found maven file: ". g:JavaComplete_PomPath)
       endif
     endif
   endif
@@ -25,11 +31,28 @@ function! s:BuildClassPath(force)
       endif
       if g:JavaComplete_GradlePath != ""
         let g:JavaComplete_GradlePath = fnamemodify(g:JavaComplete_GradlePath, ':p')
+        call s:Log("found gradle file: ". g:JavaComplete_GradlePath)
+      endif
+    endif
+  endif
+
+  if !get(g:, 'JavaComplete_AntRepositoryDisabled', 0)
+    if !exists('g:JavaComplete_AntPath')
+      if filereadable(getcwd(). g:FILE_SEP. "build.xml")
+        let g:JavaComplete_AntPath = getcwd(). g:FILE_SEP. "build.xml"
+      else
+        let g:JavaComplete_AntPath = javacomplete#util#FindFile('build.xml', '**3')
+      endif
+      if g:JavaComplete_AntPath != ""
+        let g:JavaComplete_AntPath = fnamemodify(g:JavaComplete_AntPath, ':p')
+        call s:Log("found ant file: ". g:JavaComplete_AntPath)
       endif
     endif
   endif
 
   let g:JavaComplete_LibsPath .= s:FindClassPath(a:force)
+
+  call s:Log("libs found: ". g:JavaComplete_LibsPath)
 endfunction
 
 function! s:ReadClassPathFile(classpathFile)
@@ -68,12 +91,21 @@ function! s:UseGradle(force)
   return ""
 endf
 
+function! s:UseAnt(force)
+  if javacomplete#classpath#ant#IfAnt()
+    return javacomplete#classpath#ant#Generate(a:force)
+  endif
+
+  return ""
+endf
+
 function! s:FindClassPath(force) abort
   for classpathSourceType in g:JavaComplete_ClasspathGenerationOrder
     try
       let cp = ''
       exec "let cp .= s:Use". classpathSourceType. "(". a:force. ")"
       if !empty(cp)
+        call s:Log("found ". classpathSourceType. " project")
         return '.' . g:PATH_SEP . cp
       endif
     catch
