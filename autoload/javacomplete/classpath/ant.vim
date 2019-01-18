@@ -6,6 +6,9 @@ let s:antXmlTemplate = [
       \ '      <condition property="vjc-project-condition">',
       \ '          <isreference refid="project.classpath"/>',
       \ '      </condition>',
+      \ '      <condition property="vjc-classpath-condition">',
+      \ '          <isreference refid="classpath"/>',
+      \ '      </condition>',
       \ '  </target>',
       \ '  <target name="vjc-netbeans-classpath" depends="vjc-test-conditions" if="vjc-netbeans-condition">',
       \ '      <property name="javavi.classpath" value="${javac.classpath}" />',
@@ -13,7 +16,10 @@ let s:antXmlTemplate = [
       \ '  <target name="vjc-project-classpath" depends="vjc-test-conditions" if="vjc-project-condition">',
       \ '      <property name="javavi.classpath" refid="project.classpath"/>',
       \ '  </target>',
-      \ '  <target name="vjc-printclasspath" depends="vjc-project-classpath,vjc-netbeans-classpath">',
+      \ '  <target name="vjc-classpath" depends="vjc-test-conditions" if="vjc-classpath-condition">',
+      \ '      <property name="javavi.classpath" refid="project.classpath"/>',
+      \ '  </target>',
+      \ '  <target name="vjc-printclasspath" depends="vjc-project-classpath,vjc-netbeans-classpath,vjc-classpath">',
       \ '      <echo message="${javavi.classpath}"/>',
       \ '  </target>']
 
