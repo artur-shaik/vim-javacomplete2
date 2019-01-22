@@ -127,6 +127,8 @@ public class SourceClass {
 
     public void addLinkedClass(SourceClass clazz) {
         linkedClasses.add(clazz);
+        methods.addAll(clazz.getMethods());
+        fields.addAll(clazz.getFields());
     }
 
     public List<SourceClass> getLinkedClasses() {

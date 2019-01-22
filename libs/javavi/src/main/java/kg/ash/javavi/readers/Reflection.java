@@ -268,6 +268,9 @@ public class Reflection implements ClassReader {
         methodsSet.addAll(Arrays.asList(cls.getDeclaredMethods()));
         methodsSet.addAll(Arrays.asList(cls.getMethods()));
         methodsSet.forEach(m -> {
+            if (!m.getDeclaringClass().getName().equals(cls.getName())) {
+                return;
+            }
             ClassMethod method = new ClassMethod();
             if (m.getAnnotationsByType(Deprecated.class).length > 0) {
                 method.setDeprecated(true);
