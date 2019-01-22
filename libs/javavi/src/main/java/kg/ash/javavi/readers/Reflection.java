@@ -221,7 +221,7 @@ public class Reflection implements ClassReader {
             if (seacher.find(ifaceClassName, sources)) {
                 clazz.addLinkedClass(
                     seacher.getReader().setTypeArguments(
-                        parser.getTypeArguments()).read(i));
+                        parser.getTypeArguments()).read(ifaceClassName));
             }
         });
 
