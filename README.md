@@ -208,6 +208,8 @@ let g:JavaComplete_EnableDefaultMappings = 0
 
 `let g:JavaComplete_CheckServerVersionAtStartup = 0` - Check server version on startup. Can be disabled on slow start, or infinite recompilation. By default it is 1.
 
+`let g:JavaComplete_ExcludeClassRegex = 'regex of classes to exclude'` - Exclude matching fully qualified class names from producing import statements.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';
