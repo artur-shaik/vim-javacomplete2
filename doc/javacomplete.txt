@@ -358,6 +358,10 @@ A single letter indicates the kind of compeltion item. These kinds are:
         let g:JavaComplete_CheckServerVersionAtStartup = 0
         By default this options is 1.
 
+    Exclude matching fully qualified class names from producing import statements:
+
+        let g:JavaComplete_ExcludeClassRegex = 'lombok\(\.experimental\)\?\.var'
+
 
 2.4 Commands					*javacomplete-commands*
 

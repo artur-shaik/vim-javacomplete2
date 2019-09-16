@@ -213,6 +213,12 @@ function! javacomplete#imports#SortImports()
 endfunction
 
 function! s:AddImport(import)
+  if exists('g:JavaComplete_ExcludeClassRegex')
+    if a:import =~ get(g:, 'JavaComplete_ExcludeClassRegex')
+      return
+    endif
+  endif
+
   let isStaticImport = a:import =~ "^static.*" ? 1 : 0
   let import = substitute(a:import, "\\$", ".", "g")
   if !isStaticImport
