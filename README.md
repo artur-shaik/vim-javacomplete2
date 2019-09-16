@@ -208,7 +208,7 @@ let g:JavaComplete_EnableDefaultMappings = 0
 
 `let g:JavaComplete_CheckServerVersionAtStartup = 0` - Check server version on startup. Can be disabled on slow start, or infinite recompilation. By default it is 1.
 
-`let g:JavaComplete_ExcludeClassRegex = 'regex of classes to exclude'` - Exclude matching fully qualified class names from producing import statements.
+`let g:JavaComplete_ExcludeClassRegex = 'lombok\(\.experimental\)\?\.var'` - Exclude matching fully qualified class names from producing import statements.
 
 ## Commands
 
