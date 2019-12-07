@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
 import java.util.stream.Stream;
 
 import kg.ash.javavi.apache.logging.log4j.LogManager;
@@ -45,6 +46,12 @@ public class Reflection implements ClassReader {
         return this;
     }
 
+    @Override
+    public ClassReader addKnown(List knownClasses) {
+        this.knownClasses.addAll(knownClasses);
+        return this;
+    }
+
     public Reflection(String sources) {
         this.sources = sources;
     }
@@ -71,7 +78,7 @@ public class Reflection implements ClassReader {
 
         logger.debug("read class with reflections: {}", nameWithArguments);
 
-        HashMap<String, SourceClass> cachedClasses = 
+        HashMap<String, SourceClass> cachedClasses =
             Cache.getInstance().getClasses();
         if (cachedClasses.containsKey(nameWithArguments)) {
             return cachedClasses.get(nameWithArguments);
@@ -92,7 +99,7 @@ public class Reflection implements ClassReader {
                 break;
             }
 
-            binaryName = String.format("%s$%s", 
+            binaryName = String.format("%s$%s",
                     binaryName.substring(0, lastDotPos),
                     binaryName.substring(
                         lastDotPos + 1, binaryName.length()));
@@ -109,14 +116,14 @@ public class Reflection implements ClassReader {
             .getClassPackages()
             .get(getNameWithArguments(last));
         if (classMap != null) {
-            if (classMap.getClassFile() != null 
+            if (classMap.getClassFile() != null
                     && classMap.getJavaFile() != null) {
                 logger.debug(
                         "loading class from compiled source: {}", classMap);
 
-                ClassLoader parentClassLoader = 
+                ClassLoader parentClassLoader =
                     FileClassLoader.class.getClassLoader();
-                FileClassLoader fileClassLoader = 
+                FileClassLoader fileClassLoader =
                     new FileClassLoader(parentClassLoader,
                             classMap.getClassFile());
                 Class clazz = fileClassLoader.loadClass(name);
@@ -164,7 +171,7 @@ public class Reflection implements ClassReader {
         for (Entry<String, String> kv : taa.entrySet()) {
             genericName = genericName.replaceAll(
                     String.format("\\b%s\\b", kv.getKey()),
-                    kv.getValue());
+                    Matcher.quoteReplacement(kv.getValue()));
         }
         return genericName;
     }
@@ -218,9 +225,9 @@ public class Reflection implements ClassReader {
         clazz.getInterfaces().stream().forEach(i -> {
             TargetParser parser = new TargetParser(sources);
             String ifaceClassName = parser.parse(i);
-            if (seacher.find(ifaceClassName, sources)) {
+            if (!knownClasses.contains(ifaceClassName) && seacher.find(ifaceClassName, sources)) {
                 clazz.addLinkedClass(
-                    seacher.getReader().setTypeArguments(
+                    seacher.getReader().addKnown(knownClasses).setTypeArguments(
                         parser.getTypeArguments()).read(ifaceClassName));
             }
         });
@@ -283,7 +290,7 @@ public class Reflection implements ClassReader {
             method.setDeclaration(genericDeclaration);
 
             String genericReturnType = getGenericName(
-                    typeArgumentsMap, 
+                    typeArgumentsMap,
                     m.getGenericReturnType().getTypeName());
             method.setTypeName(genericReturnType);
 

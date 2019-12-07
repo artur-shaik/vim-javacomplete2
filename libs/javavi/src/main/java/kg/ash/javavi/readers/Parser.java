@@ -67,8 +67,13 @@ public class Parser implements ClassReader {
     }
 
     @Override
+    public ClassReader addKnown(List list) {
+        return this;
+    }
+
+    @Override
     public SourceClass read(String targetClass) {
-        if ((sourceFile == null || sourceFile.isEmpty()) 
+        if ((sourceFile == null || sourceFile.isEmpty())
                 && (sourceContent == null || sourceContent.isEmpty())) {
             return null;
         }
@@ -119,13 +124,13 @@ public class Parser implements ClassReader {
             for (ImportDeclaration id : cu.getImports()) {
                 clazz.addImport(
                     new ClassImport(
-                        id.getName().toString(), 
-                        id.isStatic(), 
+                        id.getName().toString(),
+                        id.isStatic(),
                         id.isAsterisk()));
             }
         }
 
-        ClassOrInterfaceVisitor coiVisitor = 
+        ClassOrInterfaceVisitor coiVisitor =
             new ClassOrInterfaceVisitor(clazz);
         coiVisitor.visit(cu, null);
         clazz = coiVisitor.getClazz();

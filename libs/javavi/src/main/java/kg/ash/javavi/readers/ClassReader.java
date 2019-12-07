@@ -8,4 +8,6 @@ public interface ClassReader {
     SourceClass read(String fqn);
 
     ClassReader setTypeArguments(List<String> typeArguments);
+
+    ClassReader addKnown(List knownClasses);
 }
