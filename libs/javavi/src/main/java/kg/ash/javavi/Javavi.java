@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class Javavi {
 
-    public static final String VERSION = "2.4.0";
+    public static final String VERSION = "2.4.1";
 
     public static String NEWLINE = "";
 
