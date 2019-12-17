@@ -362,6 +362,10 @@ A single letter indicates the kind of compeltion item. These kinds are:
 
         let g:JavaComplete_ExcludeClassRegex = 'lombok\(\.experimental\)\?\.var'
 
+    Exclude source directories. Accept absolute and relative values:
+
+        let g:JavaComplete_SourceExclude = ['src/frontend']
+
 
 2.4 Commands					*javacomplete-commands*
 
