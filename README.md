@@ -210,6 +210,8 @@ let g:JavaComplete_EnableDefaultMappings = 0
 
 `let g:JavaComplete_ExcludeClassRegex = 'lombok\(\.experimental\)\?\.var'` - Exclude matching fully qualified class names from producing import statements.
 
+`let g:JavaComplete_SourceExclude = ['src/frontend']` - Exclude source directories. Accept absolute and relative values.
+
 ## Commands
 
 `JCimportsAddMissing` - add all missing 'imports';

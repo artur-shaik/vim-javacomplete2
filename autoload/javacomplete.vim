@@ -294,6 +294,16 @@ if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
           \, g:PATH_SEP)
 endif
 
+for source in get(g:, 'JavaComplete_SourceExclude', [])
+  let source = fnamemodify(source, ':p')
+  let idx = stridx(g:JavaComplete_SourcesPath, source)
+  while idx > 0
+    let colon = stridx(g:JavaComplete_SourcesPath, ':', idx + 1)
+    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath[:idx - 1] . g:JavaComplete_SourcesPath[colon + 1:]
+    let idx = stridx(g:JavaComplete_SourcesPath, source)
+  endwhile
+endfor
+
 call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
 
 if exists('g:JavaComplete_LibsPath')
