@@ -65,6 +65,11 @@ function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
     endif
   endif
 
+  if len(get(b:, 'errormsg', '')) > 0
+    " shane: omni compl may fail if not clear cache but re-issue it again
+    call javacomplete#ClearCache()
+  endif
+
   if get(g:, 'JavaComplete_IgnoreErrorMsg', 0) <= 0 && len(get(b:, 'errormsg', '')) > 0
     echoerr 'javacomplete error: ' . b:errormsg
     let b:errormsg = ''
