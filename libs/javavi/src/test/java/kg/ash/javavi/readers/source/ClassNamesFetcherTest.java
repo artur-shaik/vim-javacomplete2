@@ -1,24 +1,25 @@
 package kg.ash.javavi.readers.source;
 
 import com.github.javaparser.ast.CompilationUnit;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class ClassNamesFetcherTest {
 
-    private String testClassDeclarationPath = 
-        "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
-    private String fetcherTestClassdeclarationPath = 
-        "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
 
     @Test
-    public void testClassnamesFetch() throws Exception {
-        CompilationUnit cu = CompilationUnitCreator
-            .createFromFile(testClassDeclarationPath);
+    public void testClassnamesFetch() {
+        String testClassDeclarationPath = 
+            "src/test/resources/kg/ash/javavi/ClassWithClasses.java";
+
+        CompilationUnitResult cur = CompilationUnitCreator.createFromFile(
+                testClassDeclarationPath);
+        Assert.assertNull(cur.getProblems());
+        CompilationUnit cu = cur.getCompilationUnit();
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 
@@ -32,23 +33,26 @@ public class ClassNamesFetcherTest {
 
     @Test
     public void testClassnamesFetchComplex() {
-        String waitFor = "UserTransaction, TestException, WebService, " 
-            + "HashMap, TestResponse, Resource, TestClass, String, " 
-            + "Logger, WebMethod, TestClassForbiddenException, Long, " 
+        String fetcherTestClassDeclarationPath
+            = "src/test/resources/kg/ash/javavi/ResourceClassForClassFetcherTest.java";
+        String waitFor = "UserTransaction, TestException, WebService, "
+            + "HashMap, TestResponse, Resource, TestClass, String, "
+            + "Logger, WebMethod, TestClassForbiddenException, Long, "
             + "EJB, BeanClass1, InterceptorRefs, InterceptorRef, BeanClass2, "
             + "WebParam, HashSet, Set, List, Map, Attr, ArrayList, HashLine, "
-            + "SomeClass, unusualClassName, FakeAttr, StaticClassName, " 
+            + "SomeClass, unusualClassName, FakeAttr, StaticClassName, "
             + "AnotherStatic, ParentAnnotation, ChildAnnotation, format, "
             + "AnnotationForConstractor";
-        Set<String> waitForList = new HashSet<String>();
+        Set<String> waitForList = new HashSet<>();
         waitForList.addAll(Arrays.asList(waitFor.split(", ")));
 
-        CompilationUnit cu = CompilationUnitCreator
-            .createFromFile(fetcherTestClassdeclarationPath);
+        CompilationUnitResult cur = CompilationUnitCreator.createFromFile(
+                fetcherTestClassDeclarationPath);
+        Assert.assertNull(cur.getProblems());
+        CompilationUnit cu = cur.getCompilationUnit();
         ClassNamesFetcher parser = new ClassNamesFetcher(cu);
         Set<String> result = parser.getNames();
 
         Assert.assertEquals(waitForList, result);
     }
-
 }

@@ -10,5 +10,4 @@ public class GetClassInfoFromSourceAction extends ActionWithTarget {
         Parser parser = new Parser(sources, parseTarget(args));
         return new OutputClassInfo().get(parser.read(null));
     }
-
 }

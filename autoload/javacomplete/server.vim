@@ -55,39 +55,41 @@ function! javacomplete#server#Terminate()
   endif
 endfunction
 
-function! s:GetServerAppVersion()
+function! s:ControlServerAppVersion()
   let classpath =
         \ s:GetJavaviClassPath(). g:PATH_SEP.
         \ s:GetJavaviDeps(). g:PATH_SEP
-  return system(join(
+  let s:serverVersionOutput = []
+  call javacomplete#util#RunSystem(join(
         \ [
           \ javacomplete#server#GetJVMLauncher(), '-cp', classpath,
           \ 'kg.ash.javavi.Javavi -version'
-        \ ]))
+        \ ]),
+        \ 'Javavi server version check',
+        \ 'javacomplete#server#CheckServerAccordance')
 endfunction
 
-function! s:CheckServerAccordance(serverVersion)
-  if s:autoRecompileCheckFlag
-    return 1
-  endif
-  let s:autoRecompileCheckFlag = 1
-  if !javacomplete#version#CheckServerCompatibility(a:serverVersion)
-    call s:Log("server ". a:serverVersion. " is outdated, recompile")
-    call javacomplete#server#Compile()
-    return 0
-  endif
+function! javacomplete#server#CheckServerAccordance(data, event)
+  if a:event == 'exit'
+    if a:data == '0'
+      let serverVersion = join(s:serverVersionOutput)
+      if !javacomplete#version#CheckServerCompatibility(serverVersion)
+        call s:Log("server ". serverVersion. " is outdated, recompile")
+        call javacomplete#server#Compile()
+      endif
+    endif
 
-  return 1
+    unlet s:serverVersionOutput
+  elseif a:event == 'stdout'
+    call extend(s:serverVersionOutput, a:data)
+  endif
 endfunction
 
 function! javacomplete#server#Start()
   if s:Poll() == 0 && s:serverStartBlocked == 0
-    let serverAppVersion = s:GetServerAppVersion()
-    if !s:CheckServerAccordance(serverAppVersion)
-      return
+    if get(g:, 'JavaComplete_CheckServerVersionAtStartup', 1)
+      call s:ControlServerAppVersion()
     endif
-
-    call s:Log("start server ". serverAppVersion)
 
     JavacompletePy import vim
     let file = g:JavaComplete_Home. g:FILE_SEP. "autoload". g:FILE_SEP. "javavibridge.py"
@@ -190,7 +192,7 @@ function! javacomplete#server#Compile()
 
   let s:compilationIsRunning = 1
   if executable('mvn')
-    let command = ['mvn', '-f', '"'. javaviDir. g:FILE_SEP. 'pom.xml"', 'compile']
+    let command = ['mvn', '-B', '-f', javaviDir. g:FILE_SEP. 'pom.xml', 'compile']
   else
     call mkdir(javaviDir. join(['target', 'classes'], g:FILE_SEP), "p")
     let deps = s:GetJavaviDeps()
@@ -225,7 +227,7 @@ function! javacomplete#server#Communicate(option, args, log)
 
   if s:Poll()
     if !empty(a:args)
-      let args = ' '. substitute(a:args, '"', '\\"', 'g')
+      let args = ' "'. substitute(a:args, '"', '\\"', 'g'). '"'
     else
       let args = ''
     endif
@@ -233,7 +235,7 @@ function! javacomplete#server#Communicate(option, args, log)
     call s:Log("communicate: ". cmd. " [". a:log. "]")
     let result = ""
 JavacompletePy << EOPC
-vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")))
+vim.command('let result = "%s"' % bridgeState.send(vim.eval("cmd")).replace('"', '\\"'))
 EOPC
 
     call s:Log(result)
@@ -299,7 +301,7 @@ endfunction
 
 function! s:GetJavaviDeps()
   let deps = []
-  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p"))
+  call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser-core-3.5.20.jar'], g:FILE_SEP), ":p"))
   call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javavi_log4j-api.jar'], g:FILE_SEP), ":p"))
   call add(deps, fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javavi_log4j-core.jar'], g:FILE_SEP), ":p"))
   let path = join(deps, g:PATH_SEP)

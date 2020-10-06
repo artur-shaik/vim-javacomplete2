@@ -6,7 +6,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 if exists('g:JavaComplete_PluginLoaded')
-    finish
+  finish
 endif
 let g:JavaComplete_PluginLoaded = 1
 
@@ -30,7 +30,7 @@ let g:JavaComplete_ShowExternalCommandsOutput =
       \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
 
 let g:JavaComplete_ClasspathGenerationOrder =
-      \ get(g:, 'g:JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle'])
+      \ get(g:, 'JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle', 'Ant'])
 
 let g:JavaComplete_ImportSortType =
       \ get(g:, 'JavaComplete_ImportSortType', 'jarName')
@@ -38,8 +38,17 @@ let g:JavaComplete_ImportSortType =
 let g:JavaComplete_ImportOrder =
       \ get(g:, 'JavaComplete_ImportOrder', ['java.', 'javax.', 'com.', 'org.', 'net.'])
 
+let g:JavaComplete_StaticImportsAtTop =
+      \ get(g:, 'JavaComplete_StaticImportsAtTop', 0)
+
 let g:JavaComplete_RegularClasses =
       \ get(g:, 'JavaComplete_RegularClasses', ['java.lang.String', 'java.lang.Object', 'java.lang.Exception', 'java.lang.StringBuilder', 'java.lang.Override', 'java.lang.UnsupportedOperationException', 'java.math.BigDecimal', 'java.lang.Byte', 'java.lang.Short', 'java.lang.Integer', 'java.lang.Long', 'java.lang.Float', 'java.lang.Double', 'java.lang.Character', 'java.lang.Boolean'])
+
+let g:JavaComplete_AutoStartServer = 
+      \ get(g:, 'JavaComplete_AutoStartServer', 1)
+
+let g:JavaComplete_CompletionResultSort =
+      \ get(g:, 'JavaComplete_CompletionResultSort', 0)
 
 command! JCDisable call javacomplete#Disable()
 command! JCEnable call javacomplete#Enable()
@@ -49,6 +58,8 @@ command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
 command! JCimportsSort call javacomplete#imports#SortImports()
 command! JCimportAddSmart call javacomplete#imports#Add(1)
 command! JCimportAdd call javacomplete#imports#Add()
+
+command! JCGetSymbolType call javacomplete#imports#getType()
 
 command! JCserverShowPort call javacomplete#server#ShowPort()
 command! JCserverShowPID call javacomplete#server#ShowPID()
@@ -82,7 +93,9 @@ command! JCclasspathGenerate call javacomplete#classpath#classpath#RebuildClassP
 command! JCclassNew call javacomplete#newclass#CreateClass()
 command! JCclassInFile call javacomplete#newclass#CreateInFile()
 
-autocmd Filetype java,jsp JCstart
+if g:JavaComplete_AutoStartServer
+  autocmd Filetype java,jsp JCstart
+endif
 
 function! s:nop(s)
   return ''
@@ -119,4 +132,6 @@ inoremap <silent> <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javaco
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
+
+autocmd User CmSetup call cm#sources#java#register()
 " vim:set fdm=marker sw=2 nowrap:

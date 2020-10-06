@@ -1,5 +1,8 @@
 package kg.ash.javavi.searchers;
 
+import kg.ash.javavi.apache.logging.log4j.LogManager;
+import kg.ash.javavi.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -8,22 +11,18 @@ import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import kg.ash.javavi.apache.logging.log4j.LogManager;
-import kg.ash.javavi.apache.logging.log4j.Logger;
-
 public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
-    public static final Logger logger = 
-        LogManager.getLogger();
+    public static final Logger logger = LogManager.getLogger();
 
     private final PathMatcher matcher;
-    private String targetFile = null;
-    private String pattern = null;
+    private String targetFile;
+    private String pattern;
 
     public SourceFileVisitor(String pattern) {
-        if (pattern == null) pattern = "";
-
         String path;
+        pattern = pattern != null ? pattern : "";
+
         if (pattern.contains(".")) {
             String[] splitted = pattern.split("\\.");
             path = splitted[splitted.length - 1];
@@ -32,8 +31,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
         }
 
         logger.info("visit source: {}", path);
-        matcher = FileSystems.getDefault()
-                .getPathMatcher(String.format("glob:%s.java", path));
+        matcher = FileSystems.getDefault().getPathMatcher(String.format("glob:%s.java", path));
 
         this.pattern = pattern;
     }
@@ -44,13 +42,13 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
 
     private boolean find(Path file) {
         Path name = file.getFileName();
+
         if (name != null && matcher.matches(name)) {
             if (pattern.contains(".")) {
                 return checkPattern(file);
             }
             return true;
         }
-
         return false;
     }
 
@@ -71,20 +69,17 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFile(Path file,
-            BasicFileAttributes attrs) {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         if (!find(file)) {
             return FileVisitResult.CONTINUE;
         }
 
         targetFile = file.toFile().getPath().replace('\\', '/');
-
         return FileVisitResult.TERMINATE;
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir,
-            BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         if (!find(dir)) {
             return FileVisitResult.CONTINUE;
         }
@@ -93,8 +88,7 @@ public class SourceFileVisitor extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file,
-            IOException exc) {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 }

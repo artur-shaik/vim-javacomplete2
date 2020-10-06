@@ -128,7 +128,7 @@ class JavaviBridge():
                     break
 
                 totalData.append(data.decode('UTF-8'))
-                time.sleep(.01)
+                time.sleep(0.0001)
             except:
                 if totalData: break
 

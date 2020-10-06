@@ -3,7 +3,7 @@
 "
 " Version control
 
-let g:JavaComplete_ServerCompatibilityVersion = "2.3.7"
+let g:JavaComplete_ServerCompatibilityVersion = "2.4.1"
 
 function! javacomplete#version#GetCompatibilityVerison()
   return g:JavaComplete_ServerCompatibilityVersion
@@ -21,9 +21,9 @@ function! javacomplete#version#CompareVersions(scriptVersion, serverVersion)
   let i = 0
   while i < len(scriptVersion)
     if i < len(serverVersion)
-      if scriptVersion[i] < serverVersion[i]
+      if str2nr(scriptVersion[i]) < str2nr(serverVersion[i])
         return -1
-      elseif scriptVersion[i] > serverVersion[i]
+      elseif str2nr(scriptVersion[i]) > str2nr(serverVersion[i])
         return 1
       endif
     else

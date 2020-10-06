@@ -7,18 +7,20 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.MultiTypeParameter;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.visitor.TreeVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.printer.PrettyPrinterConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,14 +31,23 @@ public class ClassNamesFetcher {
 
     private final CompilationUnit compilationUnit;
     private final Set<String> resultList = new HashSet<>();
+    private final Set<String> declarationList = new HashSet<>();
     private List<String> staticImportsList = new ArrayList<>();
+
+    public static PrettyPrinterConfiguration withoutComments() {
+        PrettyPrinterConfiguration pp = new PrettyPrinterConfiguration();
+        pp.setPrintComments(false);
+        return pp;
+    }
 
     public ClassNamesFetcher(CompilationUnit compilationUnit) {
         this.compilationUnit = compilationUnit;
         for (ImportDeclaration id : compilationUnit.getImports()) {
             if (id.isStatic()) {
                 String name = id.getName().toString();
-                staticImportsList.add(name.substring(name.lastIndexOf(".") + 1, name.length()));
+                staticImportsList.add(
+                        name.substring(
+                            name.lastIndexOf(".") + 1, name.length()));
             }
         }
     }
@@ -52,32 +63,40 @@ public class ClassNamesFetcher {
         return resultList;
     }
 
+    public Set<String> getDeclarationList() {
+        if (resultList.isEmpty()) {
+            getNames();
+        }
+        return declarationList;
+    }
+
     private class ClassTypeVisitor extends VoidVisitorAdapter<Object> {
 
         @Override
         public void visit(ClassOrInterfaceDeclaration type, Object arg) {
+            new DeepVisitor(this, arg).visitBreadthFirst(type);
             if (type.getAnnotations() != null) {
                 for (AnnotationExpr expr : type.getAnnotations()) {
-                    resultList.add(expr.getName().getName());
-                    List<Node> children = expr.getChildrenNodes();
+                    resultList.add(expr.getNameAsString());
+                    List<Node> children = expr.getChildNodes();
                     for (Node node : children.subList(1, children.size())) {
-                        new DeepVisitor(this, arg).visitDepthFirst(node);
+                        new DeepVisitor(this, arg).visitBreadthFirst(node);
                     }
                 }
             }
         }
-
     }
 
     private class AnnotationsVisitor extends VoidVisitorAdapter<Object> {
 
-        private void addAnnotations(List<AnnotationExpr> annotations, Object arg) {
+        private void addAnnotations(
+                List<AnnotationExpr> annotations, Object arg) {
             if (annotations != null) {
                 for (AnnotationExpr expr : annotations) {
-                    resultList.add(expr.getName().getName());
-                    List<Node> children = expr.getChildrenNodes();
+                    resultList.add(expr.getNameAsString());
+                    List<Node> children = expr.getChildNodes();
                     for (Node node : children.subList(1, children.size())) {
-                        new DeepVisitor(this, arg).visitDepthFirst(node);
+                        new DeepVisitor(this, arg).visitBreadthFirst(node);
                     }
                 }
             }
@@ -102,20 +121,19 @@ public class ClassNamesFetcher {
                 }
             }
 
-            if (type.getThrows() != null) {
-                for (Type expr : type.getThrows()) {
-                    resultList.add(expr.toStringWithoutComments());
+            if (type.getThrownExceptions() != null) {
+                for (Type expr : type.getThrownExceptions()) {
+                    resultList.add(expr.toString(withoutComments()));
                 }
             }
         }
-
     }
 
-    private class TypesVisitor extends VoidVisitorAdapter<Object>{
+    private class TypesVisitor extends VoidVisitorAdapter<Object> {
 
         @Override
         public void visit(BlockStmt type, Object arg) {
-            new DeepVisitor(this, arg).visitDepthFirst(type);
+            new DeepVisitor(this, arg).visitBreadthFirst(type);
         }
 
         @Override
@@ -129,8 +147,10 @@ public class ClassNamesFetcher {
         }
 
         private void addStatic(Expression type) {
-            if (type.getChildrenNodes() != null && type.getChildrenNodes().size() > 0) {
-                String name = type.getChildrenNodes().get(0).toStringWithoutComments();
+            if (type.getChildNodes() != null && 
+                    type.getChildNodes().size() > 0) {
+                String name = type.getChildNodes().
+                    get(0).toString(withoutComments());
                 if (!name.contains(".")) {
                     resultList.add(name);
                 }
@@ -139,20 +159,21 @@ public class ClassNamesFetcher {
 
         @Override
         public void visit(ClassOrInterfaceType type, Object arg) {
-            String name = type.getName();
-            String fullName = type.toStringWithoutComments();
+            String name = type.getNameAsString();
+            String fullName = type.toString(withoutComments());
             if (!fullName.startsWith(name)) {
-                if (!type.getChildrenNodes().isEmpty()) {
-                    name = type.getChildrenNodes().get(0).toStringWithoutComments();
+                if (!type.getChildNodes().isEmpty()) {
+                    name = type.getChildNodes().
+                        get(0).toString(withoutComments());
                 }
             }
             if (name.contains(".")) {
                 name = name.split("\\.")[0];
             }
             resultList.add(name);
-            if (type.getTypeArgs() != null) {
-                for (Type t : type.getTypeArgs()) {
-                    String typeName = t.toStringWithoutComments();
+            if (type.getTypeArguments().isPresent()) {
+                for (Type t : type.getTypeArguments().get()) {
+                    String typeName = t.toString(withoutComments());
                     if (typeName.contains(".")) {
                         typeName = typeName.split("\\.")[0];
                     }
@@ -160,30 +181,30 @@ public class ClassNamesFetcher {
                 }
             }
         }
-
     }
 
     private class DeepVisitor extends TreeVisitor {
 
-        private VoidVisitorAdapter adapter;
+        private VoidVisitorAdapter<Object> adapter;
         private Object arg;
 
-        public DeepVisitor(VoidVisitorAdapter adapter, Object arg) {
+        public DeepVisitor(VoidVisitorAdapter<Object> adapter, Object arg) {
             this.adapter = adapter;
             this.arg = arg;
         }
 
         public void process(Node node) {
             if (node instanceof ClassOrInterfaceType) {
-                adapter.visit((ClassOrInterfaceType)node, arg);
-            } else if (node instanceof MultiTypeParameter) {
-                ((MultiTypeParameter)node).getType().getElements()
-                    .forEach(t -> resultList.add(t.toStringWithoutComments()));
+                adapter.visit((ClassOrInterfaceType) node, arg);
+            } else if (node instanceof UnionType) {
+                ((UnionType) node).getElements()
+                    .forEach(
+                            t -> resultList.add(
+                                t.toString(withoutComments())));
             } else if (node instanceof MethodCallExpr) {
                 MethodCallExpr methodCall = ((MethodCallExpr) node);
-                String name = methodCall.getName();
-                List<Node> children = node.getChildrenNodes();
-                if (staticImportsList.contains(name) && children.get(0).toString().equals("null")) {
+                String name = methodCall.getNameAsString();
+                if (staticImportsList.contains(name)) {
                     resultList.add(name);
                 }
             } else if (node instanceof NameExpr) {
@@ -195,13 +216,15 @@ public class ClassNamesFetcher {
                 // the beginning.
                 NameExpr nameExpr = (NameExpr) node;
                 String parent = "";
-                if (nameExpr.getParentNode() != null) {
-                    parent = nameExpr.getParentNode()
-                        .toStringWithoutComments();
-                } 
-                String name = nameExpr.getName();
+                if (nameExpr.getParentNode().isPresent()) {
+                    parent = nameExpr.getParentNode().
+                        get().toString(withoutComments());
+                }
+                String name = nameExpr.getNameAsString();
                 if (name != null) {
-                    if (!parent.startsWith("@") && !parent.equals(name) && parent.endsWith(name)) {
+                    if (!parent.startsWith("@") && 
+                            !parent.equals(name) && 
+                            parent.endsWith(name)) {
                         return;
                     }
 
@@ -209,6 +232,18 @@ public class ClassNamesFetcher {
                         resultList.add(name);
                     }
                 }
+            } else if (node instanceof Name) {
+                String name = node.toString(withoutComments());
+
+                if (name.matches("^[A-Z][A-Za-z0-9_]*")) {
+                    resultList.add(name);
+                }
+            } else if (node instanceof ClassOrInterfaceDeclaration) {
+                ClassOrInterfaceDeclaration declaration = 
+                    (ClassOrInterfaceDeclaration) node;
+                declarationList.add(
+                        declaration.getName().toString(
+                            withoutComments()));
             }
         }
     }

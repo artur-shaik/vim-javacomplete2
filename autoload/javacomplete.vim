@@ -146,7 +146,7 @@ endfunction
 call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI()
-  if get(g:, 'JC_ClassnameCompletedFlag', 0)
+  if get(g:, 'JC_ClassnameCompletedFlag', 0) && get(g:, 'JavaComplete_InsertImports', 1)
     let saveCursor = getcurpos()
     let line = getline('.')
     if empty(javacomplete#util#Trim(line))
@@ -279,7 +279,7 @@ augroup javacomplete
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE_SEP. '?')
-let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser.jar'], g:FILE_SEP), ":p")
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser-core-3.5.20.jar'], g:FILE_SEP), ":p")
 
 call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
 
@@ -293,6 +293,16 @@ if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
           \, join(['**', 'build', 'generated', 'source', '**', 'debug'], g:FILE_SEP), 0, 0)
           \, g:PATH_SEP)
 endif
+
+for source in get(g:, 'JavaComplete_SourceExclude', [])
+  let source = fnamemodify(source, ':p')
+  let idx = stridx(g:JavaComplete_SourcesPath, source)
+  while idx > 0
+    let colon = stridx(g:JavaComplete_SourcesPath, ':', idx + 1)
+    let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath[:idx - 1] . g:JavaComplete_SourcesPath[colon + 1:]
+    let idx = stridx(g:JavaComplete_SourcesPath, source)
+  endwhile
+endfor
 
 call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
 

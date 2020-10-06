@@ -138,16 +138,20 @@ function! javacomplete#collector#FetchInfoFromServer(class, option)
 
   let res = javacomplete#server#Communicate(a:option, a:class, 'collector#FetchInfoFromServer')
   if res =~ "^{'"
-    let dict = eval(res)
-    for key in keys(dict)
-      if !has_key(g:JavaComplete_Cache, key)
-        if type(dict[key]) == type({})
-          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
-        elseif type(dict[key]) == type([])
-          let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = sort(dict[key])
+    silent! let dict = eval(res)
+    if !empty(dict) && type(dict)==type({})
+      for key in keys(dict)
+        if !has_key(g:JavaComplete_Cache, key)
+          if type(dict[key]) == type({})
+            let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = javacomplete#util#Sort(dict[key])
+          elseif type(dict[key]) == type([])
+            let g:JavaComplete_Cache[substitute(key, '\$', '.', '')] = sort(dict[key])
+          endif
         endif
-      endif
-    endfor
+      endfor
+    else
+      let b:errormsg = dict
+    endif
   else
     let b:errormsg = res
   endif
@@ -323,7 +327,8 @@ function! s:CollectFQNs(typename, packagename, filekey, extends)
     let typename = a:typename
   endif
 
-  let directFqn = javacomplete#imports#SearchSingleTypeImport(typename, javacomplete#imports#GetImports('imports_fqn', a:filekey))
+  let imports = javacomplete#imports#GetImports('imports_fqn', a:filekey)
+  let directFqn = javacomplete#imports#SearchSingleTypeImport(typename, imports)
   if !empty(directFqn)
     return [directFqn. extra]
   endif

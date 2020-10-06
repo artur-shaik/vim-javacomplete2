@@ -65,7 +65,7 @@ function! s:GenerateImports()
       if (lnum == 0)
         break
       elseif !javacomplete#util#InComment(line("."), col(".")-1)
-        normal! w
+        call search(' \S', 'e')
         " TODO: search semicolon or import keyword, excluding comment
         let stat = matchstr(getline(lnum)[col('.')-1:], '\(static\s\+\)\?\(' .g:RE_QUALID. '\%(\s*\.\s*\*\)\?\)\s*;')
         if !empty(stat)
@@ -189,6 +189,10 @@ function! javacomplete#imports#SortImports()
     call sort(importsList)
     let importsListSorted = s:SortImportsList(importsList)
 
+    if g:JavaComplete_StaticImportsAtTop
+      let importsListSorted = s:StaticImportsFirst(importsListSorted)
+    endif
+
     let saveCursor = getpos('.')
     silent execute beginLine.','.lastLine. 'delete _'
     for imp in importsListSorted
@@ -209,6 +213,12 @@ function! javacomplete#imports#SortImports()
 endfunction
 
 function! s:AddImport(import)
+  if exists('g:JavaComplete_ExcludeClassRegex')
+    if a:import =~ get(g:, 'JavaComplete_ExcludeClassRegex')
+      return
+    endif
+  endif
+
   let isStaticImport = a:import =~ "^static.*" ? 1 : 0
   let import = substitute(a:import, "\\$", ".", "g")
   if !isStaticImport
@@ -305,6 +315,21 @@ endfunction
 if !exists('s:RegularClassesDict') && exists('g:JavaComplete_RegularClasses')
   let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
 endif
+
+function! s:StaticImportsFirst(importsList)
+  let staticImportsList = []
+  let l_a = copy(a:importsList)
+  for imp in l_a
+    if imp =~ '^static'
+      call remove(a:importsList, index(a:importsList, imp))
+      call add(staticImportsList, imp)
+    endif
+  endfor
+  if len(staticImportsList) > 0
+    call add(staticImportsList, '')
+  endif
+  return staticImportsList + a:importsList
+endfunction
 
 function! s:SortImportsList(importsList, ...)
   let sortType = a:0 > 0 ? a:1 : g:JavaComplete_ImportSortType
@@ -410,6 +435,29 @@ function! javacomplete#imports#Add(...)
   endif
 endfunction
 
+function! javacomplete#imports#getType(...)
+  call javacomplete#server#Start()
+
+  let i = 0
+  let classname = ''
+  while empty(classname)
+    let offset = col('.') - i
+    if offset <= 0
+      return
+    endif
+    let classname = javacomplete#util#GetClassNameWithScope(offset)
+    let i += 1
+  endwhile
+
+  if classname =~ '^@.*'
+    let classname = classname[1:]
+  endif
+  if index(keys(s:RegularClassesDict), classname) != -1
+    echo s:RegularClassesDict[classname]
+  else
+  endif
+endfunction
+
 function! s:ChooseImportOption(options, classname)
   let import = ''
   let options = a:options
@@ -459,48 +507,63 @@ function! s:PopulateRegularClasses(classname, import)
 endfunction
 
 function! javacomplete#imports#RemoveUnused()
+  call javacomplete#highlights#Drop()
+
   let currentBuf = getline(1,'$')
   let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
 
   let response = javacomplete#server#Communicate('-unused-imports -content', base64Content, 'RemoveUnusedImports')
-  if response =~ '^['
-    let saveCursor = getpos('.')
-    let unused = eval(response)
-    for unusedImport in unused
-      let imports = javacomplete#imports#GetImports('imports')
-      if stridx(unusedImport, '$') != -1
-        let unusedImport = 'static '. substitute(unusedImport, "\\$", ".", "")
-      endif
-      for import in imports
-        if import[0] == unusedImport
-          silent execute import[1]. 'delete _'
+  if response =~ '^{'
+    let response = eval(response)
+    if has_key(response, 'imports')
+      let saveCursor = getpos('.')
+      let unusedImports = response['imports']
+      for unusedImport in unusedImports
+        let imports = javacomplete#imports#GetImports('imports')
+        if stridx(unusedImport, '$') != -1
+          let unusedImport = 'static '. substitute(unusedImport, "\\$", ".", "")
         endif
+        for import in imports
+          if import[0] == unusedImport
+            silent execute import[1]. 'delete _'
+          endif
+        endfor
       endfor
-    endfor
-    let saveCursor[1] = saveCursor[1] - len(unused)
-    call setpos('.', saveCursor)
+      let saveCursor[1] = saveCursor[1] - len(unusedImports)
+      call setpos('.', saveCursor)
+    elseif has_key(response, 'parse-problems')
+      call javacomplete#highlights#ShowProblems(response['parse-problems'])
+    endif
   endif
 endfunction
 
 function! javacomplete#imports#AddMissing()
+  call javacomplete#highlights#Drop()
+
   let currentBuf = getline(1,'$')
   let base64Content = javacomplete#util#Base64Encode(join(currentBuf, "\n"))
 
   let response = javacomplete#server#Communicate('-missing-imports -content', base64Content, 'AddMissingImports')
-  if response =~ '^['
-    let missing = eval(response)
-    for import in missing
-      let classname = split(import[0], '\(\.\|\$\)')[-1]
-      if index(keys(s:RegularClassesDict), classname) < 0
-        let result = s:ChooseImportOption(import, classname)
-        if !empty(result)
-          call s:AddImport(result)
+  if response =~ '^{'
+    let response = eval(response)
+    if has_key(response, 'imports')
+      for import in response['imports']
+        let classname = split(import[0], '\(\.\|\$\)')[-1]
+        if index(keys(s:RegularClassesDict), classname) < 0
+          let result = s:ChooseImportOption(import, classname)
+          if !empty(result)
+            call s:AddImport(result)
+          endif
+        else
+          call s:AddImport(s:RegularClassesDict[classname])
         endif
-      else
-        call s:AddImport(s:RegularClassesDict[classname])
-      endif
-    endfor
-    call javacomplete#imports#SortImports()
+      endfor
+      call javacomplete#imports#SortImports()
+    elseif has_key(response, 'parse-problems')
+      call javacomplete#highlights#ShowProblems(response['parse-problems'])
+    endif
+  else
+    echo response
   endif
 endfunction
 

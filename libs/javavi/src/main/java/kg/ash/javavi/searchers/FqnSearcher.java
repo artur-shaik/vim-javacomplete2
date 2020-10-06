@@ -1,11 +1,11 @@
 package kg.ash.javavi.searchers;
 
-import java.util.ArrayList;
-import java.util.List;
 import kg.ash.javavi.TargetParser;
 import kg.ash.javavi.clazz.ClassImport;
-import kg.ash.javavi.searchers.ClassSearcher;
 import kg.ash.javavi.clazz.SourceClass;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FqnSearcher {
 
@@ -13,8 +13,9 @@ public class FqnSearcher {
 
     public FqnSearcher(String sources) {
         this.sources = sources;
-        if (this.sources != null)
+        if (this.sources != null) {
             this.sources = this.sources.replace('\\', '/');
+        }
     }
 
     public String getFqn(SourceClass clazz, String name) {
@@ -23,7 +24,7 @@ public class FqnSearcher {
 
         List<String> fqns = new ArrayList<>();
         for (ClassImport ci : clazz.getImports()) {
-            if (!ci.isAsterisk()){
+            if (!ci.isAsterisk()) {
                 if (ci.getTail().equals(name)) {
                     fqns.add(ci.getName());
                     break;
@@ -82,5 +83,4 @@ public class FqnSearcher {
 
         return importName;
     }
-
 }

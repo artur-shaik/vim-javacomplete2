@@ -1,13 +1,17 @@
 package kg.ash.javavi.clazz;
 
+import com.github.javaparser.ast.Modifier;
+import kg.ash.javavi.TargetParser;
+
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 public class SourceClass {
-    
-    private String pakage = null;
+
+    private String pkg = null;
     private String name = null;
-    private int modifiers;
+    private EnumSet<Modifier> modifiers;
     private boolean isInterface = false;
     private List<ClassConstructor> constructors = new ArrayList<>();
     private List<ClassMethod> methods = new ArrayList<>();
@@ -25,11 +29,14 @@ public class SourceClass {
     private CodeRegion region = new CodeRegion();
 
     public String getName() {
-        String args = "";
-        for (String type : typeArguments) {
-            args += type + ",";
+        StringBuilder sb = new StringBuilder();
+
+        if (pkg != null) {
+            sb.append(pkg).append(".");
         }
-        return String.format("%s%s%s", pakage == null ? "" : pakage + ".", name, args.length() > 0 ? "<" + args.substring(0, args.length() - 1) + ">" : "");
+        sb.append(name).append(TargetParser.getTypeArgumentsString(typeArguments));
+
+        return sb.toString();
     }
 
     public void setName(String name) {
@@ -70,20 +77,20 @@ public class SourceClass {
         }
     }
 
-    public int getModifiers() {
+    public EnumSet<Modifier> getModifiers() {
         return modifiers;
     }
 
-    public void setModifiers(int modifiers) {
+    public void setModifiers(EnumSet<Modifier> modifiers) {
         this.modifiers = modifiers;
     }
 
     public String getPackage() {
-        return pakage;
+        return pkg;
     }
 
     public void setPackage(String pakage) {
-        this.pakage = pakage;
+        this.pkg = pakage;
     }
 
     public void setSuperclass(String superclass) {
@@ -120,18 +127,12 @@ public class SourceClass {
 
     public void addLinkedClass(SourceClass clazz) {
         linkedClasses.add(clazz);
+        methods.addAll(clazz.getMethods());
+        fields.addAll(clazz.getFields());
     }
 
     public List<SourceClass> getLinkedClasses() {
         return linkedClasses;
-    }
-
-    public boolean containsInLinked(String fqn) {
-        for (SourceClass sc : getLinkedClasses()) {
-            if (sc.getName().equals(fqn)) return true;
-        }
-
-        return false;
     }
 
     public void addTypeArgument(String type) {

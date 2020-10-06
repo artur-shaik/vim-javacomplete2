@@ -1,12 +1,13 @@
 package kg.ash.javavi.readers;
 
 import kg.ash.javavi.clazz.SourceClass;
+
 import java.util.List;
 
 public interface ClassReader {
-    
-    public SourceClass read(String fqn);
+    SourceClass read(String fqn);
 
-    public ClassReader setTypeArguments(List<String> typeArguments);
+    ClassReader setTypeArguments(List<String> typeArguments);
 
+    ClassReader addKnown(List knownClasses);
 }

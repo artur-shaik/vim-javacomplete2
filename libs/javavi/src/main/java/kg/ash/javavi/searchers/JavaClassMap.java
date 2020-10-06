@@ -2,7 +2,6 @@ package kg.ash.javavi.searchers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +36,13 @@ public abstract class JavaClassMap implements Serializable {
         return pathsMap.get(path);
     }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void add(String path, int source, int type, String filename) {
         if (!contains(path)) {
@@ -58,20 +57,21 @@ public abstract class JavaClassMap implements Serializable {
 
     public StringBuilder getCachedClasses() {
         StringBuilder cachedClasses = new StringBuilder();
-        classes.stream().sorted().forEach(path -> cachedClasses.append("'").append(path).append("',"));
+        classes.stream()
+            .sorted()
+            .forEach(path -> cachedClasses.append("'").append(path).append("',"));
         return cachedClasses;
     }
 
     public StringBuilder getCachedSubpackages() {
         StringBuilder cachedSubpackages = new StringBuilder();
-        subpackages.keySet().stream().sorted().forEach(path -> cachedSubpackages.append("'").append(path).append("',"));
+        subpackages.keySet()
+            .stream()
+            .sorted()
+            .forEach(path -> cachedSubpackages.append("'").append(path).append("',"));
         return cachedSubpackages;
     }
 
-
-    public List<String> getClasses() {
-        return classes;
-    }
 
     public Map<String, String> getSubpackages() {
         return subpackages;
