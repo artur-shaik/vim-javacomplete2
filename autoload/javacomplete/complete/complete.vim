@@ -574,13 +574,13 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
         \ javacomplete#util#GetClassPackage(a:ci.name)
   let result = [[], [], [], []]
 
-  call s:Log("interface: ". a:ci.interface)
+  let isinterface = get(a:ci, 'interface', 0)
 
   if a:kind != 13
     if a:outputkind != 14
       for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'fields', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_fields', []) : [])
         if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-          if s:CanAccess(m.m, a:kind, a:outputkind, samePackage, a:ci.interface)
+          if s:CanAccess(m.m, a:kind, a:outputkind, samePackage, isinterface)
             call add(result[2], m)
           endif
         endif
@@ -589,7 +589,7 @@ function! javacomplete#complete#complete#SearchMember(ci, name, fullmatch, kind,
 
     for m in (a:0 > 0 && a:1 ? [] : get(a:ci, 'methods', [])) + ((a:kind == 1 || a:kind == 2 || a:kind == 7) ? get(a:ci, 'declared_methods', []) : [])
       if empty(a:name) || (a:fullmatch ? m.n ==# a:name : m.n =~# '^' . a:name)
-        if s:CanAccess(m.m, a:kind, a:outputkind, samePackage, a:ci.interface)
+        if s:CanAccess(m.m, a:kind, a:outputkind, samePackage, isinterface)
           call add(result[1], m)
         endif
       endif
