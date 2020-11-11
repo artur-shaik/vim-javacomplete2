@@ -2221,7 +2221,7 @@ fu! s:innerCreator(newpos, typeArgs, encl)
   let t = s:Ident(b:pos, s:ident())
   if b:token == 'LT'
     " checkGenerics
-    let t = TypeArguments(t)
+    let t = s:typeArguments(t)
   endif
   return s:classCreatorRest(a:newpos, a:encl, a:typeArgs, t)
 endfu
