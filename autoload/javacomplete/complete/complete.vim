@@ -66,13 +66,12 @@ function! javacomplete#complete#complete#Complete(findstart, base, is_filter)
   endif
 
   if len(get(b:, 'errormsg', '')) > 0
-    " shane: omni compl may fail if not clear cache but re-issue it again
     call javacomplete#ClearCache()
-  endif
 
-  if get(g:, 'JavaComplete_IgnoreErrorMsg', 0) <= 0 && len(get(b:, 'errormsg', '')) > 0
-    echoerr 'javacomplete error: ' . b:errormsg
-    let b:errormsg = ''
+    if get(g:, 'JavaComplete_IgnoreErrorMsg', 0) <= 0
+      echom 'javacomplete error: ' . b:errormsg
+      let b:errormsg = ''
+    endif
   endif
 
   return []
@@ -429,7 +428,7 @@ function! javacomplete#complete#complete#CompleteAfterDot(expr)
 
           if !empty(members[3])
             if len(members[3]) > 0
-              let fount = 0
+              let found = 0
               for entry in members[3]
                 if has_key(entry, 'n') && entry.n == ident && has_key(entry, 'm')
                   let ti = javacomplete#collector#DoGetClassInfo(entry.m)

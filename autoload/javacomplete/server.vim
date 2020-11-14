@@ -174,7 +174,7 @@ function! javacomplete#server#CompilationJobHandler(data, event)
     endif
     let s:compilationIsRunning = 0
   elseif a:event == 'stderr'
-    echoerr join(a:data)
+    echomsg join(a:data)
   elseif a:event == 'stdout'
     if g:JavaComplete_ShowExternalCommandsOutput
       echomsg join(a:data)
