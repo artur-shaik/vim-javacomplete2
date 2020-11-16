@@ -30,7 +30,7 @@ let g:JavaComplete_ShowExternalCommandsOutput =
       \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
 
 let g:JavaComplete_ClasspathGenerationOrder =
-      \ get(g:, 'JavaComplete_ClasspathGenerationOrder', ['Eclipse', 'Maven', 'Gradle', 'Ant'])
+      \ get(g:, 'JavaComplete_ClasspathGenerationOrder', ['Maven', 'Eclipse', 'Gradle', 'Ant'])
 
 let g:JavaComplete_ImportSortType =
       \ get(g:, 'JavaComplete_ImportSortType', 'jarName')
