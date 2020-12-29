@@ -162,6 +162,9 @@ function! javacomplete#newclass#CreateInFile()
 
   let currentPath = split(expand('%:p:h'), g:FILE_SEP)
   call filter(currentPath, 'empty(v:val) == 0')
+  if has('win32') && currentPath[0][-1:] ==':'
+    let currentPath = currentPath[1:]
+  endif
 
   let data = {}
   let data['path'] = ''
@@ -217,6 +220,9 @@ function! javacomplete#newclass#CreateClass()
   let currentPackage = split(javacomplete#collector#GetPackageName(), '\.')
   let currentPath = split(expand('%:p:h'), g:FILE_SEP)
   call filter(currentPath, 'empty(v:val) == 0')
+  if has('win32') && currentPath[0][-1:] ==':'
+    let currentPath = currentPath[1:]
+  endif
   let data = s:ParseInput(
         \ userinput, reverse(copy(currentPath)), currentPackage)
   if type(data) != type({})
