@@ -210,6 +210,8 @@ function! s:DeterminePackage(currentPath)
 endfunction
 
 function! javacomplete#newclass#CreateClass()
+  call javacomplete#Enable()
+  call javacomplete#Start()
   let message = "enter new class name: "
   let userinput = input(message, '', 'customlist,javacomplete#newclass#Completion')
   if empty(userinput)
