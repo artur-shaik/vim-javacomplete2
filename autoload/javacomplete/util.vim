@@ -352,11 +352,7 @@ endfunction
 
 function! javacomplete#util#RemoveEmptyClasses(classes)
   let newClasses = a:classes[:]
-  let emptyClassIndex = index(newClasses, '')
-  if emptyClassIndex > -1
-    unlet newClasses[emptyClassIndex]
-  endif
-  return newClasses
+  return filter(newClasses, 'v:val !~ "^$"')
 endfunction
 
 function! javacomplete#util#GetRegularClassesDict(classes)
