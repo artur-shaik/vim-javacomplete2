@@ -351,8 +351,7 @@ function! javacomplete#util#GetBase(extra)
 endfunction
 
 function! javacomplete#util#RemoveEmptyClasses(classes)
-  let newClasses = a:classes[:]
-  return filter(newClasses, 'v:val !~ "^$"')
+  return filter(a:classes, 'v:val !~ "^$"')
 endfunction
 
 function! javacomplete#util#GetRegularClassesDict(classes)
