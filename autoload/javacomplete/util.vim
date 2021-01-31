@@ -350,6 +350,10 @@ function! javacomplete#util#GetBase(extra)
   return base
 endfunction
 
+function! javacomplete#util#RemoveEmptyClasses(classes)
+  return filter(a:classes, 'v:val !~ "^$"')
+endfunction
+
 function! javacomplete#util#GetRegularClassesDict(classes)
   let path = javacomplete#util#GetBase('cache'). g:FILE_SEP. 'regular_classes_'. g:JavaComplete_ProjectKey. '.dat'
   if filereadable(path)
@@ -357,7 +361,7 @@ function! javacomplete#util#GetRegularClassesDict(classes)
   else
     let classes = []
   endif
-  let classes = javacomplete#util#uniq(sort(extend(classes, a:classes)))
+  let classes = javacomplete#util#RemoveEmptyClasses(javacomplete#util#uniq(sort(extend(classes, a:classes))))
   let dict = {}
   for class in classes
     call extend(dict, {split(class,'\.')[-1] : class})
