@@ -219,6 +219,11 @@ function! s:AddImport(import)
     endif
   endif
 
+  let importPackage = a:import[0:strridx(a:import, '.') - 1]
+  if importPackage == javacomplete#collector#GetPackageName()
+    return
+  endif
+
   let isStaticImport = a:import =~ "^static.*" ? 1 : 0
   let import = substitute(a:import, "\\$", ".", "g")
   if !isStaticImport
