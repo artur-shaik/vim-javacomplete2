@@ -116,7 +116,7 @@ function! s:GenerateClassPath(path) abort
         \ fnamemodify(g:JavaComplete_GradlePath, ':p:h'), 
         \ '-I', 
         \ s:temporaryGradleFile, 
-        \ 'classpath']
+        \ ':classpath']
   call javacomplete#server#BlockStart()
   call javacomplete#util#RunSystem(
         \ cmd, 
