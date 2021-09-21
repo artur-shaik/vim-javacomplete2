@@ -435,6 +435,11 @@ endif
 " @parentsection usage
 " All these options are supported when encoding with java project.
 
+
+""
+" Base cache directory of javacomplete2 (default is ~/.cache):
+"
+" let g:JavaComplete_BaseDir = '~/.your_cache_dir'
 let g:JavaComplete_BaseDir =
       \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
 
