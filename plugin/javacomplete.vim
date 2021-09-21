@@ -455,7 +455,14 @@ let g:JavaComplete_BaseDir =
 " <
 let g:JavaComplete_ImportDefault =
       \ get(g:, 'JavaComplete_ImportDefault', 0)
-
+""
+" Import selection is activated automatically when completing new class
+" name. This can be avoided by setting:
+" >
+"   let g:JavaComplete_InsertImports = 0
+" <
+let g:JavaComplete_InsertImports =
+      \ get(g:, 'JavaComplete_InsertImports', 1)
 let g:JavaComplete_ShowExternalCommandsOutput =
       \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
 

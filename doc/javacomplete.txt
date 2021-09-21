@@ -408,6 +408,13 @@ To avoid this behavior use:
   let g:JavaComplete_ImportDefault = -1
 <
 
+                                                *g:JavaComplete_InsertImports*
+Import selection is activated automatically when completing new class name.
+This can be avoided by setting:
+>
+  let g:JavaComplete_InsertImports = 0
+<
+
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:
 >

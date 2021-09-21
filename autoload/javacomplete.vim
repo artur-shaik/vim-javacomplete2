@@ -305,7 +305,7 @@ endfunction
 call s:SetCurrentFileKey()
 
 function! s:HandleTextChangedI() abort
-  if get(g:, 'JC_ClassnameCompletedFlag', 0) && get(g:, 'JavaComplete_InsertImports', 1)
+  if get(g:, 'JC_ClassnameCompletedFlag', 0) && g:JavaComplete_InsertImports
     let saveCursor = getcurpos()
     let line = getline('.')
     if empty(javacomplete#util#Trim(line))
