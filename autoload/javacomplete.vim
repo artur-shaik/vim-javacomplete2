@@ -6,13 +6,115 @@
 
 ""
 " @section Usage, usage
-" You can use it like other omni-completion script. Many samples of input context
-" are gived in the following section.
+" You can use `vim-javacomplete2` just like other omni-completion plugin.
+" Many samples of input context are gived in the following section.
 "
-" See FAQ in time if some problem occurs. When meeting other problems not
-" described in FAQ, you can contact with the auther by the following e-mail:
-" ashaihullin@gmail.com
+" See |javacomplete-faq| in time if some problem occurs.
+" When meeting other problems not described in FAQ, you can contact with
+" the auther by the following e-mail: ashaihullin@gmail.com
 "
+
+""
+" @section Input contexts, contexts
+" @parentsection usage
+" It recognize nearly all kinds of Primary Expressions (see langspec-3.0)
+" except for `"Primary.new Indentifier"`. Casting conversion is also supported.
+" 
+" Samples of input contexts are as following: (Note that '|' indicates cursor)
+"
+" (1). after '.', list members of a class or a package
+" >
+"     - package.| 	subpackages and classes of a package
+"     - Type.| 		static members of the 'Type' class and "class"
+"     - var.| or field.|	members of a variable or a field
+"     - method().| 	members of result of method()
+"     - this.|		members of the current class
+"     - ClassName.this.|	members of the qualified class
+"     - super.|		members of the super class
+"     - array.|		members of an array object
+"     - array[i].|	array access, return members of the element of array
+"     - "String".|	String literal, return members of java.lang.String
+"     - int.| or void.|	primitive type or pseudo-type, return "class"
+"     - int[].|		array type, return members of a array type and "class"
+"     - java.lang.String[].|
+"     - new int[].|	members of the new array instance
+"     - new java.lang.String[i=1][].|
+"     - new Type().|	members of the new class instance 
+"     - Type.class.|	class literal, return members of java.lang.Class
+"     - void.class.| or int.class.|
+"     - ((Type)var).|	cast var as Type, return members of Type.
+"     - (var.method()).|	same with "var.|"
+"     - (new Class()).|	same with "new Class().|"
+" <
+" (2). after '(', list matching methods with parameters information.
+" >
+"     - method(|) 	methods matched
+"     - var.method(|) 	methods matched
+"     - new ClassName(|)	constructors matched
+"     - this(|) 		constructors of current class matched
+"     - super(|) 		constructors of super class matched
+"     Any place between '(' and ')' will be supported soon.
+"     Help information of javadoc is not supported yet.
+" <
+" (3). after an incomplete word, list all the matched beginning with it.
+" >
+"     - var.ab| 	subset of members of var beginning with `ab`
+"     - ab|	list of all maybes
+" <
+" (4). import statement
+" >
+"     - " import 	java.util.|"
+"     - " import 	java.ut|"
+"     - " import 	ja|"
+"     - " import 	java.lang.Character.|"	e.g. "Subset"
+"     - " import static java.lang.Math.|"	e.g. "PI, abs"
+" <
+" (5). package declaration
+" >
+"     - " package 	com.|"
+" <
+"
+" The above are in simple expression.
+"
+" (6). after compound expression:
+" >
+"     - PrimaryExpr.var.|
+"     - PrimaryExpr.method().|
+"     - PrimaryExpr.method(|)
+"     - PrimaryExpr.var.ab|
+"     e.g.
+"     - "java.lang	. System.in .|"
+"     - "java.lang.System.getenv().|"
+"     - "int.class.toString().|"
+"     - "list.toArray().|"
+"     - "new ZipFile(path).|"
+"     - "new ZipFile(path).entries().|"
+" <
+" (7). Nested expression:
+" >
+"     - "System.out.println( str.| )"
+"     - "System.out.println(str.charAt(| )"
+"     - "for (int i = 0; i < str.|; i++)"
+"     - "for ( Object o : a.getCollect| )"
+" <
+" 
+
+""
+" @section Kind letter, kindletter
+" @parentsection usage
+" A single letter indicates the kind of compeltion item. These kinds are:
+" >
+" 	+	ctor
+" 	v	local variable or parameter
+" 	f	nonstatic field
+" 	F	static field
+" 	m	nonstatic method
+" 	M	static method
+" 	P	package
+" 	C	class type
+" 	I	interface type
+" <
+
 
 if exists('g:JavaComplete_Autoload')
   finish
@@ -21,17 +123,17 @@ let g:JavaComplete_Autoload = 1
 
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
-if has("python3")
+if has('python3')
   command! -nargs=1 JavacompletePy py3 <args>
   command! -nargs=1 JavacompletePyfile py3file <args>
 else
-  echoerr "Javacomplete needs Python3 support to run!"
+  echoerr 'Javacomplete needs Python3 support to run!'
   finish
 endif
 
-function! s:Log(log)
-  let log = type(a:log) == type("") ? a:log : string(a:log)
-  call javacomplete#logger#Log("[javacomplete] ". a:log)
+function! s:Log(log) abort
+  let log = type(a:log) ==# type('') ? a:log : string(a:log)
+  call javacomplete#logger#Log('[javacomplete] '. a:log)
 endfunction
 
 let g:J_ARRAY_TYPE_MEMBERS = [
@@ -117,19 +219,19 @@ let g:JavaComplete_Files = {}	" srouce file path -> properties, e.g. {filekey: {
 
 let g:JavaComplete_ProjectKey = ''
 
-fu! SScope()
+fu! SScope() abort
   return s:
 endfu
 
-function! javacomplete#Disable()
+function! javacomplete#Disable() abort
   let g:JavaComplete_Disabled = 1
 endfunction
 
-function! javacomplete#Enable()
+function! javacomplete#Enable() abort
   let g:JavaComplete_Disabled = 0
 endfunction
 
-function! javacomplete#ClearCache()
+function! javacomplete#ClearCache() abort
   let g:JavaComplete_Cache = {}
   let g:JavaComplete_Files = {}
 
@@ -137,25 +239,25 @@ function! javacomplete#ClearCache()
   call javacomplete#server#Communicate('-collect-packages', '', 's:ClearCache')
 endfunction
 
-function! javacomplete#Complete(findstart, base)
+function! javacomplete#Complete(findstart, base) abort
   return javacomplete#complete#complete#Complete(a:findstart, a:base, 1)
 endfunction
 
 " key of g:JavaComplete_Files for current buffer. It may be the full path of current file or the bufnr of unnamed buffer, and is updated when BufEnter, BufLeave.
-function! javacomplete#GetCurrentFileKey()
+function! javacomplete#GetCurrentFileKey() abort
   return s:GetCurrentFileKey()
 endfunction
 
-function! s:GetCurrentFileKey()
-  return has("autocmd") ? s:curfilekey : empty(expand('%')) ? bufnr('%') : expand('%:p')
+function! s:GetCurrentFileKey() abort
+  return has('autocmd') ? s:curfilekey : empty(expand('%')) ? bufnr('%') : expand('%:p')
 endfunction
 
-function! s:SetCurrentFileKey()
+function! s:SetCurrentFileKey() abort
   let s:curfilekey = empty(expand('%')) ? bufnr('%') : expand('%:p')
 endfunction
 call s:SetCurrentFileKey()
 
-function! s:HandleTextChangedI()
+function! s:HandleTextChangedI() abort
   if get(g:, 'JC_ClassnameCompletedFlag', 0) && get(g:, 'JavaComplete_InsertImports', 1)
     let saveCursor = getcurpos()
     let line = getline('.')
@@ -164,7 +266,7 @@ function! s:HandleTextChangedI()
       let line = getline('.')
       let offset = 1
     else
-      if line[col('.') - 2] !~ '\v(\s|\.|\(|\<)'
+      if line[col('.') - 2] !~# '\v(\s|\.|\(|\<)'
         return
       endif
       let offset = 0
@@ -184,24 +286,24 @@ function! s:HandleTextChangedI()
 
     let g:JC_DeclarationCompletedFlag = 0
 
-    if line !~ '.*@Override.*'
+    if line !~# '.*@Override.*'
       let line = getline(line('.') - 1)
     endif
 
-    if line =~ '.*@Override\s\+\(\S\+\|\)\(\s\+\|\)$'
+    if line =~# '.*@Override\s\+\(\S\+\|\)\(\s\+\|\)$'
       return
     endif
 
     if !empty(javacomplete#util#Trim(getline('.')))
-      call feedkeys("\b\r", "n")
+      call feedkeys("\b\r", 'n')
     endif
     if get(g:, 'JavaComplete_ClosingBrace', 1)
-      call feedkeys("}\eO", "n")
+      call feedkeys("}\eO", 'n')
     endif
   endif
 endfunction
 
-function! s:HandleInsertLeave()
+function! s:HandleInsertLeave() abort
   if get(g:, 'JC_DeclarationCompletedFlag', 0)
     let g:JC_DeclarationCompletedFlag = 0
   endif
@@ -210,11 +312,11 @@ function! s:HandleInsertLeave()
   endif
 endfunction
 
-function! javacomplete#UseFQN()
+function! javacomplete#UseFQN() abort
   return get(g:, 'JavaComplete_UseFQN', 0)
 endfunction
 
-function! s:RemoveCurrentFromCache()
+function! s:RemoveCurrentFromCache() abort
   let package = javacomplete#complete#complete#GetPackageName()
   let classname = split(expand('%:t'), '\.')[0]
   let fqn = package. '.'. classname
@@ -230,8 +332,8 @@ function! s:RemoveCurrentFromCache()
   call javacomplete#server#Communicate('-async -add-source-to-cache', arguments, 's:RemoveCurrentFromCache')
 endfunction
 
-function! s:DefaultMappings()
-  if !get(g:, "JavaComplete_EnableDefaultMappings", 1)
+function! s:DefaultMappings() abort
+  if !get(g:, 'JavaComplete_EnableDefaultMappings', 1)
     return
   endif
 
@@ -282,21 +384,21 @@ augroup javacomplete
     autocmd TextChangedI *.java,*.jsp call s:HandleTextChangedI()
   else
     echohl WarningMsg
-    echomsg "JavaComplete2 : TextChangedI feature needs vim version >= 7.4.143"
+    echomsg 'JavaComplete2 : TextChangedI feature needs vim version >= 7.4.143'
     echohl None
   endif
   autocmd InsertLeave *.java,*.jsp call s:HandleInsertLeave()
 augroup END
 
 let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE_SEP. '?')
-let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser-core-3.5.20.jar'], g:FILE_SEP), ":p")
+let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser-core-3.5.20.jar'], g:FILE_SEP), ':p')
 
-call s:Log("JavaComplete_Home: ". g:JavaComplete_Home)
+call s:Log('JavaComplete_Home: '. g:JavaComplete_Home)
 
 let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', ''). g:PATH_SEP
       \. join(filter(javacomplete#util#GlobPathList(getcwd(), 'src', 0, 3), "match(v:val, '.*build.*') < 0"), g:PATH_SEP)
 
-if filereadable(getcwd(). g:FILE_SEP. "build.gradle")
+if filereadable(getcwd(). g:FILE_SEP. 'build.gradle')
     let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath
           \. g:PATH_SEP
           \. join(javacomplete#util#GlobPathList(getcwd()
@@ -314,17 +416,17 @@ for source in get(g:, 'JavaComplete_SourceExclude', [])
   endwhile
 endfor
 
-call s:Log("Default sources: ". g:JavaComplete_SourcesPath)
+call s:Log('Default sources: '. g:JavaComplete_SourcesPath)
 
 if exists('g:JavaComplete_LibsPath')
   let g:JavaComplete_LibsPath .= g:PATH_SEP
 else
-  let g:JavaComplete_LibsPath = ""
+  let g:JavaComplete_LibsPath = ''
 endif
 
 call javacomplete#classpath#classpath#BuildClassPath()
 
-function! javacomplete#Start()
+function! javacomplete#Start() abort
   call javacomplete#server#Start()
 endfunction
 

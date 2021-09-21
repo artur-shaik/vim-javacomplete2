@@ -9,6 +9,8 @@ CONTENTS                                               *javacomplete-contents*
   4. Download..........................................|javacomplete-download|
   5. Install............................................|javacomplete-install|
   6. Usage................................................|javacomplete-usage|
+      1. Input contexts................................|javacomplete-contexts|
+      2. Kind letter.................................|javacomplete-kindletter|
 
 ==============================================================================
 INTRODUCTION                                              *javacomplete-intro*
@@ -139,13 +141,114 @@ the write permission and jdk installed.
 ==============================================================================
 USAGE                                                     *javacomplete-usage*
 
-You can use it like other omni-completion script. Many samples of input
-context are gived in the following section.
+You can use `vim-javacomplete2` just like other omni-completion plugin. Many
+samples of input context are gived in the following section.
 
-See FAQ in time if some problem occurs. When meeting other problems not
-described in FAQ, you can contact with the auther by the following e-mail:
-ashaihullin@gmail.com
+See |javacomplete-faq| in time if some problem occurs. When meeting other
+problems not described in FAQ, you can contact with the auther by the
+following e-mail: ashaihullin@gmail.com
 
+
+==============================================================================
+INPUT CONTEXTS                                         *javacomplete-contexts*
+
+It recognize nearly all kinds of Primary Expressions (see langspec-3.0) except
+for `"Primary.new Indentifier"`. Casting conversion is also supported.
+
+Samples of input contexts are as following: (Note that '|' indicates cursor)
+
+(1). after '.', list members of a class or a package
+>
+    - package.|         subpackages and classes of a package
+    - Type.|            static members of the 'Type' class and "class"
+    - var.| or field.|  members of a variable or a field
+    - method().|        members of result of method()
+    - this.|            members of the current class
+    - ClassName.this.|  members of the qualified class
+    - super.|           members of the super class
+    - array.|           members of an array object
+    - array[i].|        array access, return members of the element of array
+    - "String".|        String literal, return members of java.lang.String
+    - int.| or void.|   primitive type or pseudo-type, return "class"
+    - int[].|           array type, return members of a array type and "class"
+    - java.lang.String[].|
+    - new int[].|       members of the new array instance
+    - new java.lang.String[i=1][].|
+    - new Type().|      members of the new class instance
+    - Type.class.|      class literal, return members of java.lang.Class
+    - void.class.| or int.class.|
+    - ((Type)var).|     cast var as Type, return members of Type.
+    - (var.method()).|  same with "var.|"
+    - (new Class()).|   same with "new Class().|"
+<
+(2). after '(', list matching methods with parameters information.
+>
+    - method(|)         methods matched
+    - var.method(|)     methods matched
+    - new ClassName(|)  constructors matched
+    - this(|)           constructors of current class matched
+    - super(|)          constructors of super class matched
+    Any place between '(' and ')' will be supported soon.
+    Help information of javadoc is not supported yet.
+<
+(3). after an incomplete word, list all the matched beginning with it.
+>
+    - var.ab|   subset of members of var beginning with `ab`
+    - ab|       list of all maybes
+<
+(4). import statement
+>
+    - " import  java.util.|"
+    - " import  java.ut|"
+    - " import  ja|"
+    - " import  java.lang.Character.|"  e.g. "Subset"
+    - " import static java.lang.Math.|" e.g. "PI, abs"
+<
+(5). package declaration
+>
+    - " package         com.|"
+<
+
+The above are in simple expression.
+
+(6). after compound expression:
+>
+    - PrimaryExpr.var.|
+    - PrimaryExpr.method().|
+    - PrimaryExpr.method(|)
+    - PrimaryExpr.var.ab|
+    e.g.
+    - "java.lang        . System.in .|"
+    - "java.lang.System.getenv().|"
+    - "int.class.toString().|"
+    - "list.toArray().|"
+    - "new ZipFile(path).|"
+    - "new ZipFile(path).entries().|"
+<
+(7). Nested expression:
+>
+    - "System.out.println( str.| )"
+    - "System.out.println(str.charAt(| )"
+    - "for (int i = 0; i < str.|; i++)"
+    - "for ( Object o : a.getCollect| )"
+<
+
+
+==============================================================================
+KIND LETTER                                          *javacomplete-kindletter*
+
+A single letter indicates the kind of compeltion item. These kinds are:
+>
+        +       ctor
+        v       local variable or parameter
+        f       nonstatic field
+        F       static field
+        m       nonstatic method
+        M       static method
+        P       package
+        C       class type
+        I       interface type
+<
 
 
 vim:tw=78:ts=8:ft=help:norl:
