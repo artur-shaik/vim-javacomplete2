@@ -171,6 +171,15 @@ All these commands are supported when encoding with java project.
 :JCimportsSort                                                *:JCimportsSort*
   sort all 'imports'
 
+:JCgenerateAbstractMethods                        *:JCgenerateAbstractMethods*
+  generate methods that need to be implemented
+
+:JCgenerateAccessors                                    *:JCgenerateAccessors*
+  generate getters and setters for all fields;
+
+:JCgenerateAccessorSetterGetter              *:JCgenerateAccessorSetterGetter*
+  generate getter and setter for field under cursor;
+
 ==============================================================================
 INPUT CONTEXTS                                         *javacomplete-contexts*
 

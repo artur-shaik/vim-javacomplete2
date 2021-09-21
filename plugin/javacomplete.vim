@@ -197,6 +197,20 @@ command! JCimportsSort call javacomplete#imports#SortImports()
 
 command! JCGetSymbolType call javacomplete#imports#getType()
 
+    " JCclassNew - open prompt to enter class creation command;
+    " JCclassInFile - open prompt to choose template that will be used for creation class boilerplate in current empty file;
+"
+    " JCserverShowPort - show port, through which vim plugin communicates with server;
+    " JCserverShowPID - show server process identificator;
+    " JCserverStart - start server manually;
+    " JCserverTerminate - stop server manually;
+    " JCserverCompile - compile server manually;
+"
+    " JCdebugEnableLogs - enable logs;
+    " JCdebugDisableLogs - disable logs;
+    " JCdebugGetLogContent - get debug logs;
+"
+    " JCcacheClear - clear cache manually.
 command! JCserverShowPort call javacomplete#server#ShowPort()
 command! JCserverShowPID call javacomplete#server#ShowPID()
 command! JCserverStart call javacomplete#server#Start()
@@ -214,14 +228,32 @@ command! JCcacheClear call javacomplete#ClearCache()
 
 command! JCstart call javacomplete#Start()
 
+""
+" generate methods that need to be implemented
 command! JCgenerateAbstractMethods call javacomplete#generators#AbstractDeclaration()
+""
+" generate getters and setters for all fields;
 command! JCgenerateAccessors call javacomplete#generators#Accessors()
+" "
+" generate setter for field under cursor;
 command! JCgenerateAccessorSetter call javacomplete#generators#Accessor('s')
+" "
+" generate getter for field under cursor;
 command! JCgenerateAccessorGetter call javacomplete#generators#Accessor('g')
+""
+" generate getter and setter for field under cursor;
 command! JCgenerateAccessorSetterGetter call javacomplete#generators#Accessor('sg')
+" "
+" generate 'toString' method;
 command! JCgenerateToString call javacomplete#generators#GenerateToString()
+" "
+" generate 'equals' and 'hashCode' methods;
 command! JCgenerateEqualsAndHashCode call javacomplete#generators#GenerateEqualsAndHashCode()
+" "
+" generate constructor with chosen fields;
 command! JCgenerateConstructor call javacomplete#generators#GenerateConstructor(0)
+" "
+" generate default constructor;
 command! JCgenerateConstructorDefault call javacomplete#generators#GenerateConstructor(1)
 
 command! JCclasspathGenerate call javacomplete#classpath#classpath#RebuildClassPath()
