@@ -441,9 +441,23 @@ let g:JavaComplete_Home = fnamemodify(expand('<sfile>'), ':p:h:h:gs?\\?'. g:FILE
 let g:JavaComplete_JavaParserJar = fnamemodify(g:JavaComplete_Home. join(['', 'libs', 'javaparser-core-3.5.20.jar'], g:FILE_SEP), ':p')
 
 call s:Log('JavaComplete_Home: '. g:JavaComplete_Home)
-
+""
+" path of your sources. Don't try to 
+" add all sources you have, this will slow down parsing process.
+" Add you project sources and necessery library sources. If you
+" have compiled classes add them to previous config instead. By
+" default plugin will search `src` directory and add it
+" automatically.
 let g:JavaComplete_SourcesPath = get(g:, 'JavaComplete_SourcesPath', ''). g:PATH_SEP
       \. join(filter(javacomplete#util#GlobPathList(getcwd(), 'src', 0, 3), "match(v:val, '.*build.*') < 0"), g:PATH_SEP)
+
+""
+" disable the maven repository.
+" >
+"   let g:JavaComplete_MavenRepositoryDisabled = 1
+" <
+" by default this option is disabled (0).
+let g:JavaComplete_MavenRepositoryDisabled = 0
 
 if filereadable(getcwd(). g:FILE_SEP. 'build.gradle')
     let g:JavaComplete_SourcesPath = g:JavaComplete_SourcesPath

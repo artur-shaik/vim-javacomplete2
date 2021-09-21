@@ -12,7 +12,7 @@ function! javacomplete#classpath#classpath#RebuildClassPath()
 endfunction
 
 function! s:BuildClassPath(force)
-  if !get(g:, 'JavaComplete_MavenRepositoryDisabled', 0)
+  if g:JavaComplete_MavenRepositoryDisabled
     if !exists('g:JavaComplete_PomPath')
       let g:JavaComplete_PomPath = javacomplete#util#FindFile('pom.xml')
       if g:JavaComplete_PomPath != ""

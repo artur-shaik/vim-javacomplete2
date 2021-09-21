@@ -373,6 +373,19 @@ OPTIONS                                                  *javacomplete-config*
 
 All these options are supported when encoding with java project.
 
+                                                  *g:JavaComplete_SourcesPath*
+path of your sources. Don't try to  add all sources you have, this will slow
+down parsing process. Add you project sources and necessery library sources.
+If you have compiled classes add them to previous config instead. By default
+plugin will search `src` directory and add it automatically.
+
+                                      *g:JavaComplete_MavenRepositoryDisabled*
+disable the maven repository.
+>
+  let g:JavaComplete_MavenRepositoryDisabled = 1
+<
+by default this option is disabled (0).
+
                                                      *g:JavaComplete_LibsPath*
 path of you jar files. This path will  always appended with '~/.m2/repository'
 directory. Here you can  add your glassfish libs directory or your project
