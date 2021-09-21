@@ -13,8 +13,10 @@ CONTENTS                                               *javacomplete-contents*
       2. Commands......................................|javacomplete-commands|
       3. Input contexts................................|javacomplete-contexts|
       4. Kind letter.................................|javacomplete-kindletter|
-  7. History............................................|javacomplete-history|
-  8. Thanks..............................................|javacomplete-thanks|
+  7. FAQ....................................................|javacomplete-faq|
+  8. History............................................|javacomplete-history|
+  9. Todo..................................................|javacomplete-todo|
+  10. Thanks.............................................|javacomplete-thanks|
 
 ==============================================================================
 INTRODUCTION                                              *javacomplete-intro*
@@ -366,6 +368,21 @@ A single letter indicates the kind of compeltion item. These kinds are:
 <
 
 ==============================================================================
+FAQ                                                         *javacomplete-faq*
+
+4.1 Why can not complete in gradle project?
+
+    Check if 'gradle' is in your runtime path or './gradlew' (or
+'.\gradlew.bat' for Windows) is in your project's directory.
+
+4.2 I have installed gradle, but why I can not complete R.class?
+
+    In android project, many of the class contains a ton of     innerclass,
+javacomplete2 could works better by reflection, so you need to     compile you
+project, after use './gradlew build', R.java will be     automatically
+generated and compiled.
+
+==============================================================================
 HISTORY                                                 *javacomplete-history*
 
 
@@ -644,6 +661,18 @@ v0.60 2007-01-25
 v0.50 2007-01-21
 
   Use java and Reflection.class directly.
+
+==============================================================================
+TODO                                                       *javacomplete-todo*
+
+Add javadoc
+Cross session cache;
+Most used (classes, methods, vars) at first place (smart suggestions);
+FXML support;
+JSP check support;
+Refactoring support?;
+Class creation helpers;
+etc...
 
 ==============================================================================
 THANKS                                                   *javacomplete-thanks*

@@ -136,6 +136,33 @@
 " 
 " There is autocompletion in command prompt that will try to help you. Your current opened file shouldn't have dirty changes or 'hidden' should be set.
 
+
+""
+" @section FAQ, faq
+" 4.1 Why can not complete in gradle project?
+" 
+"     Check if 'gradle' is in your runtime path or './gradlew' (or
+"     '.\gradlew.bat' for Windows) is in your project's directory.
+" 
+" 4.2 I have installed gradle, but why I can not complete R.class?
+"     
+"     In android project, many of the class contains a ton of
+"     innerclass, javacomplete2 could works better by reflection, so you need to
+"     compile you project, after use './gradlew build', R.java will be
+"     automatically generated and compiled. 
+
+""
+" @section Todo, todo
+" -  Add javadoc
+" -  Cross session cache;
+" -  Most used (classes, methods, vars) at first place (smart suggestions);
+" -  FXML support;
+" -  JSP check support;
+" -  Refactoring support?;
+" -  Class creation helpers;
+" -  etc...
+
+
 if exists('g:JavaComplete_Autoload')
   finish
 endif
