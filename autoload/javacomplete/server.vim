@@ -100,7 +100,7 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_JavaviLogLevel')
       call add(javaProps, '-Dlog.level='. g:JavaComplete_JavaviLogLevel)
     endif
-    if exists('g:JavaComplete_JavaviLogDirectory')
+    if !empty(g:JavaComplete_JavaviLogDirectory)
       call add(javaProps, '-Dlog.directory='. g:JavaComplete_JavaviLogDirectory)
     endif
     JavacompletePy vim.command('let port = "%s"' % SERVER[1])

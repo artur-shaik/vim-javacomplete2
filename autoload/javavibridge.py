@@ -49,7 +49,7 @@ class JavaviBridge():
         if vim.eval('get(g:, "JavaComplete_JavaviLogLevel", 0)') != 0:
             defaulttmp = tempfile.gettempdir() + fileSeparator + 'javavi_log'
             logdir = vim.eval(
-                "get(g:, 'JavaComplete_JavaviLogDirectory', '%s')" 
+                "empty(g:JavaComplete_JavaviLogDirectory) ? '%s' : g:JavaComplete_JavaviLogDirectory" 
                 % defaulttmp)
             if not os.path.isdir(logdir):
                 os.mkdir(logdir)

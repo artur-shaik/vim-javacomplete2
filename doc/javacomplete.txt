@@ -420,6 +420,9 @@ Close brace on method declaration completion:
 Add close brace automatically, when complete method declaration. By default
 this option is enabled (1). Disable if it conflicts with another plugins.
 
+                                           *g:JavaComplete_JavaviLogDirectory*
+Set the directory where to write server logs. By default this option is empty.
+
 ==============================================================================
 FAQ                                                         *javacomplete-faq*
 

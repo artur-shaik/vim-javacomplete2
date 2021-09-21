@@ -490,6 +490,11 @@ let g:JavaComplete_PomPath = ''
 " By default this option is enabled (1).
 " Disable if it conflicts with another plugins.
 let g:JavaComplete_ClosingBrace = 1
+
+""
+" Set the directory where to write server logs. By default this option is
+" empty.
+let g:JavaComplete_JavaviLogDirectory = ''
 let g:JavaComplete_CompletionResultSort =
       \ get(g:, 'JavaComplete_CompletionResultSort', 0)
 
