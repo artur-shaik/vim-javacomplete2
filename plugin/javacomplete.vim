@@ -5,7 +5,7 @@
 ""
 " @section Introduction, intro
 " @library
-" @order intro features config layers api faq changelog
+" @order intro features requirements layers api faq changelog
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.
@@ -31,6 +31,15 @@
 " 16. Cross-session cache;
 " 17. Auto insert methods that need to be implemented;
 " 18. `toString`, `equals`, `hashCode`, Accessors generation.
+
+
+""
+" @section Requirements, requirements
+"
+" 1. Vim version 7.4 and above with python support;
+" 2. JDK8.
+"
+
 
 
 let s:save_cpo = &cpoptions

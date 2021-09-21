@@ -5,6 +5,7 @@ artur shaik                                                *vim-javacomplete2*
 CONTENTS                                          *vim-javacomplete2-contents*
   1. Introduction....................................|vim-javacomplete2-intro|
   2. Features.....................................|vim-javacomplete2-features|
+  3. Requirements.............................|vim-javacomplete2-requirements|
 
 ==============================================================================
 INTRODUCTION                                         *vim-javacomplete2-intro*
@@ -38,6 +39,14 @@ FEATURES                                          *vim-javacomplete2-features*
   16. Cross-session cache;
   17. Auto insert methods that need to be implemented;
   18. `toString`, `equals`, `hashCode`, Accessors generation.
+
+==============================================================================
+REQUIREMENTS                                  *vim-javacomplete2-requirements*
+
+
+  1. Vim version 7.4 and above with python support;
+  2. JDK8.
+
 
 
 vim:tw=78:ts=8:ft=help:norl:
