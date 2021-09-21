@@ -360,7 +360,7 @@ function! s:HandleInsertLeave() abort
 endfunction
 
 function! javacomplete#UseFQN() abort
-  return get(g:, 'JavaComplete_UseFQN', 0)
+  return g:JavaComplete_UseFQN
 endfunction
 
 function! s:RemoveCurrentFromCache() abort

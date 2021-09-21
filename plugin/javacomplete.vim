@@ -466,7 +466,21 @@ let g:JavaComplete_RegularClasses =
 " By default this option is disabled (1).
 let g:JavaComplete_AutoStartServer = 
       \ get(g:, 'JavaComplete_AutoStartServer', 1)
+""
+" Use fully qualified name in description:
+" >
+"   let g:JavaComplete_UseFQN = 1
+" <
+" By default this option is disabled (0).
+let g:JavaComplete_UseFQN = get(g:, 'JavaComplete_UseFQN', 0)
 
+""
+" Set pom.xml path explicitly:
+" >
+"   let g:JavaComplete_PomPath = /path/to/pom.xml
+" <
+" It will be set automatically, if pom.xml is in underlying path.
+let g:JavaComplete_PomPath = ''
 let g:JavaComplete_CompletionResultSort =
       \ get(g:, 'JavaComplete_CompletionResultSort', 0)
 
