@@ -5,13 +5,36 @@
 ""
 " @section Introduction, intro
 " @library
-" @order intro options config layers api faq changelog
+" @order intro features config layers api faq changelog
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.
 
-let s:save_cpo = &cpo
-set cpo&vim
+
+""
+" @section Features, features
+" 1. List members of a class, including (static) fields, (static) methods and ctors;
+" 2. List classes or subpackages of a package;
+" 3. Provide parameters information of a method, list all overload methods;
+" 4. Complete an incomplete word;
+" 5. Provide a complete JAVA parser written in Vim script language;
+" 6. Use the JVM to obtain most information;
+" 7. Use the embedded parser to obtain the class information from source files;
+" 8. JSP is supported, Builtin objects such as request, session can be recognized;
+" 9. The classes and jar files in the WEB-INF will be appended automatically to the classpath;
+" 10. Server side java reflection class loader and parsing library;
+" 11. Search class files automatically;
+" 12. Complete class name;
+" 13. Add import statement for a given class name;
+" 14. Complete methods declaration after '@Override';
+" 15. Support for maven, gradle and Eclipse's '.classpath';
+" 16. Cross-session cache;
+" 17. Auto insert methods that need to be implemented;
+" 18. `toString`, `equals`, `hashCode`, Accessors generation.
+
+
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 if exists('g:JavaComplete_PluginLoaded')
   finish
@@ -102,7 +125,10 @@ command! JCclassNew call javacomplete#newclass#CreateClass()
 command! JCclassInFile call javacomplete#newclass#CreateInFile()
 
 if g:JavaComplete_AutoStartServer
-  autocmd Filetype java,jsp JCstart
+  augroup vim_javacomplete2
+    autocmd!
+    autocmd Filetype java,jsp JCstart
+  augroup END
 endif
 
 function! s:nop(s)
@@ -138,8 +164,9 @@ nnoremap <silent> <Plug>(JavaComplete-Generate-ClassInFile) :call javacomplete#n
 nnoremap <silent> <Plug>(JavaComplete-Imports-SortImports) :call javacomplete#imports#SortImports()<cr>
 inoremap <silent> <Plug>(JavaComplete-Imports-SortImports) <c-r>=<SID>nop(javacomplete#imports#SortImports())<cr>
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
-
-autocmd User CmSetup call cm#sources#java#register()
+augroup vim_javacomplete2
+  autocmd User CmSetup call cm#sources#java#register()
+augroup END
 " vim:set fdm=marker sw=2 nowrap:
