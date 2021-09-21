@@ -403,6 +403,10 @@ available:
 >
   let g:JavaComplete_ImportDefault = 0
 <
+To avoid this behavior use:
+>
+  let g:JavaComplete_ImportDefault = -1
+<
 
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:

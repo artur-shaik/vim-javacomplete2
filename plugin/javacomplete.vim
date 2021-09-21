@@ -449,6 +449,10 @@ let g:JavaComplete_BaseDir =
 " >
 "   let g:JavaComplete_ImportDefault = 0
 " <
+" To avoid this behavior use:
+" >
+"   let g:JavaComplete_ImportDefault = -1
+" <
 let g:JavaComplete_ImportDefault =
       \ get(g:, 'JavaComplete_ImportDefault', 0)
 
