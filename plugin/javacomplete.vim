@@ -5,7 +5,7 @@
 ""
 " @section Introduction, intro
 " @library
-" @order intro features requirements layers api faq changelog
+" @order intro features requirements download install
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.
@@ -40,6 +40,88 @@
 " 2. JDK8.
 "
 
+""
+" @section Download, download
+" You can download the lastest version from this url:
+	" https://github.com/artur-shaik/vim-javacomplete2
+
+""
+" @section Install, install
+" 1. This assumes you are using `Vundle`. Adapt for your plugin manager of choice. Put this into your `.vimrc`.
+" 
+"     " Java completion plugin.
+"     Plugin 'artur-shaik/vim-javacomplete2'
+" 
+" 2. Set 'omnifunc' option. e.g.
+" >
+"   autocmd Filetype java setlocal omnifunc=javacomplete#Complete
+" <
+" 3. Map keys you prefer:
+" For smart (trying to guess import option) insert class import with <F4>:
+" >
+"     nmap <F4> <Plug>(JavaComplete-Imports-AddSmart)
+"     imap <F4> <Plug>(JavaComplete-Imports-AddSmart)
+" <
+" For usual (will ask for import option) insert class import with <F5>:
+" 
+"     nmap <F5> <Plug>(JavaComplete-Imports-Add)
+"     imap <F5> <Plug>(JavaComplete-Imports-Add)
+" 
+" For add all missing imports with <F6>:
+" 
+"     nmap <F6> <Plug>(JavaComplete-Imports-AddMissing)
+"     imap <F6> <Plug>(JavaComplete-Imports-AddMissing)
+" 
+" For remove all missing imports with <F7>:
+" 
+"     nmap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
+"     imap <F7> <Plug>(JavaComplete-Imports-RemoveUnused)
+" 
+" For sorting all imports with <F8>:
+" 
+"     nmap <F8> <Plug>(JavaComplete-Imports-SortImports)
+"     imap <F8> <Plug>(JavaComplete-Imports-SortImports)
+" 
+" 
+" Default mappings:
+" 
+"     nmap <leader>jI <Plug>(JavaComplete-Imports-AddMissing)
+"     nmap <leader>jR <Plug>(JavaComplete-Imports-RemoveUnused)
+"     nmap <leader>ji <Plug>(JavaComplete-Imports-AddSmart)
+"     nmap <leader>jii <Plug>(JavaComplete-Imports-Add)
+"     nmap <Leader>jis <Plug>(JavaComplete-Imports-SortImports)
+" 
+"     imap <C-j>I <Plug>(JavaComplete-Imports-AddMissing)
+"     imap <C-j>R <Plug>(JavaComplete-Imports-RemoveUnused)
+"     imap <C-j>i <Plug>(JavaComplete-Imports-AddSmart)
+"     imap <C-j>ii <Plug>(JavaComplete-Imports-Add)
+" 
+"     nmap <leader>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+" 
+"     imap <C-j>jM <Plug>(JavaComplete-Generate-AbstractMethods)
+" 
+"     nmap <leader>jA <Plug>(JavaComplete-Generate-Accessors)
+"     nmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+"     nmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+"     nmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+"     nmap <leader>jts <Plug>(JavaComplete-Generate-ToString)
+"     nmap <leader>jeq <Plug>(JavaComplete-Generate-EqualsAndHashCode)
+"     nmap <leader>jc <Plug>(JavaComplete-Generate-Constructor)
+"     nmap <leader>jcc <Plug>(JavaComplete-Generate-DefaultConstructor)
+" 
+"     imap <C-j>s <Plug>(JavaComplete-Generate-AccessorSetter)
+"     imap <C-j>g <Plug>(JavaComplete-Generate-AccessorGetter)
+"     imap <C-j>a <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+" 
+"     vmap <leader>js <Plug>(JavaComplete-Generate-AccessorSetter)
+"     vmap <leader>jg <Plug>(JavaComplete-Generate-AccessorGetter)
+"     vmap <leader>ja <Plug>(JavaComplete-Generate-AccessorSetterGetter)
+" 
+" 
+" 4. Javavi library will be automatcally compiled when you
+" use first time. 
+" If no libs/javavi/target is generated, check that you have the write permission
+" and jdk installed.
 
 
 let s:save_cpo = &cpoptions
