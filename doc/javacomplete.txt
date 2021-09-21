@@ -13,6 +13,7 @@ CONTENTS                                               *javacomplete-contents*
       2. Commands......................................|javacomplete-commands|
       3. Input contexts................................|javacomplete-contexts|
       4. Kind letter.................................|javacomplete-kindletter|
+      5. Options.........................................|javacomplete-config|
   3. FAQ....................................................|javacomplete-faq|
   4. History............................................|javacomplete-history|
   5. Todo..................................................|javacomplete-todo|
@@ -366,6 +367,16 @@ A single letter indicates the kind of compeltion item. These kinds are:
         C       class type
         I       interface type
 <
+
+==============================================================================
+OPTIONS                                                  *javacomplete-config*
+
+All these options are supported when encoding with java project.
+
+                                                     *g:JavaComplete_LibsPath*
+path of you jar files. This path will  always appended with '~/.m2/repository'
+directory. Here you can  add your glassfish libs directory or your project
+libs. It will  be automatically appended with you jre home path
 
 ==============================================================================
 FAQ                                                         *javacomplete-faq*

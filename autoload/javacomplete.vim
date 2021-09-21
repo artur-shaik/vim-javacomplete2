@@ -468,6 +468,11 @@ call s:Log('Default sources: '. g:JavaComplete_SourcesPath)
 if exists('g:JavaComplete_LibsPath')
   let g:JavaComplete_LibsPath .= g:PATH_SEP
 else
+  ""
+  " path of you jar files. This path will 
+  " always appended with '~/.m2/repository' directory. Here you can 
+  " add your glassfish libs directory or your project libs. It will 
+  " be automatically appended with you jre home path
   let g:JavaComplete_LibsPath = ''
 endif
 

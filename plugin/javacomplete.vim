@@ -430,6 +430,11 @@ else
   let g:FILE_SEP    = '/'
 endif
 
+""
+" @section Options, config
+" @parentsection usage
+" All these options are supported when encoding with java project.
+
 let g:JavaComplete_BaseDir =
       \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
 
