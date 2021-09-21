@@ -3,9 +3,9 @@
 " this file comtains command,custom g:var init and maps
 
 ""
-" @section Introduction, intro
+" @section Overview, overview
 " @library
-" @order intro features requirements download install usage faq history todo thanks
+" @order overview usage faq history todo thanks
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.
@@ -13,6 +13,7 @@
 
 ""
 " @section Features, features
+" @parentsection overview
 " 1. List members of a class, including (static) fields, (static) methods and ctors;
 " 2. List classes or subpackages of a package;
 " 3. Provide parameters information of a method, list all overload methods;
@@ -35,6 +36,7 @@
 
 ""
 " @section Requirements, requirements
+" @parentsection overview
 "
 " 1. Vim version 7.4 and above with python support;
 " 2. JDK8.
@@ -42,11 +44,13 @@
 
 ""
 " @section Download, download
+" @parentsection overview
 " You can download the lastest version from this url:
 	" https://github.com/artur-shaik/vim-javacomplete2
 
 ""
 " @section Install, install
+" @parentsection overview
 " 1. This assumes you are using `Vundle`.
 " Adapt for your plugin manager of choice. Put this into your `.vimrc`.
 " >

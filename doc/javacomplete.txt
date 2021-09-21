@@ -3,27 +3,33 @@ artur shaik                                                     *javacomplete*
 
 ==============================================================================
 CONTENTS                                               *javacomplete-contents*
-  1. Introduction.........................................|javacomplete-intro|
-  2. Features..........................................|javacomplete-features|
-  3. Requirements..................................|javacomplete-requirements|
-  4. Download..........................................|javacomplete-download|
-  5. Install............................................|javacomplete-install|
-  6. Usage................................................|javacomplete-usage|
+  1. Overview..........................................|javacomplete-overview|
+      1. Download......................................|javacomplete-download|
+      2. Features......................................|javacomplete-features|
+      3. Install........................................|javacomplete-install|
+      4. Requirements..............................|javacomplete-requirements|
+  2. Usage................................................|javacomplete-usage|
       1. Class creation................................|javacomplete-classnew|
       2. Commands......................................|javacomplete-commands|
       3. Input contexts................................|javacomplete-contexts|
       4. Kind letter.................................|javacomplete-kindletter|
-  7. FAQ....................................................|javacomplete-faq|
-  8. History............................................|javacomplete-history|
-  9. Todo..................................................|javacomplete-todo|
-  10. Thanks.............................................|javacomplete-thanks|
+  3. FAQ....................................................|javacomplete-faq|
+  4. History............................................|javacomplete-history|
+  5. Todo..................................................|javacomplete-todo|
+  6. Thanks..............................................|javacomplete-thanks|
 
 ==============================================================================
-INTRODUCTION                                              *javacomplete-intro*
+OVERVIEW                                               *javacomplete-overview*
 
 This is javacomplete, an omni-completion script of JAVA language for vim 7 and
 above. It includes javacomplete.vim, java_parser.vim, javavi library,
 javaparser library and javacomplete.txt.
+
+==============================================================================
+DOWNLOAD                                               *javacomplete-download*
+
+You can download the lastest version from this url:
+https://github.com/artur-shaik/vim-javacomplete2
 
 ==============================================================================
 FEATURES                                               *javacomplete-features*
@@ -50,20 +56,6 @@ FEATURES                                               *javacomplete-features*
   16. Cross-session cache;
   17. Auto insert methods that need to be implemented;
   18. `toString`, `equals`, `hashCode`, Accessors generation.
-
-==============================================================================
-REQUIREMENTS                                       *javacomplete-requirements*
-
-
-  1. Vim version 7.4 and above with python support;
-  2. JDK8.
-
-
-==============================================================================
-DOWNLOAD                                               *javacomplete-download*
-
-You can download the lastest version from this url:
-https://github.com/artur-shaik/vim-javacomplete2
 
 ==============================================================================
 INSTALL                                                 *javacomplete-install*
@@ -144,6 +136,14 @@ Default mappings:
   4. Javavi library will be automatcally compiled when you
 use first time.  If no libs/javavi/target is generated, check that you have
 the write permission and jdk installed.
+
+==============================================================================
+REQUIREMENTS                                       *javacomplete-requirements*
+
+
+  1. Vim version 7.4 and above with python support;
+  2. JDK8.
+
 
 ==============================================================================
 USAGE                                                     *javacomplete-usage*
