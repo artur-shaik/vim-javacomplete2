@@ -115,7 +115,6 @@
 " 	I	interface type
 " <
 
-
 if exists('g:JavaComplete_Autoload')
   finish
 endif

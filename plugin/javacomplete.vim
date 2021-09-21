@@ -172,14 +172,28 @@ let g:JavaComplete_AutoStartServer =
 let g:JavaComplete_CompletionResultSort =
       \ get(g:, 'JavaComplete_CompletionResultSort', 0)
 
+""
+" @section Commands, commands
+" @parentsection usage
+" All these commands are supported when encoding with java project.
+
+""
+" add all missing 'imports'
+command! JCimportsAddMissing call javacomplete#imports#AddMissing()
 command! JCDisable call javacomplete#Disable()
 command! JCEnable call javacomplete#Enable()
-
-command! JCimportsAddMissing call javacomplete#imports#AddMissing()
+""
+" remove all unsused 'imports'
 command! JCimportsRemoveUnused call javacomplete#imports#RemoveUnused()
-command! JCimportsSort call javacomplete#imports#SortImports()
-command! JCimportAddSmart call javacomplete#imports#Add(1)
+""
+" add 'import' for classname that is under cursor, or before it
 command! JCimportAdd call javacomplete#imports#Add()
+""
+" add 'import' for classname trying to guess variant without ask user to choose an option (it will ask on false guessing)
+command! JCimportAddSmart call javacomplete#imports#Add(1)
+""
+" sort all 'imports'
+command! JCimportsSort call javacomplete#imports#SortImports()
 
 command! JCGetSymbolType call javacomplete#imports#getType()
 

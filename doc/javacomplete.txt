@@ -9,8 +9,9 @@ CONTENTS                                               *javacomplete-contents*
   4. Download..........................................|javacomplete-download|
   5. Install............................................|javacomplete-install|
   6. Usage................................................|javacomplete-usage|
-      1. Input contexts................................|javacomplete-contexts|
-      2. Kind letter.................................|javacomplete-kindletter|
+      1. Commands......................................|javacomplete-commands|
+      2. Input contexts................................|javacomplete-contexts|
+      3. Kind letter.................................|javacomplete-kindletter|
 
 ==============================================================================
 INTRODUCTION                                              *javacomplete-intro*
@@ -148,6 +149,27 @@ See |javacomplete-faq| in time if some problem occurs. When meeting other
 problems not described in FAQ, you can contact with the auther by the
 following e-mail: ashaihullin@gmail.com
 
+
+==============================================================================
+COMMANDS                                               *javacomplete-commands*
+
+All these commands are supported when encoding with java project.
+
+:JCimportsAddMissing                                    *:JCimportsAddMissing*
+  add all missing 'imports'
+
+:JCimportsRemoveUnused                                *:JCimportsRemoveUnused*
+  remove all unsused 'imports'
+
+:JCimportAdd                                                    *:JCimportAdd*
+  add 'import' for classname that is under cursor, or before it
+
+:JCimportAddSmart                                          *:JCimportAddSmart*
+  add 'import' for classname trying to guess variant without ask user to
+  choose an option (it will ask on false guessing)
+
+:JCimportsSort                                                *:JCimportsSort*
+  sort all 'imports'
 
 ==============================================================================
 INPUT CONTEXTS                                         *javacomplete-contexts*
