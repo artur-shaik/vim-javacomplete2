@@ -309,6 +309,7 @@ There is autocompletion in command prompt that will try to help you. Your curren
 - Cheng Fang author of original javacomplete plugin;
 - Zhang Li author of vim-javacompleteex plugin;
 - http://github.com/javaparser/javaparser library.
+- [vimdoc](https://github.com/google/vimdoc) generate `:h javacomplete` file
 
 ## FeedBack
 
