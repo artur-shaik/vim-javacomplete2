@@ -344,7 +344,7 @@ function! s:HandleTextChangedI() abort
     if !empty(javacomplete#util#Trim(getline('.')))
       call feedkeys("\b\r", 'n')
     endif
-    if get(g:, 'JavaComplete_ClosingBrace', 1)
+    if g:JavaComplete_ClosingBrace
       call feedkeys("}\eO", 'n')
     endif
   endif

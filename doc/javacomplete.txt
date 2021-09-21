@@ -412,6 +412,14 @@ Set pom.xml path explicitly:
 <
 It will be set automatically, if pom.xml is in underlying path.
 
+                                                 *g:JavaComplete_ClosingBrace*
+Close brace on method declaration completion:
+>
+  let g:JavaComplete_ClosingBrace = 1
+<
+Add close brace automatically, when complete method declaration. By default
+this option is enabled (1). Disable if it conflicts with another plugins.
+
 ==============================================================================
 FAQ                                                         *javacomplete-faq*
 

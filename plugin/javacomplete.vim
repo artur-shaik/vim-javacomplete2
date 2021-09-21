@@ -481,6 +481,15 @@ let g:JavaComplete_UseFQN = get(g:, 'JavaComplete_UseFQN', 0)
 " <
 " It will be set automatically, if pom.xml is in underlying path.
 let g:JavaComplete_PomPath = ''
+""
+" Close brace on method declaration completion:
+" >
+"   let g:JavaComplete_ClosingBrace = 1
+" <
+" Add close brace automatically, when complete method declaration.
+" By default this option is enabled (1).
+" Disable if it conflicts with another plugins.
+let g:JavaComplete_ClosingBrace = 1
 let g:JavaComplete_CompletionResultSort =
       \ get(g:, 'JavaComplete_CompletionResultSort', 0)
 
