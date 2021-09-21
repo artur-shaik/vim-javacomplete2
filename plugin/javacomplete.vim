@@ -5,7 +5,7 @@
 ""
 " @section Introduction, intro
 " @library
-" @order intro features requirements download install
+" @order intro features requirements download install usage
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.

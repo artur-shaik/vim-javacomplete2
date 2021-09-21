@@ -1,6 +1,19 @@
 " Vim completion script for java
 " Maintainer:	artur shaik <ashaihullin@gmail.com>
 
+
+
+
+""
+" @section Usage, usage
+" You can use it like other omni-completion script. Many samples of input context
+" are gived in the following section.
+"
+" See FAQ in time if some problem occurs. When meeting other problems not
+" described in FAQ, you can contact with the auther by the following e-mail:
+" ashaihullin@gmail.com
+"
+
 if exists('g:JavaComplete_Autoload')
   finish
 endif
