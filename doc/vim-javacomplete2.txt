@@ -1,0 +1,16 @@
+*vim-javacomplete2.txt*	Updated version of the original javacomplete plugin
+artur shaik                                                *vim-javacomplete2*
+
+==============================================================================
+CONTENTS                                          *vim-javacomplete2-contents*
+  1. Introduction....................................|vim-javacomplete2-intro|
+
+==============================================================================
+INTRODUCTION                                         *vim-javacomplete2-intro*
+
+This is javacomplete, an omni-completion script of JAVA language for vim 7 and
+above. It includes javacomplete.vim, java_parser.vim, javavi library,
+javaparser library and javacomplete.txt.
+
+
+vim:tw=78:ts=8:ft=help:norl:
