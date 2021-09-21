@@ -115,6 +115,27 @@
 " 	I	interface type
 " <
 
+""
+" @section Class creation, classnew
+" @parentsection usage
+" Prompt scheme, for class creation:
+" >
+"     template:[subdirectory]:/package.ClassName extends SuperClass implements Interface(String str, public Integer i):contructor(*):toString(1)
+" <
+" A: (optional) template - which will be used to create class boilerplate. Some existed templates: junit, interface, exception, servlet, etcl
+"
+" B: (optional) subdirectory in which class will be put. For example: test, androidTest;
+"
+" C: class name and package. With `/` will use backsearch for parent package to put in it. Without `/` put in relative package to current;
+"
+" D: (optional) extends and implements classes will be automatically imported;
+"
+" E: (optional) private str variable, and public i variable will be added to class;
+"
+" F: (optional) contructor using all fields and toString override method with only 'str' field will be created. Also hashCode and equals can be used.
+" 
+" There is autocompletion in command prompt that will try to help you. Your current opened file shouldn't have dirty changes or 'hidden' should be set.
+
 if exists('g:JavaComplete_Autoload')
   finish
 endif
