@@ -438,11 +438,17 @@ endif
 
 ""
 " Base cache directory of javacomplete2 (default is ~/.cache):
-"
-" let g:JavaComplete_BaseDir = '~/.your_cache_dir'
+" >
+"   let g:JavaComplete_BaseDir = '~/.your_cache_dir'
+" <
 let g:JavaComplete_BaseDir =
       \ get(g:, 'JavaComplete_BaseDir', expand('~'. g:FILE_SEP. '.cache'))
 
+""
+" In the import selection the default behavior is to use the first option available:
+" >
+"   let g:JavaComplete_ImportDefault = 0
+" <
 let g:JavaComplete_ImportDefault =
       \ get(g:, 'JavaComplete_ImportDefault', 0)
 
