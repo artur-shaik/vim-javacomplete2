@@ -5,7 +5,7 @@
 ""
 " @section Introduction, intro
 " @library
-" @order intro features requirements download install usage history
+" @order intro features requirements download install usage history thanks
 " This is javacomplete, an omni-completion script of JAVA language
 " for vim 7 and above. It includes javacomplete.vim, java_parser.vim,
 " javavi library, javaparser library and javacomplete.txt.
@@ -398,6 +398,15 @@
 " - v0.50 2007-01-21
 "
 "   Use java and Reflection.class directly.
+
+""
+" @section Thanks, thanks
+" * Cheng Fang author of original javacomplete plugin;
+" * Zhang Li author of vim-javacompleteex plugin;
+" * http://github.com/javaparser/javaparser library.
+"
+" FeedBack:
+" Any problem, bug or suggest are welcome to send to ashaihullin@gmail.com
 
 let s:save_cpo = &cpoptions
 set cpoptions&vim

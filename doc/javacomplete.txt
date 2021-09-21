@@ -13,6 +13,7 @@ CONTENTS                                               *javacomplete-contents*
       2. Input contexts................................|javacomplete-contexts|
       3. Kind letter.................................|javacomplete-kindletter|
   7. History............................................|javacomplete-history|
+  8. Thanks..............................................|javacomplete-thanks|
 
 ==============================================================================
 INTRODUCTION                                              *javacomplete-intro*
@@ -614,6 +615,16 @@ v0.60 2007-01-25
 v0.50 2007-01-21
 
   Use java and Reflection.class directly.
+
+==============================================================================
+THANKS                                                   *javacomplete-thanks*
+
+  * Cheng Fang author of original javacomplete plugin;
+  * Zhang Li author of vim-javacompleteex plugin;
+  * http://github.com/javaparser/javaparser library.
+
+FeedBack: Any problem, bug or suggest are welcome to send to
+ashaihullin@gmail.com
 
 
 vim:tw=78:ts=8:ft=help:norl:
