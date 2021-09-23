@@ -499,6 +499,13 @@ this option is enabled (1). Disable if it conflicts with another plugins.
                                            *g:JavaComplete_JavaviLogDirectory*
 Set the directory where to write server logs. By default this option is empty.
 
+                                      *g:JavaComplete_CustomTemplateDirectory*
+Set directory that contains custom templates for class creation, for example:
+>
+  let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'
+<
+By default this options is empty string.
+
 ==============================================================================
 FAQ                                                         *javacomplete-faq*
 

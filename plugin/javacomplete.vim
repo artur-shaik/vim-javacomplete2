@@ -566,6 +566,14 @@ let g:JavaComplete_ClosingBrace = 1
 let g:JavaComplete_JavaviLogDirectory = ''
 let g:JavaComplete_CompletionResultSort =
       \ get(g:, 'JavaComplete_CompletionResultSort', 0)
+""
+" Set directory that contains custom templates for class creation,
+" for example:
+" >
+"   let g:JavaComplete_CustomTemplateDirectory = '~/jc_templates'
+" <
+" By default this options is empty string.
+let g:JavaComplete_CustomTemplateDirectory = ''
 
 ""
 " @section Commands, commands

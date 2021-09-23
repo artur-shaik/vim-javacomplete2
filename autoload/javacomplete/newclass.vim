@@ -49,7 +49,7 @@ function! s:FetchTemplatesByPrefix(command, addSeparator)
         \ g:JavaComplete_Home. '/plugin/res/gen__class_',
         \ a:command,
         \ a:addSeparator)
-  if exists('g:JavaComplete_CustomTemplateDirectory')
+  if isdirectory(g:JavaComplete_CustomTemplateDirectory)
     call extend(result,
           \ s:FetchTemplatesByPath(expand(g:JavaComplete_CustomTemplateDirectory). '/gen__class_',
           \ a:command,
