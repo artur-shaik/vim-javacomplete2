@@ -443,6 +443,15 @@ An import group is a list of individual import statements that all start with
 the same beginning of package name surrounded by blank lines above and below
 the group.
 
+                                               *g:JavaComplete_RegularClasses*
+Regular class names that will be used automatically when you insert import:
+>
+  let g:JavaComplete_RegularClasses = ['java.lang.String', 'java.lang.Object']
+<
+You can populate it with your custom classes, or it will be populated
+automatically when you choose any import option. List will be persisted, so it
+will be used next time you run the same project.
+
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:
 >
