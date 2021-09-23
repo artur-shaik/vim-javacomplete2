@@ -466,6 +466,13 @@ Use fully qualified name in description:
 <
 By default this option is disabled (0).
 
+                                                   *g:JavaComplete_UsePython3*
+An option to make javacomplete2 use python3 interpreter instead of python2,
+default value is 1.
+>
+  let g:JavaComplete_UsePython3 = 1
+<
+
                                                       *g:JavaComplete_PomPath*
 Set pom.xml path explicitly:
 >

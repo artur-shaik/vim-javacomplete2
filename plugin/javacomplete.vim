@@ -528,7 +528,13 @@ let g:JavaComplete_AutoStartServer =
 " <
 " By default this option is disabled (0).
 let g:JavaComplete_UseFQN = get(g:, 'JavaComplete_UseFQN', 0)
-
+""
+" An option to make javacomplete2 use python3 interpreter
+" instead of python2, default value is 1.
+" >
+"   let g:JavaComplete_UsePython3 = 1
+" <
+let g:JavaComplete_UsePython3 = 0
 ""
 " Set pom.xml path explicitly:
 " >

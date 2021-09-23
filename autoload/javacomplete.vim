@@ -170,7 +170,10 @@ let g:JavaComplete_Autoload = 1
 
 " It doesn't make sense to do any work if vim doesn't support any Python since
 " we relly on it to properly work.
-if has('python3')
+if has('python') && g:JavaComplete_UsePython3 == 0
+  command! -nargs=1 JavacompletePy py <args>
+  command! -nargs=1 JavacompletePyfile pyfile <args>
+elseif has('python3')
   command! -nargs=1 JavacompletePy py3 <args>
   command! -nargs=1 JavacompletePyfile py3file <args>
 else
