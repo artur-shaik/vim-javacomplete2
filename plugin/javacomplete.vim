@@ -536,6 +536,14 @@ let g:JavaComplete_UseFQN = get(g:, 'JavaComplete_UseFQN', 0)
 " <
 let g:JavaComplete_UsePython3 = 0
 ""
+" Enable or disable default key mappings,
+" by default this option is 1, and default mappings are defined.
+" To disable default mappings, set this option to 1.
+" >
+"   let g:JavaComplete_EnableDefaultMappings = 1
+" <
+let g:JavaComplete_EnableDefaultMappings = 0
+""
 " Set pom.xml path explicitly:
 " >
 "   let g:JavaComplete_PomPath = /path/to/pom.xml

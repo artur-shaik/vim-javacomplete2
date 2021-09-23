@@ -473,6 +473,14 @@ default value is 1.
   let g:JavaComplete_UsePython3 = 1
 <
 
+                                        *g:JavaComplete_EnableDefaultMappings*
+Enable or disable default key mappings, by default this option is 1, and
+default mappings are defined. To disable default mappings, set this option to
+1.
+>
+  let g:JavaComplete_EnableDefaultMappings = 1
+<
+
                                                       *g:JavaComplete_PomPath*
 Set pom.xml path explicitly:
 >
