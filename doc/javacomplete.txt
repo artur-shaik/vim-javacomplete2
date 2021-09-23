@@ -415,6 +415,15 @@ This can be avoided by setting:
   let g:JavaComplete_InsertImports = 0
 <
 
+                                             *g:JavaComplete_GradleExecutable*
+Set the path of gradle executable file. by default it is empty string.
+
+                                       *g:JavaComplete_ServerAutoShutdownTime*
+The Java daemon should kill itself when Vim stops. Also its possible to
+configure the timeout, so if there is no request during this time the daemon
+will stop. To configure the timemout use the following (in seconds). By
+default this option is 0.
+
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:
 >

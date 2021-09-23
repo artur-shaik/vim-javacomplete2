@@ -115,7 +115,7 @@ function! javacomplete#server#Start()
     endif
 
     let args = javaProps + ['kg.ash.javavi.Javavi'] + sources
-    if exists('g:JavaComplete_ServerAutoShutdownTime')
+    if g:JavaComplete_ServerAutoShutdownTime > 0
       let args += ['-t', g:JavaComplete_ServerAutoShutdownTime]
     endif
     let args += ['-base', javacomplete#util#GetBase('')]

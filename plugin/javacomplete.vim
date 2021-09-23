@@ -463,6 +463,16 @@ let g:JavaComplete_ImportDefault =
 " <
 let g:JavaComplete_InsertImports =
       \ get(g:, 'JavaComplete_InsertImports', 1)
+""
+" Set the path of gradle executable file. by default it is empty string.
+let g:JavaComplete_GradleExecutable = ''
+""
+" The Java daemon should kill itself when Vim stops.
+" Also its possible to configure the timeout,
+" so if there is no request during this time the daemon will stop.
+" To configure the timemout use the following (in seconds).
+" By default this option is 0.
+let g:JavaComplete_ServerAutoShutdownTime = 0
 let g:JavaComplete_ShowExternalCommandsOutput =
       \ get(g:, 'JavaComplete_ShowExternalCommandsOutput', 0)
 
