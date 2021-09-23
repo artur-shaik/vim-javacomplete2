@@ -488,7 +488,15 @@ let g:JavaComplete_ClasspathGenerationOrder =
 " 
 let g:JavaComplete_ImportSortType =
       \ get(g:, 'JavaComplete_ImportSortType', 'jarName')
-
+""
+" Specifies the order of import groups, when use `packageName`
+" sorting type, for example:
+" >
+"   let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']
+" <
+" An import group is a list of individual import statements that all
+" start with the same beginning of package name surrounded by blank
+" lines above and below the group.
 let g:JavaComplete_ImportOrder =
       \ get(g:, 'JavaComplete_ImportOrder', ['java.', 'javax.', 'com.', 'org.', 'net.'])
 

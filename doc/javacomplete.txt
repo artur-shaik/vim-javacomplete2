@@ -433,6 +433,16 @@ option is to set the imports sorting type. By default this option is
 <
 
 
+                                                  *g:JavaComplete_ImportOrder*
+Specifies the order of import groups, when use `packageName` sorting type, for
+example:
+>
+  let g:JavaComplete_ImportOrder = ['java.', 'javax.', 'com.', 'org.', 'net.']
+<
+An import group is a list of individual import statements that all start with
+the same beginning of package name surrounded by blank lines above and below
+the group.
+
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:
 >
