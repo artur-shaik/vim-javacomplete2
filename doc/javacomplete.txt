@@ -424,6 +424,15 @@ configure the timeout, so if there is no request during this time the daemon
 will stop. To configure the timemout use the following (in seconds). By
 default this option is 0.
 
+                                               *g:JavaComplete_ImportSortType*
+Sorting can by jar archives `jarName` or by package names `packageName`. This
+option is to set the imports sorting type. By default this option is
+`jarName`:
+>
+  let g:JavaComplete_ImportSortType = 'jarName'
+<
+
+
                                               *g:JavaComplete_AutoStartServer*
 Disable automatic startup of server:
 >

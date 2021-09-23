@@ -478,7 +478,14 @@ let g:JavaComplete_ShowExternalCommandsOutput =
 
 let g:JavaComplete_ClasspathGenerationOrder =
       \ get(g:, 'JavaComplete_ClasspathGenerationOrder', ['Maven', 'Eclipse', 'Gradle', 'Ant'])
-
+""
+" Sorting can by jar archives `jarName` or by package names `packageName`.
+" This option is to set the imports sorting type. By default this
+" option is `jarName`:
+" >
+"   let g:JavaComplete_ImportSortType = 'jarName'
+" <
+" 
 let g:JavaComplete_ImportSortType =
       \ get(g:, 'JavaComplete_ImportSortType', 'jarName')
 
