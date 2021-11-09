@@ -100,7 +100,7 @@ function! javacomplete#server#Start()
     if exists('g:JavaComplete_JavaviLogLevel')
       call add(javaProps, '-Dlog.level='. g:JavaComplete_JavaviLogLevel)
     endif
-    if exists('g:JavaComplete_JavaviLogDirectory')
+    if !empty(g:JavaComplete_JavaviLogDirectory)
       call add(javaProps, '-Dlog.directory='. g:JavaComplete_JavaviLogDirectory)
     endif
     JavacompletePy vim.command('let port = "%s"' % SERVER[1])
@@ -115,7 +115,7 @@ function! javacomplete#server#Start()
     endif
 
     let args = javaProps + ['kg.ash.javavi.Javavi'] + sources
-    if exists('g:JavaComplete_ServerAutoShutdownTime')
+    if g:JavaComplete_ServerAutoShutdownTime > 0
       let args += ['-t', g:JavaComplete_ServerAutoShutdownTime]
     endif
     let args += ['-base', javacomplete#util#GetBase('')]

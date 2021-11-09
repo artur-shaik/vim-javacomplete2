@@ -200,7 +200,7 @@ endfunction
 
 function! s:CheckAndLoadTemplate(template)
   let filenames = []
-  if exists('g:JavaComplete_CustomTemplateDirectory')
+  if isdirectory(g:JavaComplete_CustomTemplateDirectory)
     call add(filenames, expand(g:JavaComplete_CustomTemplateDirectory). '/gen__'. a:template. '.tpl')
   endif
   call add(filenames, g:JavaComplete_Home. '/plugin/res/gen__'. a:template. '.tpl')
