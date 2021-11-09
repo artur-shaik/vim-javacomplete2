@@ -11,7 +11,7 @@
 "
 " See |javacomplete-faq| in time if some problem occurs.
 " When meeting other problems not described in FAQ, you can contact with
-" the auther by the following e-mail: ashaihullin@gmail.com
+" the author by the following e-mail: ashaihullin@gmail.com
 "
 
 ""
