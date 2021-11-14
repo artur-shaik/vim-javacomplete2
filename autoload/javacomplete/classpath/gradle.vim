@@ -7,7 +7,7 @@ function! javacomplete#classpath#gradle#IfGradle()
     end
   endif
 
-  if g:JavaComplete_GradlePath != "" && s:IsGradleExecutable() && g:JavaComplete_GradlePath != ""
+  if g:JavaComplete_GradlePath != "" && s:IsGradleExecutable()
     return 1
   endif
   return 0
@@ -92,7 +92,7 @@ function! s:GenerateClassPath(path) abort
   let s:temporaryGradleFile = tempname()
   let s:gradleOutput = []
   let s:gradlePath = a:path
-  if empty(g:JavaComplete_GradleExecutable)
+  if !empty(g:JavaComplete_GradleExecutable)
     let gradle = g:JavaComplete_GradleExecutable
   else
     let gradle = fnamemodify(

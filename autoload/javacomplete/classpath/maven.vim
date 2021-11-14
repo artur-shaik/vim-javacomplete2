@@ -3,10 +3,24 @@ let s:pomTags = ['build', 'properties']
 let s:mavenErrors = []
 
 function! javacomplete#classpath#maven#IfMaven()
-  if executable('mvn') && g:JavaComplete_PomPath != ""
+  if !empty(g:JavaComplete_MavenExecutable)
+    if executable(g:JavaComplete_MavenExecutable) && g:JavaComplete_PomPath != ""
+      return 1
+    else
+      return 0
+    end
+  endif
+
+  if g:JavaComplete_PomPath != "" && s:isMavenExecutable()
     return 1
   endif
   return 0
+endfunction
+
+function! s:isMavenExecutable() abort
+  let osExec = javacomplete#util#IsWindows() ? '\mvnw.bat' : '/mvnw'
+  let path = fnamemodify(g:JavaComplete_PomPath, ':p:h')
+  return executable('mvn') || executable(path. osExec)
 endfunction
 
 function! javacomplete#classpath#maven#Generate(force) abort
@@ -27,7 +41,21 @@ function! javacomplete#classpath#maven#Generate(force) abort
     let s:mavenPath = path
     let s:mavenPom = g:JavaComplete_PomPath
     let s:mavenSettingsOutput = []
-    let mvnCmd = ['mvn', '-B', '--file', g:JavaComplete_PomPath, 'dependency:build-classpath', '-DincludeScope=test']
+    if !empty(g:JavaComplete_MavenExecutable)
+      let mvn = g:JavaComplete_MavenExecutable
+    else
+      let mvn = fnamemodify(
+            \ g:JavaComplete_PomPath, ':p:h') 
+            \ . (javacomplete#util#IsWindows() 
+            \ ? 
+            \ '\mvnw.bat' 
+            \ : 
+            \ '/mvnw')
+      if !executable(mvn)
+        let mvn = 'mvn'
+      endif
+    endif
+    let mvnCmd = [mvn, '-B', '--file', g:JavaComplete_PomPath, 'dependency:build-classpath', '-DincludeScope=test']
     call javacomplete#server#BlockStart()
     call javacomplete#util#RunSystem(mvnCmd, 'maven classpath build process', 'javacomplete#classpath#maven#BuildClasspathHandler')
     return ""
