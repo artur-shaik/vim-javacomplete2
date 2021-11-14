@@ -153,7 +153,7 @@ You can use `vim-javacomplete2` just like other omni-completion plugin. Many
 samples of input context are gived in the following section.
 
 See |javacomplete-faq| in time if some problem occurs. When meeting other
-problems not described in FAQ, you can contact with the auther by the
+problems not described in FAQ, you can contact with the author by the
 following e-mail: ashaihullin@gmail.com
 
 
@@ -417,6 +417,9 @@ This can be avoided by setting:
 
                                              *g:JavaComplete_GradleExecutable*
 Set the path of gradle executable file. by default it is empty string.
+
+                                              *g:JavaComplete_MavenExecutable*
+Set the path of mvn executable file. by default it is empty string.
 
                                        *g:JavaComplete_ServerAutoShutdownTime*
 The Java daemon should kill itself when Vim stops. Also its possible to

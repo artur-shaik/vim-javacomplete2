@@ -467,6 +467,9 @@ let g:JavaComplete_InsertImports =
 " Set the path of gradle executable file. by default it is empty string.
 let g:JavaComplete_GradleExecutable = ''
 ""
+" Set the path of mvn executable file. by default it is empty string.
+let g:JavaComplete_MavenExecutable = ''
+""
 " The Java daemon should kill itself when Vim stops.
 " Also its possible to configure the timeout,
 " so if there is no request during this time the daemon will stop.
