@@ -92,7 +92,7 @@ function! s:GenerateClassPath(path) abort
   let s:temporaryGradleFile = tempname()
   let s:gradleOutput = []
   let s:gradlePath = a:path
-  if empty(g:JavaComplete_GradleExecutable)
+  if exists(g:JavaComplete_GradleExecutable)
     let gradle = g:JavaComplete_GradleExecutable
   else
     let gradle = fnamemodify(
