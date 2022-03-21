@@ -320,7 +320,7 @@ function! s:HandleTextChangedI() abort
     endif
 
     let g:JC_ClassnameCompletedFlag = 0
-    call javacomplete#imports#Add()
+    call javacomplete#imports#Add(1)
     let saveCursor[1] = line('.') + offset
     call setpos('.', saveCursor)
   endif

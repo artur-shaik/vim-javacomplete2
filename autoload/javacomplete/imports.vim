@@ -273,13 +273,10 @@ function! s:AddImport(import)
     if !exists('insertline')
       let insertline = 1
     endif
-    let saveCursor = getpos('.')
     let linesCount = line('$')
     while (javacomplete#util#Trim(getline(insertline)) == '' && insertline < linesCount)
       silent execute insertline. 'delete _'
-      let saveCursor[1] -= 1
     endwhile
-    call setpos('.', saveCursor)
 
     let insertline = insertline - 1
     let newline = 1
@@ -293,12 +290,15 @@ function! s:AddImport(import)
       endif
       let idx += 1
     endfor
-    if replaceIdx > 0
-      silent execute imports[replaceIdx][1]. 'normal! cc'
-      call remove(imports, replaceIdx)
-    endif
-    let insertline = imports[len(imports) - 1][1]
+    let insertline = imports[len(imports) - 1][1] - 1
     let newline = 0
+    if replaceIdx >= 0
+      let saveCursor = getcurpos()
+      silent execute imports[replaceIdx][1]. 'normal! dd'
+      call remove(imports, replaceIdx)
+      let saveCursor[1] -= 1
+      call setpos('.', saveCursor)
+    endif
   endif
 
   if &ft == 'jsp'
@@ -316,10 +316,6 @@ function! s:AddImport(import)
   endif
 
 endfunction
-
-if !exists('s:RegularClassesDict') && exists('g:JavaComplete_RegularClasses')
-  let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict(g:JavaComplete_RegularClasses)
-endif
 
 function! s:StaticImportsFirst(importsList)
   let staticImportsList = []
@@ -406,6 +402,7 @@ function! s:_SortStaticToEnd(i1, i2)
   endif
 endfunction
 
+" a:1 - use smart import if True
 function! javacomplete#imports#Add(...)
   call javacomplete#server#Start()
 
@@ -426,7 +423,10 @@ function! javacomplete#imports#Add(...)
   if index(g:J_KEYWORDS, classname) >= 0
     return
   endif
-  if a:0 == 0 || !a:1 || index(keys(s:RegularClassesDict), classname) < 0
+  if a:0 > 0 && a:1 && index(keys(javacomplete#util#GetRegularClassesDict()), classname) >= 0
+    call s:AddImport(javacomplete#util#GetRegularClassesDict()[classname])
+    call javacomplete#imports#SortImports()
+  else
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
     if response =~ '^['
       let result = eval(response)
@@ -437,9 +437,6 @@ function! javacomplete#imports#Add(...)
         call javacomplete#imports#SortImports()
       endif
     endif
-  else
-    call s:AddImport(s:RegularClassesDict[classname])
-    call javacomplete#imports#SortImports()
   endif
 endfunction
 
@@ -460,8 +457,8 @@ function! javacomplete#imports#getType(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
-  if index(keys(s:RegularClassesDict), classname) != -1
-    echo s:RegularClassesDict[classname]
+  if index(keys(javacomplete#util#GetRegularClassesDict()), classname) != -1
+    echo javacomplete#util#GetRegularClassesDict()[classname]
   else
   endif
 endfunction
@@ -510,8 +507,9 @@ function! s:ChooseImportOption(options, classname)
 endfunction
 
 function! s:PopulateRegularClasses(classname, import)
-    let s:RegularClassesDict[a:classname] = a:import
-    call javacomplete#util#SaveRegularClassesList(s:RegularClassesDict)
+  let s:RegularClassesDict = javacomplete#util#GetRegularClassesDict()
+  let s:RegularClassesDict[a:classname] = a:import
+  call javacomplete#util#SaveRegularClassesList(s:RegularClassesDict)
 endfunction
 
 function! javacomplete#imports#RemoveUnused()
@@ -557,13 +555,13 @@ function! javacomplete#imports#AddMissing()
     if has_key(response, 'imports')
       for import in response['imports']
         let classname = split(import[0], '\(\.\|\$\)')[-1]
-        if index(keys(s:RegularClassesDict), classname) < 0
+        if index(keys(javacomplete#util#GetRegularClassesDict()), classname) < 0
           let result = s:ChooseImportOption(import, classname)
           if !empty(result)
             call s:AddImport(result)
           endif
         else
-          call s:AddImport(s:RegularClassesDict[classname])
+          call s:AddImport(javacomplete#util#GetRegularClassesDict()[classname])
         endif
       endfor
       call javacomplete#imports#SortImports()

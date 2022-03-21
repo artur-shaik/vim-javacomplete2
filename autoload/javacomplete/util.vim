@@ -354,24 +354,29 @@ function! javacomplete#util#RemoveEmptyClasses(classes)
   return filter(a:classes, 'v:val !~ "^$"')
 endfunction
 
-function! javacomplete#util#GetRegularClassesDict(classes)
+function! javacomplete#util#GetRegularClassesDict()
+  if exists('s:RegularClassesDict')
+    return s:RegularClassesDict
+  endif
   let path = javacomplete#util#GetBase('cache'). g:FILE_SEP. 'regular_classes_'. g:JavaComplete_ProjectKey. '.dat'
   if filereadable(path)
     let classes = readfile(path)
   else
     let classes = []
   endif
-  let classes = javacomplete#util#RemoveEmptyClasses(javacomplete#util#uniq(sort(extend(classes, a:classes))))
+  let classes = javacomplete#util#RemoveEmptyClasses(javacomplete#util#uniq(sort(extend(classes, g:JavaComplete_RegularClasses))))
   let dict = {}
   for class in classes
     call extend(dict, {split(class,'\.')[-1] : class})
   endfor
-  return dict
+  let s:RegularClassesDict = dict
+  return s:RegularClassesDict
 endfunction
 
 function! javacomplete#util#SaveRegularClassesList(classesDict)
     let path = javacomplete#util#GetBase('cache'). g:FILE_SEP. 'regular_classes_'. g:JavaComplete_ProjectKey. '.dat'
     call writefile(values(a:classesDict), path)
+    unlet s:RegularClassesDict
 endfunction
 
 function! javacomplete#util#IsStatic(modifier)
