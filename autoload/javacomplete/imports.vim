@@ -423,6 +423,9 @@ function! javacomplete#imports#Add(...)
   if classname =~ '^@.*'
     let classname = classname[1:]
   endif
+  if index(g:J_KEYWORDS, classname) >= 0
+    return
+  endif
   if a:0 == 0 || !a:1 || index(keys(s:RegularClassesDict), classname) < 0
     let response = javacomplete#server#Communicate("-class-packages", classname, 'Filter packages to add import')
     if response =~ '^['
