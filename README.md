@@ -1,3 +1,5 @@
+# DEPRECATED in favor of [jc.nvim](https://github.com/artur-shaik/jc.nvim)
+
 # vim-javacomplete2
 
 Updated version of the original [javacomplete plugin](http://www.vim.org/scripts/script.php?script_id=1785) for vim.
